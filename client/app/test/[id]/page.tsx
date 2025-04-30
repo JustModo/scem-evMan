@@ -1,7 +1,34 @@
 import { IdParams } from "@/types/params";
 import React from "react";
+import ContestCard from "@/components/ui/ContestCard";
+import { ContestLandingData } from "@/types/contest";
 
 export default function TestDetails({ params }: { params: IdParams }) {
   const { id } = params;
-  return <div>Test Details : {id}</div>;
+
+  // Dummy contest data - can be dynamic later
+  const contestData: ContestLandingData = {
+    title: `CodeMania 2025 - Round ${id}`,
+    description: "A 3-hour online coding contest to test your skills.",
+    duration: {
+      start: new Date("2025-05-01T10:00:00"),
+      end: new Date("2025-05-01T13:00:00"),
+    },
+    totalProblems: 5,
+    author: "SCEM Coding Club",
+    rules: [
+      "No plagiarism",
+      "Individual participation only",
+      "Submit all answers before the end time",
+    ],
+  };
+
+  return (
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">Test Details: {id}</h1>
+
+      {/* Render ContestCard */}
+      <ContestCard data={contestData} />
+    </div>
+  );
 }
