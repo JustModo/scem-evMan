@@ -3,6 +3,7 @@ import React from "react";
 
 // Admin Layout
 // Provides sidebar or admin navigation. Wraps all /admin/* routes.
+
 export default function AdminLayout({
   children,
 }: {
@@ -10,8 +11,8 @@ export default function AdminLayout({
 }) {
   return (
     <div>
-      <AdminNavbar />
-      <main>{children}</main>
+      <AdminNavbar /> 
+      <main className="p-4">{children}</main>
     </div>
   );
 }
