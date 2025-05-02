@@ -1,4 +1,4 @@
-import AdminNavbar from "@/components/AdminNavbar";
+import AdminSidebar from "@/components/AdminNavbar";
 import React from "react";
 
 // Admin Layout
@@ -11,8 +11,9 @@ export default function AdminLayout({
 }) {
   return (
     <div>
-      <AdminNavbar /> 
-      <main className="p-4">{children}</main>
+      <AdminSidebar /> 
+      <main className="p-4 pl-64 w-full ">{children}</main>
+
     </div>
   );
 }
