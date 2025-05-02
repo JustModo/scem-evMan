@@ -1,43 +1,8 @@
-"use client";
-
 import React from "react";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-const formSchema = z.object({
-  email: z.string().min(2, "Email must be at least 2 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-});
-
 export default function RegisterPage() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("Form Submitted", values);
-  };
-
   return (
     <div className="relative h-screen w-full bg-white">
       {/* green dabba */}
@@ -53,75 +18,53 @@ export default function RegisterPage() {
       </div>
 
       {/* form */}
-      <div className="absolute w-full max-w-lg top-50 left-20 p-6 space-y-8 text-black">
+      <div className="absolute w-full max-w-lg top-50 left-20 p-6 space-y-4 text-black">
         <h1 className="text-6xl font-bold text-black mb-1.5">SIGN UP</h1>
         <hr className="bg-[#579e86] h-1.5 w-[35%] rounded-2xl" />
         <p className="text-right">
           Already a User?<a className="underline" href="https://www.google.com/">Login</a>
         </p>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      className="bg-[#b1d6a9] text-black placeholder:text-black"
-                      placeholder="E-Mail ID"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form className="space-y-6">
+          <div className="flex flex-col space-y-2">
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="E-Mail ID"
+            className="bg-[#b1d6a9] text-black placeholder:text-black"
+            required
+          />
+          </div>
 
-            <FormField
-              control={form.control}
+          <div className="flex flex-col space-y-2">
+            <Input
+              id="password"
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      className="bg-[#b1d6a9] text-black placeholder:text-black"
-                      type="password"
-                      placeholder="Create a password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              type="password"
+              placeholder="Create a password"
+              className="bg-[#b1d6a9] text-black placeholder:text-black"
+              required
             />
+          </div>
 
-            <FormField
-              control={form.control}
+          <div className="flex flex-col space-y-2">
+            <Input
+              id="confirmPassword"
               name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      className="bg-[#b1d6a9] text-black placeholder:text-black"
-                      type="password"
-                      placeholder="Confirm Password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              type="password"
+              placeholder="Confirm Password"
+              className="bg-[#b1d6a9] text-black placeholder:text-black"
+              required
             />
+          </div>
 
-            <Button
-              type="submit"
-              className="w-full mt-5 bg-[#579e86] text-black"
-            >
-              CONTINUE
-            </Button>
-          </form>
-        </Form>
+          <Button
+            type="submit"
+            className="w-full mt-5 bg-[#579e86] text-black"
+          >
+            CONTINUE
+          </Button>
+        </form>
       </div>
     </div>
   );
