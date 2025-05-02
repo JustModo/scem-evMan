@@ -1,9 +1,16 @@
+"use client";
 import React from "react";
 import Link from "next/link";
 import { User, LogIn } from "lucide-react";
 import { ModeToggle } from "./theme-toggle";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const showNavbar = !pathname.startsWith("/attempt");
+
+  if (!showNavbar) return null;
+
   return (
     <header className="absolute top-0 z-10 w-full">
       <nav className="bg-[#00b88f] h-12 flex items-center justify-between px-6 shadow-md">

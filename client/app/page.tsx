@@ -15,7 +15,7 @@ export default function HomePage() {
         
         lock"
         >
-          LET'S GET STARTED
+          LETS GET STARTED
           <div className="mt-1 w-36 h-1 rounded-sm bg-green-900" />
         </h1>
 

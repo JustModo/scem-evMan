@@ -3,7 +3,8 @@ import React from "react";
 import ContestCard from "@/components/contest-card";
 import { ContestLandingData } from "@/types/contest";
 
-export default function TestDetails({ params }: { params: IdParams }) {
+export default async function TestDetails(props: { params: Promise<IdParams> }) {
+  const params = await props.params;
   const { id } = params;
 
   // Dummy contest data - can be dynamic later
