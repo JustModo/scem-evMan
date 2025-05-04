@@ -11,6 +11,9 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const [isDark, setIsDark] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -18,6 +21,41 @@ export default function LoginPage() {
       root.classList.toggle("dark", isDark);
     }
   }, [isDark]);
+
+  const validateForm = () => {
+    const newErrors = { email: "", password: "" };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+
+    if (!emailRegex.test(email)) {
+      newErrors.email = "Enter a valid email.";
+    }
+
+    if (!passwordRegex.test(password)) {
+      newErrors.password =
+        "Password must be at least 6 characters and include uppercase, lowercase, number, and symbol.";
+    }
+
+    setErrors(newErrors);
+    return !newErrors.email && !newErrors.password;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    if (email !== "test@example.com" || password !== "Test@123") {
+      setErrors((prev) => ({
+        ...prev,
+        password: "Invalid email or password.",
+      }));
+      return;
+    }
+
+    setErrors({ email: "", password: "" });
+    alert("Login successful!");
+  };
 
   return (
     <main className="h-screen flex items-center justify-center p-0">
@@ -60,32 +98,39 @@ export default function LoginPage() {
               <div className="h-1 w-[120px] bg-[#4cafac] rounded-full mt-1" />
             </h1>
 
-            {/* Optional tagline */}
-            <p className="mt-2 text-xs text-slate-400"></p>
-
             {/* Form */}
-            <form className="w-full mt-4">
+            <form className="w-full mt-4" onSubmit={handleSubmit}>
               {/* Email */}
-              <div className="relative mb-4">
+              <div className="relative mb-1">
                 <MdEmail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600" size={20} />
                 <Input
-                  className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:bg-[#d0e7c2] dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
-                  type="email"
+                  className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:bg-[#d0e7c2] dark:text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
+                  type="email"  
                   id="email"
                   placeholder="E-Mail ID"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+              {errors.email && (
+                <p className="text-sm text-red-500 mb-2">{errors.email}</p>
+              )}
 
               {/* Password */}
-              <div className="relative mb-2">
+              <div className="relative mb-1">
                 <RiLockPasswordFill className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600" size={20} />
                 <Input
-                  className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:bg-[#d0e7c2] dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
+                  className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:bg-[#d0e7c2] dark:text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
                   type="password"
                   id="password"
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              {errors.password && (
+                <p className="text-sm text-red-500 mb-2">{errors.password}</p>
+              )}
 
               {/* Forgot Password */}
               <div className="text-right mt-1 mb-4">
@@ -105,7 +150,7 @@ export default function LoginPage() {
               {/* Sign Up */}
               <div className="text-center mt-4">
                 <span className="text-sm text-gray-600 dark:text-slate-400">New user? </span>
-                <Link href="/signup" className="text-sm text-[#4cafac] hover:underline">
+                <Link href="/auth/register" className="text-sm text-[#4cafac] hover:underline">
                   Sign Up
                 </Link>
               </div>
