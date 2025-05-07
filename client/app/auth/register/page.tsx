@@ -54,7 +54,7 @@ export default function RegisterPage() {
             d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2"
             fill="#aad3b0"
             stroke="#aad3b0"
-            stroke-width="1"
+            strokeWidth="1"
           />
         </svg>
       </div>
@@ -79,10 +79,7 @@ export default function RegisterPage() {
           >
             <p className="text-right text-black dark:text-white mb-2">
               Already a User?{" "}
-              <a
-                className="hover:underline text-[#4cafac]"
-                href="https://www.google.com"
-              >
+              <a className="hover:underline text-[#4cafac]" href="/auth/login">
                 Login
               </a>
             </p>
@@ -141,10 +138,10 @@ export default function RegisterPage() {
                   ? "text-red-600"
                   : matchMessage
                   ? "text-green-600"
-                  : "text-black dark:text-white"
+                  : "pt-2"
               }`}
             >
-              {matchMessage || "Matches"}
+              {matchMessage || ""}
             </p>
 
             <div className="flex flex-col lg:gap-12 items-center lg:flex-row gap-3">
@@ -159,7 +156,7 @@ export default function RegisterPage() {
                 className={`flex items-center w-full gap-4 cursor-pointer ${
                   isDark
                     ? "bg-black border-white text-white"
-                    : "bg-white border-lightgray text-black"
+                    : "bg-white border-gray-300 text-black"
                 } border-2 rounded-md`}
                 variant="outline"
               >
