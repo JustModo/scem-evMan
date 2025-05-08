@@ -62,10 +62,12 @@ export default function RegisterPage() {
       {/* form */}
       <div className="flex justify-items-center md:justify-items-start h-screen items-end p-8 lg:px-40">
         <div className="w-full max-w-md p-6 space-y-4">
-          <h1 className="text-6xl font-bold text-black dark:text-white mb-1.5">
-            SIGN UP
-          </h1>
-          <hr className="bg-[#579e86] h-1.5 w-[35%] rounded-2xl" />
+          <div className="w-max space-y-2">
+            <h1 className="shrink sm:text-6xl text-5xl font-bold text-black dark:text-white mb-1.5">
+              SIGN UP
+            </h1>
+            <hr className="bg-[#579e86] h-1.5 rounded-2xl" />
+          </div>
           <form
             className="space-y-6 scale-z-100"
             onSubmit={(e) => {
