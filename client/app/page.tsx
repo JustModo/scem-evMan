@@ -59,7 +59,7 @@ export default function HomePage() {
           </div>
           </Link>
           {/* JOIN A TEST Button */}
-          <Link href="/test/1">
+          <Link href="/join">
           <div
             className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start"
             style={{ 

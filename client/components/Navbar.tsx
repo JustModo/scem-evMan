@@ -9,14 +9,14 @@ export default function Navbar() {
       <nav style={{ backgroundColor: "rgb(0, 184, 143)", padding: "20px" }}>
         <ul style={{ display: "flex", justifyContent: "space-between", alignItems: "center", listStyle: "none", margin: 0, padding: 0 }}>
           <li>
-            <Link href="/home">
+            <Link href="/">
               <span className="nav-link">Home</span>
             </Link>
           </li>
           <li>
             <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
               <span className="separator">||</span>
-              <Link href="/Sign_In">
+              <Link href="/auth/login">
                 <span className="nav-link">SignIn</span>
               </Link>
               <span className="separator">||</span>
