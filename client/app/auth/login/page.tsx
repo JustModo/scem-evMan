@@ -124,7 +124,7 @@ export default function LoginPage() {
               {/* Login Button */}
               <Button
                 type="submit"
-                className="w-full mt-2 bg-[#4cafac] hover:bg-[#3b998f] text-white rounded-full font-semibold"
+                className="w-full mt-2 bg-[#4cafac] hover:bg-[#3b998f] text-white rounded-full font-semibold cursor-pointer"
               >
                 Login
               </Button>
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
               {/* Google Button */}
               <Button
-                className={`flex items-center w-full gap-4 bg-white dark:bg-black border-2 border-gray-300 dark:border-white text-black dark:text-white rounded-md`}
+                className={`flex items-center w-full gap-4 bg-white dark:bg-black border-2 border-gray-300 dark:border-white text-black dark:text-white rounded-md cursor-pointer`}
                 variant="outline"
               >
                 <FcGoogle size="25" />
