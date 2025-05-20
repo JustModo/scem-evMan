@@ -1,13 +1,38 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaChartLine, FaQuestionCircle, FaClipboardList, FaCogs } from "react-icons/fa";
+import {
+  FaChartLine,
+  FaQuestionCircle,
+  FaClipboardList,
+  FaCogs,
+} from "react-icons/fa";
 
 const routes = [
-  { name: "route1", icon: <FaChartLine />, label: "Route 1", content: "Example Content for Route 1 " },
-  { name: "route2", icon: <FaQuestionCircle />, label: "Route 2", content: "Example Content for Route 2" },
-  { name: "route3", icon: <FaClipboardList />, label: "Route 3", content: "Example Content for Route 3" },
-  { name: "route4", icon: <FaCogs />, label: "Route 4", content: "Example Content for Route 4" },
+  {
+    name: "route1",
+    icon: <FaChartLine />,
+    label: "Route 1",
+    content: "Example Content for Route 1 ",
+  },
+  {
+    name: "route2",
+    icon: <FaQuestionCircle />,
+    label: "Route 2",
+    content: "Example Content for Route 2",
+  },
+  {
+    name: "route3",
+    icon: <FaClipboardList />,
+    label: "Route 3",
+    content: "Example Content for Route 3",
+  },
+  {
+    name: "route4",
+    icon: <FaCogs />,
+    label: "Route 4",
+    content: "Example Content for Route 4",
+  },
 ];
 
 const HeroSection: React.FC = () => {
@@ -21,14 +46,16 @@ const HeroSection: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
+    <div className="flex h-screen bg-black text-white pt-12">
       <aside className="flex flex-col items-center bg-[#A0CC98] w-15 py-6 space-y-8">
         {routes.map((r) => (
           <button
             key={r.name}
             onClick={() => setActiveRoute(r.name)}
             className={`group p-3 rounded transition-colors ${
-              activeRoute === r.name ? "bg-green-700 text-white" : "hover:bg-green-600 text-black"
+              activeRoute === r.name
+                ? "bg-green-700 text-white"
+                : "hover:bg-green-600 text-black"
             }`}
             aria-label={r.label}
           >
@@ -44,8 +71,12 @@ const HeroSection: React.FC = () => {
 
       <main className="flex-1 px-8 py-10 flex flex-col items-center space-y-8">
         <section className="w-full max-w-5xl rounded-2xl border border-[#A0CC98] p-10 text-center shadow-xl">
-          <h2 className="mb-4 text-4xl font-bold text-[#A0CC98]">Platform Stats</h2>
-          <p className="mb-10 text-lg text-gray-300">Overview of contests and performance metrics</p>
+          <h2 className="mb-4 text-4xl font-bold text-[#A0CC98]">
+            Platform Stats
+          </h2>
+          <p className="mb-10 text-lg text-gray-300">
+            Overview of contests and performance metrics
+          </p>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
             {[
               { label: "Total Contests", value: stats.totalContests },

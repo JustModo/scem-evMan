@@ -23,10 +23,9 @@ export default function RegisterPage() {
   }, [isDark]);
 
   return (
-    // main div
-    <div className="relative h-screen w-full bg-white dark:bg-black">
+    <div className="relative h-screen w-full bg-white dark:bg-black overflow-hidden pt-12">
       {/* toggle dark mode */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-20 right-4 z-10">
         <button
           onClick={() => setIsDark(!isDark)}
           className={`w-14 h-7 flex items-center p-1 rounded-full transition-colors duration-300 ${
@@ -48,7 +47,7 @@ export default function RegisterPage() {
       </div>
 
       {/* green top */}
-      <div className="absolute top-0 left-0 w-full h-1/2">
+      <div className="absolute top-0 left-0 w-full h-1/3">
         <svg viewBox="0 1.5 20 10" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2"
@@ -60,16 +59,16 @@ export default function RegisterPage() {
       </div>
 
       {/* form */}
-      <div className="flex justify-items-center md:justify-items-start h-screen items-end p-8 lg:px-40">
-        <div className="w-full max-w-md p-6 space-y-4">
+      <div className="flex items-center h-full w-full px-6">
+        <div className="w-full max-w-md p-6 space-y-4 relative">
           <div className="w-max space-y-2">
-            <h1 className="shrink sm:text-6xl text-5xl font-bold text-black dark:text-white mb-1.5">
+            <h1 className="text-4xl sm:text-5xl font-bold text-black dark:text-white mb-1.5">
               SIGN UP
             </h1>
             <hr className="bg-[#579e86] h-1.5 rounded-2xl" />
           </div>
           <form
-            className="space-y-6 scale-z-100"
+            className="space-y-2"
             onSubmit={(e) => {
               e.preventDefault();
               if (password === confirmPassword) {
@@ -79,7 +78,7 @@ export default function RegisterPage() {
               }
             }}
           >
-            <p className="text-right text-black dark:text-white mb-2">
+            <p className="text-right text-black dark:text-white">
               Already a User?{" "}
               <a className="hover:underline text-[#4cafac]" href="/auth/login">
                 Login
@@ -117,7 +116,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="relative mb-1">
+            <div className="relative">
               <FaCheckCircle
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
                 size={18}
@@ -135,34 +134,42 @@ export default function RegisterPage() {
             </div>
 
             <p
-              className={`text-right font-medium ${
+              className={`text-right font-medium h-5 ${
                 matchMessage.includes("not")
                   ? "text-red-600"
                   : matchMessage
                   ? "text-green-600"
-                  : "pt-2"
+                  : ""
               }`}
             >
               {matchMessage || ""}
             </p>
 
-            <div className="flex flex-col lg:gap-12 items-center lg:flex-row gap-3">
+            <div className="flex flex-col gap-4">
               <Button
                 type="submit"
-                className="w-full cursor-pointer bg-[#4cafac] hover:bg-[#3b998f] text-white dark:text-white font-bold text-md rounded-full"
+                className="w-full cursor-pointer bg-[#4cafac] hover:bg-[#3b998f] text-white dark:text-white  rounded-full"
               >
-                CONTINUE
+                Continue
               </Button>
-              <p>or</p>
+
+              <div className="flex items-center justify-center gap-3">
+                <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+                <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                  or
+                </span>
+                <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+              </div>
+
               <Button
-                className={`flex items-center w-full gap-4 cursor-pointer ${
+                className={`flex items-center justify-center w-full gap-4 cursor-pointer ${
                   isDark
                     ? "bg-black border-white text-white"
                     : "bg-white border-gray-300 text-black"
                 } border-2 rounded-md`}
                 variant="outline"
               >
-                <FcGoogle size="25" />
+                <FcGoogle size="20" />
                 Continue With Google
               </Button>
             </div>
