@@ -1,8 +1,9 @@
-import AdminSidebar from "@/components/AdminNavbar";
+import AdminTopbar from "@/components/admin/AdminNavbar";
 import React from "react";
 
 // Admin Layout
 // Provides sidebar or admin navigation. Wraps all /admin/* routes.
+
 
 export default function AdminLayout({
   children,
@@ -11,9 +12,8 @@ export default function AdminLayout({
 }) {
   return (
     <div>
-      <AdminSidebar /> 
-      <main className="p-4 pl-64 w-full ">{children}</main>
-
+      <AdminTopbar />
+      <main className=" ">{children}</main>
     </div>
   );
 }
