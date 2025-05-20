@@ -1,7 +1,12 @@
-// Footer.tsx
-import React from 'react';
+"use client";
 
-const Footer = () => {
+import { usePathname } from "next/navigation";
+
+export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname !== "/") return null;
+
   return (
     <footer className="bg-gray-400 text-gray-800 text-center py-4 mt-12">
       <div className="flex justify-center space-x-8">
@@ -13,6 +18,4 @@ const Footer = () => {
       <p className="mt-4 text-sm">© 2025 Your Company. All rights reserved.</p>
     </footer>
   );
-};
-
-export default Footer;
+}
