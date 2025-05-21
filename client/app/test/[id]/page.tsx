@@ -1,6 +1,6 @@
 import { IdParams } from "@/types/params";
 import React from "react";
-import ContestCard from "@/components/ui/ContestCard";
+import ContestCard from "@/components/ContestCard";
 import { ContestLandingData } from "@/types/contest";
 
 export default function TestDetails({ params }: { params: IdParams }) {
@@ -11,8 +11,8 @@ export default function TestDetails({ params }: { params: IdParams }) {
     title: `CodeMania 2025 - Round ${id}`,
     description: "A 3-hour online coding contest to test your skills.",
     duration: {
-      start: new Date("2025-05-01T10:00:00"),
-      end: new Date("2025-05-01T13:00:00"),
+      start: "2025-05-01T10:00:00",
+      end: "2025-05-01T13:00:00",
     },
     totalProblems: 5,
     author: "SCEM Coding Club",

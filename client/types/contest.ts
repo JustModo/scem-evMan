@@ -3,8 +3,8 @@ export interface ContestLandingData {
   title: string;
   description: string;
   duration: {
-    start: Date;
-    end: Date;
+    start: string;
+    end: string;
   };
   totalProblems: number;
   author: string;
