@@ -44,10 +44,10 @@ export default function AdminQuestionEditPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#B8E1B0] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#B8E1B0] p-4 pt-16">
       <div className="w-full max-w-4xl rounded-2xl shadow-md bg-white dark:bg-neutral-900 text-black dark:text-white p-6 md:p-10 transition-colors duration-300">
         <h1 className="text-2xl font-semibold mb-6">
-          {isCreating ? "➕ Add New Question" : "✏️ Edit Question"}
+          {isCreating ? "➕ Add New Question" : "Edit Question"}
         </h1>
 
         <form className="space-y-6" onSubmit={handleSubmit}>

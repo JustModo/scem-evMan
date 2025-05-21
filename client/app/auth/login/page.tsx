@@ -25,8 +25,7 @@ export default function LoginPage() {
   const validateForm = () => {
     const newErrors = { email: "", password: "" };
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
 
     if (!emailRegex.test(email)) {
       newErrors.email = "Enter a valid email.";
@@ -68,10 +67,10 @@ export default function LoginPage() {
         {/* Right Side */}
         <div className="bg-white dark:bg-[#121212] text-black dark:text-white flex items-center justify-center flex-col px-4 sm:px-10 py-4 transition-colors duration-300 relative border-2 border-[#aad3b0] border-opacity-10">
           <div className="w-full max-w-sm mx-auto">
-            <div className="w-full h-1 bg-[#4cafac] rounded-full mb-4 absolute top-0 left-0" />
+            <div className="w-full bg-[#4cafac] rounded-full mb-4 absolute top-0 left-0" />
 
             {/* Toggle */}
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-20 right-4">
               <button
                 onClick={() => setIsDark(!isDark)}
                 className={`w-14 h-7 flex items-center p-1 rounded-full transition-colors duration-300 ${
@@ -99,13 +98,16 @@ export default function LoginPage() {
             </h1>
 
             {/* Form */}
-            <form className="w-full mt-4" onSubmit={handleSubmit}>
+            <form className="w-full mt-4 space-y-2" onSubmit={handleSubmit}>
               {/* Email */}
-              <div className="relative mb-1">
-                <MdEmail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600" size={20} />
+              <div className="relative">
+                <MdEmail
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
+                  size={20}
+                />
                 <Input
                   className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:bg-[#d0e7c2] dark:text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
-                  type="email"  
+                  type="email"
                   id="email"
                   placeholder="E-Mail ID"
                   value={email}
@@ -117,8 +119,11 @@ export default function LoginPage() {
               )}
 
               {/* Password */}
-              <div className="relative mb-1">
-                <RiLockPasswordFill className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600" size={20} />
+              <div className="relative">
+                <RiLockPasswordFill
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
+                  size={20}
+                />
                 <Input
                   className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:bg-[#d0e7c2] dark:text-black rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
                   type="password"
@@ -134,7 +139,10 @@ export default function LoginPage() {
 
               {/* Forgot Password */}
               <div className="text-right mt-1 mb-4">
-                <Link href="/forgot-password" className="text-xs text-[#4cafac] hover:underline">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-[#4cafac] hover:underline"
+                >
                   Forgot Password?
                 </Link>
               </div>
@@ -149,8 +157,13 @@ export default function LoginPage() {
 
               {/* Sign Up */}
               <div className="text-center mt-4">
-                <span className="text-sm text-gray-600 dark:text-slate-400">New user? </span>
-                <Link href="/auth/register" className="text-sm text-[#4cafac] hover:underline">
+                <span className="text-sm text-gray-600 dark:text-slate-400">
+                  New user?{" "}
+                </span>
+                <Link
+                  href="/auth/register"
+                  className="text-sm text-[#4cafac] hover:underline"
+                >
                   Sign Up
                 </Link>
               </div>

@@ -1,51 +1,42 @@
-'use client';
+"use client";
 
 import React from "react";
 import Link from "next/link";
+import { Home, User, LogIn } from "lucide-react";
 
 export default function Navbar() {
   return (
-    <header>
-      <nav style={{ backgroundColor: "rgb(0, 184, 143)", padding: "20px" }}>
-        <ul style={{ display: "flex", justifyContent: "space-between", alignItems: "center", listStyle: "none", margin: 0, padding: 0 }}>
+    <header className="absolute top-0 z-10 w-full">
+      <nav className="bg-[#00b88f] h-12 flex items-center justify-between px-6 shadow-md">
+        {/* Logo/Brand section */}
+        <div className="flex items-center">
+          <Link href="/">
+            <span className="font-semibold text-white text-lg cursor-pointer">
+              SOSC
+            </span>
+          </Link>
+        </div>
+
+        {/* Navigation links */}
+        <ul className="flex items-center space-x-1">
           <li>
-            <Link href="/">
-              <span className="nav-link">Home</span>
+            <Link href="/auth/login">
+              <span className="flex items-center gap-1 px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-white/10 transition-colors">
+                <LogIn size={16} />
+                <span>Sign In</span>
+              </span>
             </Link>
           </li>
           <li>
-            <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-              <span className="separator">||</span>
-              <Link href="/auth/login">
-                <span className="nav-link">SignIn</span>
-              </Link>
-              <span className="separator">||</span>
-              <Link href="/profile">
-                <span className="nav-link">Profile</span>
-              </Link>
-              <span className="separator">||</span>
-            </div>
+            <Link href="/profile">
+              <span className="flex items-center gap-1 px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-white/10 transition-colors">
+                <User size={16} />
+                <span>Profile</span>
+              </span>
+            </Link>
           </li>
         </ul>
       </nav>
-
-      <style jsx>{`
-        .nav-link {
-          color: white; /* Change text color to white */
-          text-decoration: none;
-          cursor: pointer;
-          transition: color 0.3s ease;
-          font-size: 18px; /* Increase the font size */
-        }
-        .nav-link:hover {
-          color: blue;
-        }
-        .separator {
-          font-weight: bold;
-          color: white; /* Ensure separators are also white */
-          font-size: 18px; /* Increase the font size of separators */
-        }
-      `}</style>
     </header>
   );
 }

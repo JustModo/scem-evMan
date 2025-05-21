@@ -3,117 +3,55 @@ import { LogOut } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen font-sans relative overflow-hidden" style={{ backgroundColor: "rgb(0, 0, 0)" }}>
-      {/* Top Green Banner */}
-      <div style={{ backgroundColor: "rgb(184, 225, 176)" }} className="w-full h-28">
-        {/* Optional: Add background SVG or wave pattern here */}
-      </div>
-
-      {/* Logout Button */}
-      <div
-        className="absolute right-6 flex items-center gap-1 text-sm cursor-pointer"
-        style={{ top: "8.5rem", color: "rgb(255, 255, 255)" }}
-      >
-        <LogOut size={20} />
-        Logout
-      </div>
-
+    <div className="h-screen bg-[#aad3b0] flex items-center pt-12">
       {/* Main Content */}
-      <div
-        className="absolute left-0 right-0 flex flex-col items-center px-4"
-        style={{ top: "8.5rem" }}
-      >
-        <h1
-          className="self-start text-5xl font-extrabold relative inline-block"
-          style={{ color: "rgb(255, 255, 255)" }}
-        >
+      <main className="flex flex-col items-center px-4 bg-black py-6 relative w-full h-8/12">
+        <div className="absolute right-8 flex items-center gap-1 text-sm text-white cursor-pointer">
+          <LogOut size={20} />
+          Logout
+        </div>
+        <h1 className="self-start text-5xl font-extrabold text-white relative inline-block">
           LET’S GET STARTED
-          <div style={{ 
-            width: "9rem",
-            height: "0.25rem", 
-            backgroundColor: "rgb(46, 91, 82)",
-            marginTop: "0.25rem", 
-            borderRadius: "0.125rem" }} />
+          <div className="mt-1 w-36 h-1 rounded-sm bg-green-900" />
         </h1>
 
         {/* Buttons */}
-        <div className="flex gap-40 mt-25">
-          {/* HOST Button */}
-          <Link href="/admin">
-          <div
-            className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start"
-            style={{ borderColor: "rgb(46, 91, 82)" , 
-              boxShadow: "0 8px 16px rgba(255, 255, 255, 0.24)",
-              backgroundColor:"rgba(163, 208, 198)"
-            }}
+        <div className="flex gap-40 mt-24">
+          <Link
+            href="/admin"
+            className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start border-green-900 shadow-[0_8px_16px_rgba(255,255,255,0.24)] bg-green-200/90"
           >
             <div
               className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2"
               style={{ backgroundImage: "url('/your-icon-path.svg')" }}
-            ></div>
-            <span style={{ color: "rgb(255, 255, 255)", 
-            fontWeight: "bold",
-            fontSize: "1.5rem", 
-            marginTop: "-0.75rem" 
-            }}>HOST</span>
-          </div>
+            />
+            <span className="mt-[-0.75rem] text-white font-bold text-2xl">
+              HOST
+            </span>
           </Link>
-          {/* JOIN A TEST Button */}
-          <Link href="/join">
-          <div
-            className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start"
-            style={{ 
-              borderColor: "rgb(46, 91, 82)",
-               boxShadow: "0 8px 16px rgba(255, 255, 255, 0.25)",
-               backgroundColor:"rgba(163, 208, 198)"
-               
-               }}
+
+          <Link
+            href="/join"
+            className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start border-green-900 shadow-[0_8px_16px_rgba(255,255,255,0.25)] bg-green-200/90"
           >
             <div
-              className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2 "
-              style={{ 
-                backgroundImage: "url('/your-icon-path.svg')"
-               }}
-            ></div>
-            <span style={{ 
-              color: "rgb(255, 255, 255)", 
-              fontWeight: "bold", 
-              textAlign: "center",
-              fontSize: "1.5rem", 
-              marginTop: "-0.75rem"
-             }}>
+              className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2"
+              style={{ backgroundImage: "url('/your-icon-path.svg')" }}
+            />
+            <span className="mt-[-0.75rem] text-white font-bold text-2xl text-center">
               JOIN A TEST
             </span>
-          </div>
           </Link>
         </div>
 
         {/* Bottom Center Footer */}
-        <div className="mt-12 text-sm text-center" style={{ color: "rgb(55, 65, 81)" }}>
-          
-          <div
-            style={{
-               width: "8rem", 
-               height: "0.35rem", 
-               backgroundColor: "rgb(46, 91, 82)", 
-               marginTop: "0.5rem",
-               marginBottom: "2rem", 
-               borderRadius: "9999px", 
-               marginLeft: "auto", 
-               marginRight: "auto" 
-              }}
-          />
+        <div className="mt-12 flex flex-col items-center text-gray-700 text-sm">
+          <div className="w-32 h-1 rounded-full bg-green-900 mb-8" />
+          <span className="text-white">
+            Made with <span className="text-red-500">❤️</span> by <b>SOSC</b>
+          </span>
         </div>
-        <span ><span style={{ color: "rgb(255, 255, 255)" }}>Made with </span><span style={{ color: "rgb(239, 68, 68)" }}>❤️</span><span style={{ color: "rgb(255, 255, 255)" }}>by<b>  SOSC</b></span></span>
-      </div>
-
-      {/* Bottom Green Banner */}
-      <div
-        className="w-full h-28 absolute bottom-0 left-0"
-        style={{ backgroundColor: "rgb(184, 225, 176)" }}
-      >
-        {/* Optional: Add matching pattern or shape here */}
-      </div>
+      </main>
     </div>
   );
 }
