@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 import {
   FaChartLine,
@@ -49,8 +50,9 @@ const HeroSection: React.FC = () => {
     <div className="flex h-screen bg-black text-white pt-12">
       <aside className="flex flex-col items-center bg-[#A0CC98] w-15 py-6 space-y-8">
         {routes.map((r) => (
-          <button
+          <Link
             key={r.name}
+            href={'/admin/tests'}
             onClick={() => setActiveRoute(r.name)}
             className={`group p-3 rounded transition-colors ${
               activeRoute === r.name
@@ -65,7 +67,7 @@ const HeroSection: React.FC = () => {
                 {r.label}
               </span>
             </div>
-          </button>
+          </Link>
         ))}
       </aside>
 
