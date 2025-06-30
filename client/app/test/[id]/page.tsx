@@ -24,8 +24,9 @@ export default function TestDetails({ params }: { params: IdParams }) {
   };
 
   return (
-    <div className="h-screen pt-12">
+    <>
+      {/* Render ContestCard */}
       <ContestCard data={contestData} />
-    </div>
+    </>
   );
 }
