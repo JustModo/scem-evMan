@@ -10,8 +10,10 @@ export default function HomePage() {
           <LogOut size={20} />
           Logout
         </div>
-        <h1 className="self-start text-5xl font-extrabold text-white relative inline-block">
-          LET’S GET STARTED
+        <h1 className="self-start text-5xl font-extrabold text-white relative inline-b
+        
+        lock">
+          LET'S GET STARTED
           <div className="mt-1 w-36 h-1 rounded-sm bg-green-900" />
         </h1>
 

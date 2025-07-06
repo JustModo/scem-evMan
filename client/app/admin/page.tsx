@@ -1,14 +1,13 @@
-// import React from "react";
-
-// // Admin Analytics Landing Page
-// // Overview of contest analytics and navigation to other admin functions.
-
 "use client";
 
+import React, { Fragment } from "react";
 
-import React from "react";
-import HeroSection from "@/components/admin/HeroSection";
+const AdminAnalyticsPage: React.FC = () => {
+  return (
+    <Fragment>
+      <p>Data</p>
+    </Fragment>
+  );
+};
 
-export default function AdminAnalyticsPage() {
-  return <HeroSection />;
-}
+export default AdminAnalyticsPage;

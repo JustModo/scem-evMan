@@ -1,13 +1,15 @@
-import AdminTopbar from "@/components/admin/AdminNavbar";
+import AdminSidebar from "@/components/admin/admin-sidebar";
 import React from "react";
-
-// Admin Layout
-// Provides sidebar or admin navigation. Wraps all /admin/* routes.
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <main>{children}</main>;
+  return (
+    <main className="flex h-screen bg-black text-white pt-12">
+      <AdminSidebar />
+      {children}
+    </main>
+  );
 }

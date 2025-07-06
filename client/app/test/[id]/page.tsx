@@ -1,6 +1,6 @@
 import { IdParams } from "@/types/params";
 import React from "react";
-import ContestCard from "@/components/ContestCard";
+import ContestCard from "@/components/contest-card";
 import { ContestLandingData } from "@/types/contest";
 
 export default function TestDetails({ params }: { params: IdParams }) {

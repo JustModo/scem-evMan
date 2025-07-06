@@ -69,7 +69,7 @@ interface ContestCardProps {
 
 const ContestCard: React.FC<ContestCardProps> = ({ data }) => {
   return (
-    <div className="h-full flex items-center justify-center bg-[#B8E1B0]">
+    <div className="h-screen flex items-center justify-center bg-[#B8E1B0]">
       <div className="w-full max-w-2xl px-6 py-8 rounded-2xl bg-black border-2 border-[#3F5E3B] shadow-lg transition-transform duration-200 hover:scale-[1.02]">
         {/* Title */}
         <h2 className="text-3xl font-bold text-center text-[#B8E1B0] mb-3">

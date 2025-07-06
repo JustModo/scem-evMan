@@ -1,8 +1,7 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import { Home, User, LogIn } from "lucide-react";
+import { User, LogIn } from "lucide-react";
+import { ModeToggle } from "./theme-toggle";
 
 export default function Navbar() {
   return (
@@ -34,6 +33,9 @@ export default function Navbar() {
                 <span>Profile</span>
               </span>
             </Link>
+          </li>
+          <li>
+            <ModeToggle />
           </li>
         </ul>
       </nav>
