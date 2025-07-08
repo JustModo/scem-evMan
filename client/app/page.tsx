@@ -10,9 +10,11 @@ export default function HomePage() {
           <LogOut size={20} />
           Logout
         </div>
-        <h1 className="self-start text-5xl font-extrabold text-white relative inline-b
+        <h1
+          className="self-start text-5xl font-extrabold text-white relative inline-b
         
-        lock">
+        lock"
+        >
           LET'S GET STARTED
           <div className="mt-1 w-36 h-1 rounded-sm bg-green-900" />
         </h1>
@@ -23,10 +25,7 @@ export default function HomePage() {
             href="/admin"
             className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start border-green-900 shadow-[0_8px_16px_rgba(255,255,255,0.24)] bg-green-200/90"
           >
-            <div
-              className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2"
-              style={{ backgroundImage: "url('/your-icon-path.svg')" }}
-            />
+            <div className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2" />
             <span className="mt-[-0.75rem] text-white font-bold text-2xl">
               HOST
             </span>
@@ -36,10 +35,7 @@ export default function HomePage() {
             href="/join"
             className="w-60 h-40 border-4 rounded-2xl flex flex-col items-center justify-start border-green-900 shadow-[0_8px_16px_rgba(255,255,255,0.25)] bg-green-200/90"
           >
-            <div
-              className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2"
-              style={{ backgroundImage: "url('/your-icon-path.svg')" }}
-            />
+            <div className="w-16 h-16 bg-contain bg-no-repeat bg-center mb-2" />
             <span className="mt-[-0.75rem] text-white font-bold text-2xl text-center">
               JOIN A TEST
             </span>

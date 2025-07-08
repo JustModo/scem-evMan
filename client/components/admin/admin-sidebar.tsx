@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import {
   FaChartLine,
@@ -10,7 +11,7 @@ import {
 } from "react-icons/fa";
 
 export default function AdminSidebar() {
-  const [activeRoute, setActiveRoute] = useState("route1");
+  const pathname = usePathname();
 
   const routes = [
     {
@@ -29,7 +30,7 @@ export default function AdminSidebar() {
       name: "questions",
       link: "/admin/questions",
       icon: <FaClipboardList />,
-      label: "questions",
+      label: "Questions",
     },
     {
       name: "settings",
@@ -40,27 +41,30 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <aside className="flex flex-col items-center bg-[#A0CC98] w-15 py-6 space-y-8">
-      {routes.map((r) => (
-        <Link
-          key={r.name}
-          href={r.link}
-          onClick={() => setActiveRoute(r.name)}
-          className={`group p-3 rounded transition-colors ${
-            activeRoute === r.name
-              ? "bg-green-700 text-white"
-              : "hover:bg-green-600 text-black"
-          }`}
-          aria-label={r.label}
-        >
-          <div className="relative text-xl">
-            {r.icon}
-            <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-              {r.label}
-            </span>
-          </div>
-        </Link>
-      ))}
+    <aside className="flex flex-col items-center w-14 py-6 space-y-6 bg-background border-r border-border">
+      {routes.map((r) => {
+        const isActive = pathname === r.link;
+
+        return (
+          <Link
+            key={r.name}
+            href={r.link}
+            className={`group p-3 rounded-lg transition-colors flex items-center justify-center ${
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted text-muted-foreground"
+            }`}
+            aria-label={r.label}
+          >
+            <div className="relative text-xl">
+              {r.icon}
+              <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-xs text-popover-foreground opacity-0 shadow group-hover:opacity-100 transition-opacity">
+                {r.label}
+              </span>
+            </div>
+          </Link>
+        );
+      })}
     </aside>
   );
 }

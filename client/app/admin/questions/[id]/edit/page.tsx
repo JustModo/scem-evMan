@@ -51,12 +51,12 @@ export default function AdminQuestionEditPage() {
     <div className="flex-1 h-full overflow-y-auto p-4">
       <div className="w-full max-w-4xl mx-auto">
         <div className="bg-card border border-border rounded-2xl shadow-xl p-6 md:p-8">
-          <h1 className="text-2xl font-semibold mb-6 ">
+          <h1 className="text-2xl font-semibold mb-6 text-card-foreground">
             {isCreating ? "➕ Add New Question" : "Edit Question"}
           </h1>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
+          <form className="space-y-6 text-card-foreground" onSubmit={handleSubmit}>
+            <div >
               <Label className="mb-2 block text-base text-card-foreground">
                 Type
               </Label>
