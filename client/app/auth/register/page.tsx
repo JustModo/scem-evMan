@@ -3,49 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BsSunFill, BsMoonFill } from "react-icons/bs";
+import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { FaCheckCircle } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 
 export default function RegisterPage() {
-  const [isDark, setIsDark] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [matchMessage, setMatchMessage] = useState("");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const root = window.document.documentElement;
-      root.classList.toggle("dark", isDark);
-    }
-  }, [isDark]);
-
   return (
     <div className="relative h-screen w-full bg-white dark:bg-black overflow-hidden pt-12">
-      {/* toggle dark mode */}
-      <div className="absolute top-20 right-4 z-10">
-        <button
-          onClick={() => setIsDark(!isDark)}
-          className={`w-14 h-7 flex items-center p-1 rounded-full transition-colors duration-300 ${
-            isDark ? "bg-[#4cafac]" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center transform transition-transform duration-300 ${
-              isDark ? "translate-x-7" : "translate-x-0"
-            }`}
-          >
-            {isDark ? (
-              <BsMoonFill className="text-[#121212] text-xs" />
-            ) : (
-              <BsSunFill className="text-yellow-500 text-xs" />
-            )}
-          </div>
-        </button>
-      </div>
-
       {/* green top */}
       <div className="absolute top-0 left-0 w-full h-1/3">
         <svg viewBox="0 1.5 20 10" xmlns="http://www.w3.org/2000/svg">
@@ -78,15 +48,18 @@ export default function RegisterPage() {
               }
             }}
           >
-            <p className="text-right text-black dark:text-white">
+            <p className="text-sm text-right text-gray-600 dark:text-slate-400">
               Already a User?{" "}
-              <a className="hover:underline text-[#4cafac]" href="/auth/login">
-                Login
-              </a>
+              <Link
+                href="/auth/login"
+                className="text-sm text-[#4cafac] hover:underline"
+              >
+                Sign In
+              </Link>
             </p>
             <div className="relative">
               <MdEmail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
                 size={20}
               />
               <Input
@@ -94,14 +67,15 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="E-Mail ID"
-                className="pl-12 pr-4 bg-[#d0e7c2] dark:bg-[#d0e7c2] dark:text-black placeholder:text-gray-700"
+                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]0"
                 required
               />
             </div>
 
+            {/* Password */}
             <div className="relative">
               <RiLockPasswordFill
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
                 size={20}
               />
               <Input
@@ -109,16 +83,17 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 placeholder="Create a password"
-                className="pl-12 pr-4 bg-[#d0e7c2] dark:bg-[#d0e7c2] dark:text-black placeholder:text-gray-700"
+                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
 
+            {/* Confirm Password */}
             <div className="relative">
               <FaCheckCircle
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
                 size={18}
               />
               <Input
@@ -126,7 +101,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="pl-12 pr-4 bg-[#d0e7c2] dark:bg-[#d0e7c2] dark:text-black placeholder:text-gray-700"
+                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black rounded-md dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -146,6 +121,7 @@ export default function RegisterPage() {
             </p>
 
             <div className="flex flex-col gap-4">
+              {/* Continue */}
               <Button
                 type="submit"
                 className="w-full cursor-pointer bg-[#4cafac] hover:bg-[#3b998f] text-white dark:text-white  rounded-full"
@@ -153,27 +129,26 @@ export default function RegisterPage() {
                 Continue
               </Button>
 
-              <div className="flex items-center justify-center gap-3">
-                <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
-                <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                  or
-                </span>
-                <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+              {/* Divider */}
+              <div className="flex items-center">
+                <hr className="flex-grow border-gray-600" />
+                <span className="px-2 text-sm text-gray-400">OR</span>
+                <hr className="flex-grow border-gray-600" />
               </div>
 
+              {/* Google icon */}
               <Button
-                className={`flex items-center justify-center w-full gap-4 cursor-pointer ${
-                  isDark
-                    ? "bg-black border-white text-white"
-                    : "bg-white border-gray-300 text-black"
-                } border-2 rounded-md`}
+                className={`cursor-pointer flex items-center w-full gap-4 bg-white dark:bg-black border-2 border-gray-300 dark:border-white text-black dark:text-white rounded-md`}
                 variant="outline"
               >
-                <FcGoogle size="20" />
+                <FcGoogle size="25" />
                 Continue With Google
               </Button>
             </div>
           </form>
+          <p className="mt-4 text-xs text-slate-400 text-center">
+            ©2025 All rights reserved
+          </p>
         </div>
       </div>
     </div>
