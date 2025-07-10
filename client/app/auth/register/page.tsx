@@ -15,14 +15,36 @@ export default function RegisterPage() {
   const [matchMessage, setMatchMessage] = useState("");
 
   return (
-    <div className="relative h-screen w-full bg-white dark:bg-black overflow-hidden pt-12">
+    <div className="relative h-screen w-full bg-card overflow-hidden pt-12">
+      {/* toggle dark mode */}
+      <div className="absolute top-20 right-4 z-10">
+        <button
+          onClick={() => setIsDark(!isDark)}
+          className={`w-14 h-7 flex items-center p-1 rounded-full transition-colors duration-300 ${
+            isDark ? "bg-primary-400" : "bg-muted"
+          }`}
+        >
+          <div
+            className={`w-5 h-5 bg-card rounded-full shadow-md flex items-center justify-center transform transition-transform duration-300 ${
+              isDark ? "translate-x-7" : "translate-x-0"
+            }`}
+          >
+            {isDark ? (
+              <BsMoonFill className="text-foreground text-xs" />
+            ) : (
+              <BsSunFill className="text-yellow-500 text-xs" />
+            )}
+          </div>
+        </button>
+      </div>
+
       {/* green top */}
       <div className="absolute sm:-top-4 left-0 w-full h-1/3">
         <svg viewBox="0 1.5 20 10" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2"
-            fill="#aad3b0"
-            stroke="#aad3b0"
+            fill="var(--color-primary-200)"
+            stroke="var(--color-primary-200)"
             strokeWidth="1"
           />
         </svg>
@@ -32,11 +54,10 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center h-full w-full md:w-1/2">
         <div className="w-full max-w-md p-6 space-y-4 relative">
           <div className="w-max space-y-2">
-            {/* heading */}
-            <h1 className="text-4xl sm:text-5xl font-bold text-black dark:text-white mb-1.5">
+            <h1 className="text-4xl sm:text-5xl font-bold text-card-foreground mb-1.5">
               SIGN UP
             </h1>
-            <hr className="bg-[#579e86] h-1.5 rounded-2xl" />
+            <hr className="bg-primary-400 h-1.5 rounded-2xl" />
           </div>
 
           <form
@@ -50,21 +71,17 @@ export default function RegisterPage() {
               }
             }}
           >
-            {/* Already a User */}
-            <p className="text-sm text-right text-gray-600 dark:text-slate-400">
+            <p className="text-right text-card-foreground">
               Already a User?{" "}
-              <Link
-                href="/auth/login"
-                className="text-sm text-[#4cafac] hover:underline"
-              >
-                Sign In
-              </Link>
+              <a className="hover:underline text-primary-400" href="/auth/login">
+                Login
+              </a>
             </p>
 
             {/* E-Mail */}
             <div className="relative">
               <MdEmail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
                 size={20}
               />
               <Input
@@ -72,7 +89,7 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="E-Mail ID"
-                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white placeholder-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]0"
+                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
@@ -80,7 +97,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="relative">
               <RiLockPasswordFill
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
                 size={20}
               />
               <Input
@@ -88,7 +105,7 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 placeholder="Create a password"
-                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white placeholder-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
+                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -98,7 +115,8 @@ export default function RegisterPage() {
             {/* Confirm Password */}
             <div className="relative">
               <FaCheckCircle
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
                 size={18}
               />
               <Input
@@ -106,7 +124,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black rounded-md placeholder-muted-foreground dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
+                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -117,7 +135,7 @@ export default function RegisterPage() {
             <p
               className={`text-right font-medium h-5 ${
                 matchMessage.includes("not")
-                  ? "text-red-600"
+                  ? "text-destructive"
                   : matchMessage
                   ? "text-green-600"
                   : ""
@@ -130,21 +148,28 @@ export default function RegisterPage() {
               {/* Continue */}
               <Button
                 type="submit"
-                className="w-full cursor-pointer bg-[#4cafac] hover:bg-[#3b998f] text-white dark:text-white  rounded-full"
+                className="w-full cursor-pointer bg-primary-400 hover:bg-primary-600 text-primary-foreground rounded-full"
               >
                 Continue
               </Button>
 
               {/* Divider */}
               <div className="flex items-center">
-                <hr className="flex-grow border-gray-600" />
-                <span className="px-2 text-sm text-gray-400">OR</span>
-                <hr className="flex-grow border-gray-600" />
+                <div className="h-px bg-muted w-full"></div>
+                <span className="px-2 text-sm text-muted-foreground whitespace-nowrap">OR</span>
+                <div className="h-px bg-muted w-full"></div>
               </div>
 
               {/* Google icon */}
               <Button
                 className={`cursor-pointer flex items-center w-full gap-4 bg-white dark:bg-black border-2 border-gray-300 dark:border-white text-black dark:text-white rounded-md`}
+
+                /*className={`flex items-center justify-center w-full gap-4 cursor-pointer ${
+                  isDark
+                    ? "bg-card border-card-foreground text-card-foreground"
+                    : "bg-card border-muted text-card-foreground"
+                } border-2 rounded-md`}*/
+
                 variant="outline"
               >
                 <FcGoogle size="25" />
