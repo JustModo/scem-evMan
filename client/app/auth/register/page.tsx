@@ -50,7 +50,6 @@ export default function RegisterPage() {
               }
             }}
           >
-            
             {/* Already a User */}
             <p className="text-sm text-right text-gray-600 dark:text-slate-400">
               Already a User?{" "}
@@ -65,7 +64,7 @@ export default function RegisterPage() {
             {/* E-Mail */}
             <div className="relative">
               <MdEmail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={20}
               />
               <Input
@@ -73,7 +72,7 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="E-Mail ID"
-                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]0"
+                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white placeholder-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]0"
                 required
               />
             </div>
@@ -81,7 +80,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="relative">
               <RiLockPasswordFill
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={20}
               />
               <Input
@@ -89,7 +88,7 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 placeholder="Create a password"
-                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
+                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black dark:text-white placeholder-muted-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -99,7 +98,7 @@ export default function RegisterPage() {
             {/* Confirm Password */}
             <div className="relative">
               <FaCheckCircle
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={18}
               />
               <Input
@@ -107,7 +106,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black rounded-md dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
+                className="pl-10 pr-4 py-2 bg-[#d0e7c2] text-black rounded-md placeholder-muted-foreground dark:text-white focus:outline-none focus:ring-2 focus:ring-[#4cafac]"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
