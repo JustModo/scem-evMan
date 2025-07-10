@@ -8,18 +8,18 @@ export default function Footer() {
   if (pathname !== "/") return null;
 
   return (
-    <footer className="bg-gray-400 text-gray-800 text-center py-4 w-screen">
+    <footer className="bg-muted text-muted-foreground text-center py-4 w-screen">
       <div className="flex justify-center space-x-8">
-        <a href="#" className="hover:text-white">
+        <a href="#" className="hover:text-foreground">
           About Us
         </a>
-        <a href="#" className="hover:text-white">
+        <a href="#" className="hover:text-foreground">
           Contact Support
         </a>
-        <a href="#" className="hover:text-white">
+        <a href="#" className="hover:text-foreground">
           Terms
         </a>
-        <a href="#" className="hover:text-white">
+        <a href="#" className="hover:text-foreground">
           Version Info
         </a>
       </div>

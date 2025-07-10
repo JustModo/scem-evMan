@@ -47,8 +47,8 @@ const HeroSection: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-black text-white pt-12">
-      <aside className="flex flex-col items-center bg-[#A0CC98] w-15 py-6 space-y-8">
+    <div className="flex h-screen bg-background text-foreground pt-12">
+      <aside className="flex flex-col items-center bg-primary-200 w-15 py-6 space-y-8">
         {routes.map((r) => (
           <Link
             key={r.name}
@@ -56,14 +56,14 @@ const HeroSection: React.FC = () => {
             onClick={() => setActiveRoute(r.name)}
             className={`group p-3 rounded transition-colors ${
               activeRoute === r.name
-                ? "bg-green-700 text-white"
-                : "hover:bg-green-600 text-black"
+                ? "bg-primary-700 text-primary-foreground"
+                : "hover:bg-primary-600 text-card-foreground"
             }`}
             aria-label={r.label}
           >
             <div className="relative text-xl">
               {r.icon}
-              <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded bg-card px-2 py-1 text-xs text-card-foreground opacity-0 transition-opacity group-hover:opacity-100">
                 {r.label}
               </span>
             </div>
@@ -72,11 +72,11 @@ const HeroSection: React.FC = () => {
       </aside>
 
       <main className="flex-1 px-8 py-10 flex flex-col items-center space-y-8">
-        <section className="w-full max-w-5xl rounded-2xl border border-[#A0CC98] p-10 text-center shadow-xl">
-          <h2 className="mb-4 text-4xl font-bold text-[#A0CC98]">
+        <section className="w-full max-w-5xl rounded-2xl border border-primary-200 p-10 text-center shadow-xl">
+          <h2 className="mb-4 text-4xl font-bold text-primary-200">
             Platform Stats
           </h2>
-          <p className="mb-10 text-lg text-gray-300">
+          <p className="mb-10 text-lg text-muted-foreground">
             Overview of contests and performance metrics
           </p>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
@@ -88,18 +88,18 @@ const HeroSection: React.FC = () => {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="rounded-xl border border-[#A0CC98] bg-[#A0CC98] p-6 shadow-md"
+                className="rounded-xl border border-primary-200 bg-primary-200 p-6 shadow-md"
               >
-                <h3 className="text-3xl font-bold text-black">{item.value}</h3>
-                <p className="mt-2 text-gray-700">{item.label}</p>
+                <h3 className="text-3xl font-bold text-card-foreground">{item.value}</h3>
+                <p className="mt-2 text-muted-foreground">{item.label}</p>
               </div>
             ))}
           </div>
         </section>
 
         <section className="w-full text-center">
-          <div className="rounded-xl bg-[#A0CC98] p-6">
-            <h2 className="text-2xl font-bold text-black">
+          <div className="rounded-xl bg-primary-200 p-6">
+            <h2 className="text-2xl font-bold text-card-foreground">
               {routes.find((r) => r.name === activeRoute)?.content}
             </h2>
           </div>

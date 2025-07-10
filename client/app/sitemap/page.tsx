@@ -38,15 +38,15 @@ const sitemap = [
 
 export default function Site() {
   return (
-    <div className="min-h-screen w-full p-8 py-12">
+    <div className="min-h-screen w-full p-8 py-12 bg-background text-foreground">
       <div className="max-w-3xl mx-auto space-y-8">
         {sitemap.map((section) => (
           <div key={section.heading}>
             <h2 className="text-xl font-semibold mb-2">{section.heading}</h2>
-            <ul className="space-y-1 pl-4 border-l border-gray-300">
+            <ul className="space-y-1 pl-4 border-l border-border">
               {section.links.map(({ path, label }) => (
                 <li key={path}>
-                  <Link href={path} className="text-blue-600 hover:underline">
+                  <Link href={path} className="text-primary-600 hover:underline">
                     {label}
                   </Link>
                 </li>
