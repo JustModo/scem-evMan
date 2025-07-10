@@ -10,7 +10,7 @@ export default function TestLayout({
   const problemMeta = problems.map(({ id, type }) => ({ id, type }));
 
   return (
-    <main className="w-screen h-screen flex flex-col">
+    <main className="w-screen h-screen pt-12">
       <TestHeader problems={problemMeta} />
       {children}
     </main>

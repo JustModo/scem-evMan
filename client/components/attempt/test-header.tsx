@@ -29,20 +29,20 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   const codingProblems = problems.filter((p) => p.type === "coding");
 
   return (
-    <div className="flex items-center justify-center p-2 pb-0 select-none">
+    <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-[#00b88f]">
       <Button
         variant="ghost"
         size="icon"
-        className="bg-muted rounded-l-lg"
+        className="bg-muted rounded-none rounded-l-lg"
         onClick={() => scroll(-300)}
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
       <div ref={scrollRef} className="overflow-x-auto no-scrollbar">
-        <div className="flex w-max  rounded-md p-1">
+        <div className="flex w-max bg-background h-9">
           {mcqProblems.length > 0 && (
-            <div className="flex items-center bg-background/50 rounded-md px-2 py-1 mr-2">
+            <div className="flex items-center rounded-md px-2 py-1">
               <div className="px-2 flex items-center text-xs font-bold text-muted-foreground bg-muted rounded-sm mr-2 py-1">
                 MCQ
               </div>
@@ -54,7 +54,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
                       key={problem.id}
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 rounded-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                      className="h-8 w-8 p-0 rounded-sm data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                       data-state={isActive ? "active" : undefined}
                       onClick={() =>
                         router.push(`/attempt/test/123/question/${problem.id}`)
@@ -68,7 +68,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
             </div>
           )}
           {codingProblems.length > 0 && (
-            <div className="flex items-center bg-background/50 rounded-md px-2 py-1 mr-2">
+            <div className="flex items-center rounded-md px-2 py-1">
               <div className="px-2 flex items-center text-xs font-bold text-muted-foreground bg-muted rounded-sm mr-2 py-1">
                 CODE
               </div>
@@ -80,7 +80,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
                       key={problem.id}
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 rounded-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                      className="h-8 w-8 p-0 rounded-sm data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                       data-state={isActive ? "active" : undefined}
                       onClick={() =>
                         router.push(`/attempt/test/123/question/${problem.id}`)
@@ -99,15 +99,15 @@ export default function TestHeader({ problems }: TestHeaderProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="bg-muted rounded-r-lg"
+        className="bg-muted rounded-none rounded-r-lg"
         onClick={() => scroll(300)}
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
 
       <Button
-        variant={"outline"}
-        className="text-sm mx-4 text-muted-foreground"
+        variant={"ghost"}
+        className="text-sm mx-4 text-muted-foreground bg-background"
       >
         Submit
         <BadgeCheck className="h-4 w-4" />
