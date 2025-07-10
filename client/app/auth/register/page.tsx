@@ -23,22 +23,22 @@ export default function RegisterPage() {
   }, [isDark]);
 
   return (
-    <div className="relative h-screen w-full bg-white dark:bg-black overflow-hidden pt-12">
+    <div className="relative h-screen w-full bg-card overflow-hidden pt-12">
       {/* toggle dark mode */}
       <div className="absolute top-20 right-4 z-10">
         <button
           onClick={() => setIsDark(!isDark)}
           className={`w-14 h-7 flex items-center p-1 rounded-full transition-colors duration-300 ${
-            isDark ? "bg-[#4cafac]" : "bg-gray-300"
+            isDark ? "bg-primary-400" : "bg-muted"
           }`}
         >
           <div
-            className={`w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center transform transition-transform duration-300 ${
+            className={`w-5 h-5 bg-card rounded-full shadow-md flex items-center justify-center transform transition-transform duration-300 ${
               isDark ? "translate-x-7" : "translate-x-0"
             }`}
           >
             {isDark ? (
-              <BsMoonFill className="text-[#121212] text-xs" />
+              <BsMoonFill className="text-foreground text-xs" />
             ) : (
               <BsSunFill className="text-yellow-500 text-xs" />
             )}
@@ -51,8 +51,8 @@ export default function RegisterPage() {
         <svg viewBox="0 1.5 20 10" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2"
-            fill="#aad3b0"
-            stroke="#aad3b0"
+            fill="var(--color-primary-200)"
+            stroke="var(--color-primary-200)"
             strokeWidth="1"
           />
         </svg>
@@ -62,10 +62,10 @@ export default function RegisterPage() {
       <div className="flex items-center h-full w-full px-6">
         <div className="w-full max-w-md p-6 space-y-4 relative">
           <div className="w-max space-y-2">
-            <h1 className="text-4xl sm:text-5xl font-bold text-black dark:text-white mb-1.5">
+            <h1 className="text-4xl sm:text-5xl font-bold text-card-foreground mb-1.5">
               SIGN UP
             </h1>
-            <hr className="bg-[#579e86] h-1.5 rounded-2xl" />
+            <hr className="bg-primary-400 h-1.5 rounded-2xl" />
           </div>
           <form
             className="space-y-2"
@@ -78,15 +78,15 @@ export default function RegisterPage() {
               }
             }}
           >
-            <p className="text-right text-black dark:text-white">
+            <p className="text-right text-card-foreground">
               Already a User?{" "}
-              <a className="hover:underline text-[#4cafac]" href="/auth/login">
+              <a className="hover:underline text-primary-400" href="/auth/login">
                 Login
               </a>
             </p>
             <div className="relative">
               <MdEmail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
                 size={20}
               />
               <Input
@@ -94,14 +94,14 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="E-Mail ID"
-                className="pl-12 pr-4 bg-[#d0e7c2] dark:bg-[#d0e7c2] dark:text-black placeholder:text-gray-700"
+                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
 
             <div className="relative">
               <RiLockPasswordFill
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
                 size={20}
               />
               <Input
@@ -109,7 +109,7 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 placeholder="Create a password"
-                className="pl-12 pr-4 bg-[#d0e7c2] dark:bg-[#d0e7c2] dark:text-black placeholder:text-gray-700"
+                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -118,7 +118,7 @@ export default function RegisterPage() {
 
             <div className="relative">
               <FaCheckCircle
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black dark:text-black"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
                 size={18}
               />
               <Input
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="pl-12 pr-4 bg-[#d0e7c2] dark:bg-[#d0e7c2] dark:text-black placeholder:text-gray-700"
+                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -136,7 +136,7 @@ export default function RegisterPage() {
             <p
               className={`text-right font-medium h-5 ${
                 matchMessage.includes("not")
-                  ? "text-red-600"
+                  ? "text-destructive"
                   : matchMessage
                   ? "text-green-600"
                   : ""
@@ -148,24 +148,24 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-4">
               <Button
                 type="submit"
-                className="w-full cursor-pointer bg-[#4cafac] hover:bg-[#3b998f] text-white dark:text-white  rounded-full"
+                className="w-full cursor-pointer bg-primary-400 hover:bg-primary-600 text-primary-foreground rounded-full"
               >
                 Continue
               </Button>
 
               <div className="flex items-center justify-center gap-3">
-                <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
-                <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                <div className="h-px bg-muted w-full"></div>
+                <span className="text-muted-foreground whitespace-nowrap">
                   or
                 </span>
-                <div className="h-px bg-gray-300 dark:bg-gray-700 w-full"></div>
+                <div className="h-px bg-muted w-full"></div>
               </div>
 
               <Button
                 className={`flex items-center justify-center w-full gap-4 cursor-pointer ${
                   isDark
-                    ? "bg-black border-white text-white"
-                    : "bg-white border-gray-300 text-black"
+                    ? "bg-card border-card-foreground text-card-foreground"
+                    : "bg-card border-muted text-card-foreground"
                 } border-2 rounded-md`}
                 variant="outline"
               >
