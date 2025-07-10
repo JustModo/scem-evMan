@@ -8,7 +8,7 @@ interface BaseProblem {
   type: "coding" | "mcq";
 }
 
-interface CodingProblem extends BaseProblem {
+export interface CodingProblem extends BaseProblem {
   type: "coding";
   inputFormat: string;
   outputFormat: string;
@@ -16,7 +16,7 @@ interface CodingProblem extends BaseProblem {
   boilerplate: Record<string, string>;
 }
 
-interface MCQProblem extends BaseProblem {
+export interface MCQProblem extends BaseProblem {
   type: "mcq";
   questionType: "single" | "multiple";
   options: {

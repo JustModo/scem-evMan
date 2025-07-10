@@ -1,6 +1,8 @@
 import { problems } from "@/constants/test-data";
 import { CodeScreen } from "@/components/attempt/code";
 import React from "react";
+import { CodingProblem } from "@/types/test";
+import MCQScreen from "@/components/attempt/mcq";
 
 interface Props {
   params: Promise<{
@@ -23,13 +25,11 @@ export default async function TestContentPage(props: Props) {
   }
 
   return (
-    <div className="flex-1 w-full h-full">
+    <div className="w-full h-full">
       {problem.type === "coding" ? (
-        <CodeScreen />
+        <CodeScreen problem={problem as CodingProblem} />
       ) : (
-        <div className="h-full w-full flex items-center justify-center text-xl text-muted-foreground">
-          TODO: MCQ Screen
-        </div>
+        <MCQScreen />
       )}
     </div>
   );

@@ -9,64 +9,61 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { CodeXml } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CodingProblem } from "@/types/test";
 
-type Language = "c" | "cpp" | "python" | "java";
+type Language = keyof CodingProblem["boilerplate"];
 
-const languageOptions: { label: string; value: Language }[] = [
-  { label: "C", value: "c" },
-  { label: "C++", value: "cpp" },
-  { label: "Python", value: "python" },
-  { label: "Java", value: "java" },
-];
-
-const defaultCode: Record<Language, string> = {
-  c: `#include <stdio.h>\nint main() {\n  printf("Hello, C!\\n");\n  return 0;\n}`,
-  cpp: `#include <iostream>\nint main() {\n  std::cout << "Hello, C++!" << std::endl;\n  return 0;\n}`,
-  python: `print("Hello, Python!")`,
-  java: `public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello, Java!");\n  }\n}`,
-};
-
-export default function CodeEditorPanel() {
-  const [language, setLanguage] = useState<Language>("python");
+export default function CodeEditorPanel({
+  problem,
+}: {
+  problem: CodingProblem;
+}) {
+  const availableLanguages = Object.keys(problem.boilerplate) as Language[];
+  const [language, setLanguage] = useState<Language>(availableLanguages[0]);
+  const { resolvedTheme } = useTheme();
 
   return (
     <div className="flex flex-col h-full w-full">
-      {/* Language Selector - fixed height */}
-      <div className="px-2 py-1 border-b flex items-center justify-between text-sm h-11">
+      {/* Language Selector */}
+      <div className="px-2 py-1 border-b flex items-center justify-between text-sm h-11 bg-muted">
         <Label className="flex items-center gap-1">
           <CodeXml className="h-4 w-4" /> Code
         </Label>
         <Select
           onValueChange={(val: Language) => setLanguage(val)}
-          defaultValue="python"
+          defaultValue={availableLanguages[0]}
         >
           <SelectTrigger className="h-8 w-32 text-sm">
             <SelectValue placeholder="Select Language" />
           </SelectTrigger>
           <SelectContent>
-            {languageOptions.map((lang) => (
-              <SelectItem key={lang.value} value={lang.value}>
-                {lang.label}
+            {availableLanguages.map((lang) => (
+              <SelectItem key={lang} value={lang}>
+                {lang.charAt(0).toUpperCase() + lang.slice(1)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
-      {/* Code Editor - takes remaining space */}
+
+      {/* Code Editor */}
       <div className="flex-1 min-h-0">
         <Editor
           language={language}
-          theme="vs-light"
-          value={defaultCode[language]}
+          theme={resolvedTheme === "dark" ? "vs-dark" : "vs-light"}
+          value={problem.boilerplate[language]}
           options={{
             minimap: { enabled: false },
             glyphMargin: false,
             folding: false,
             scrollBeyondLastLine: false,
             padding: { top: 12, bottom: 12 },
-            renderLineHighlight: "none", // disables current line highlight
-            renderLineHighlightOnlyWhenFocus: false, // optional for clarity
+            renderLineHighlight: "none",
+            renderLineHighlightOnlyWhenFocus: false,
           }}
+          loading={<Skeleton className="w-full h-full" />}
         />
       </div>
     </div>
