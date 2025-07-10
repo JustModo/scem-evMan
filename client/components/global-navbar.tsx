@@ -13,7 +13,7 @@ export default function Navbar() {
 
   return (
     <header className="absolute top-0 z-10 w-full">
-      <nav className="bg-background h-12 flex items-center justify-between px-6 shadow-md">
+      <nav className="bg-background-navbar h-12 flex items-center justify-between px-6 shadow-md">
         {/* Logo/Brand section */}
         <div className="flex items-center">
           <Link href="/">

@@ -26,7 +26,9 @@ export default function RegisterPage() {
         >
           <path
             d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2 Z"
-            className="fill-primary"
+            fill="var(--color-muted-foreground)"
+            stroke="var( --color-muted-foreground)"
+            strokeWidth="1"
           />
         </svg>
       </div>
@@ -133,7 +135,7 @@ export default function RegisterPage() {
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-3 cursor-pointer"
               >
                 Continue
-              </Button>
+              </Button>          
 
               {/* Divider */}
               <div className="flex items-center">
