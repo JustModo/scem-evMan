@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -15,73 +15,56 @@ export default function RegisterPage() {
   const [matchMessage, setMatchMessage] = useState("");
 
   return (
-    <div className="relative h-screen w-full bg-card overflow-hidden pt-12">
-      {/* toggle dark mode */}
-      <div className="absolute top-20 right-4 z-10">
-        <button
-          onClick={() => setIsDark(!isDark)}
-          className={`w-14 h-7 flex items-center p-1 rounded-full transition-colors duration-300 ${
-            isDark ? "bg-primary-400" : "bg-muted"
-          }`}
+    <div className="relative h-screen w-full bg-background overflow-hidden pt-12">
+      {/* Green Top Background SVG */}
+      <div className="absolute top-12 left-0 w-full h-1/3">
+        <svg
+          viewBox="0 0 24 10"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full"
+          preserveAspectRatio="none"
         >
-          <div
-            className={`w-5 h-5 bg-card rounded-full shadow-md flex items-center justify-center transform transition-transform duration-300 ${
-              isDark ? "translate-x-7" : "translate-x-0"
-            }`}
-          >
-            {isDark ? (
-              <BsMoonFill className="text-foreground text-xs" />
-            ) : (
-              <BsSunFill className="text-yellow-500 text-xs" />
-            )}
-          </div>
-        </button>
-      </div>
-
-      {/* green top */}
-      <div className="absolute sm:-top-4 left-0 w-full h-1/3">
-        <svg viewBox="0 1.5 20 10" xmlns="http://www.w3.org/2000/svg">
           <path
-            d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2"
-            fill="var(--color-primary-200)"
-            stroke="var(--color-primary-200)"
-            strokeWidth="1"
+            d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2 Z"
+            className="fill-primary"
           />
         </svg>
       </div>
 
-      {/* form */}
-      <div className="flex items-center justify-center h-full w-full md:w-1/2">
-        <div className="w-full max-w-md p-6 space-y-4 relative">
-          <div className="w-max space-y-2">
-            <h1 className="text-4xl sm:text-5xl font-bold text-card-foreground mb-1.5">
+      {/* Form Container */}
+      <div className="flex items-center justify-center h-full w-full md:w-1/2 relative z-10">
+        <div className="w-full max-w-md p-6 space-y-6">
+          {/* Title */}
+          <div className="space-y-2">
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground">
               SIGN UP
             </h1>
-            <hr className="bg-primary-400 h-1.5 rounded-2xl" />
+            <div className="h-1 w-24 bg-primary rounded-full" />
           </div>
 
           <form
-            className="space-y-2"
+            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
-              if (password === confirmPassword) {
-                setMatchMessage("Passwords match");
-              } else {
-                setMatchMessage("Passwords do not match");
-              }
+              setMatchMessage(
+                password === confirmPassword
+                  ? "Passwords match"
+                  : "Passwords do not match"
+              );
             }}
           >
-            <p className="text-right text-card-foreground">
+            {/* Login Link */}
+            <p className="text-right text-foreground text-sm">
               Already a User?{" "}
-              <a className="hover:underline text-primary-400" href="/auth/login">
+              <Link className="hover:underline text-primary " href="/auth/login">
                 Login
-              </a>
+              </Link>
             </p>
 
             {/* E-Mail */}
             <div className="relative">
               <MdEmail
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={20}
               />
               <Input
@@ -89,7 +72,7 @@ export default function RegisterPage() {
                 name="email"
                 type="email"
                 placeholder="E-Mail ID"
-                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
+                className="pl-12 pr-4 py-3 bg-muted text-foreground placeholder:text-muted-foreground"
                 required
               />
             </div>
@@ -97,7 +80,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="relative">
               <RiLockPasswordFill
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={20}
               />
               <Input
@@ -105,7 +88,7 @@ export default function RegisterPage() {
                 name="password"
                 type="password"
                 placeholder="Create a password"
-                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
+                className="pl-12 pr-4 py-3 bg-muted text-foreground placeholder:text-muted-foreground"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -115,8 +98,7 @@ export default function RegisterPage() {
             {/* Confirm Password */}
             <div className="relative">
               <FaCheckCircle
-
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-card-foreground"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                 size={18}
               />
               <Input
@@ -124,16 +106,16 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="pl-12 pr-4 bg-muted text-card-foreground placeholder:text-muted-foreground"
+                className="pl-12 pr-4 py-3 bg-muted text-foreground placeholder:text-muted-foreground"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
 
-            {/*Password Match Message */}
+            {/* Password Match Message */}
             <p
-              className={`text-right font-medium h-5 ${
+              className={`text-right font-medium text-sm h-5 ${
                 matchMessage.includes("not")
                   ? "text-destructive"
                   : matchMessage
@@ -144,41 +126,36 @@ export default function RegisterPage() {
               {matchMessage || ""}
             </p>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 pt-2">
               {/* Continue */}
               <Button
                 type="submit"
-                className="w-full cursor-pointer bg-primary-400 hover:bg-primary-600 text-primary-foreground rounded-full"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-3 cursor-pointer"
               >
                 Continue
               </Button>
 
               {/* Divider */}
               <div className="flex items-center">
-                <div className="h-px bg-muted w-full"></div>
-                <span className="px-2 text-sm text-muted-foreground whitespace-nowrap">OR</span>
-                <div className="h-px bg-muted w-full"></div>
+                <div className="h-px bg-muted-foreground/20 w-full"></div>
+                <span className="px-4 text-sm text-muted-foreground whitespace-nowrap">
+                  OR
+                </span>
+                <div className="h-px bg-muted-foreground/20 w-full"></div>
               </div>
 
-              {/* Google icon */}
+              {/* Google Sign Up */}
               <Button
-                className={`cursor-pointer flex items-center w-full gap-4 bg-white dark:bg-black border-2 border-gray-300 dark:border-white text-black dark:text-white rounded-md`}
-
-                /*className={`flex items-center justify-center w-full gap-4 cursor-pointer ${
-                  isDark
-                    ? "bg-card border-card-foreground text-card-foreground"
-                    : "bg-card border-muted text-card-foreground"
-                } border-2 rounded-md`}*/
-
+                className="flex items-center justify-center w-full gap-3 bg-background border-2 border-input text-foreground rounded-md py-3 hover:bg-accent cursor-pointer"
                 variant="outline"
               >
-                <FcGoogle size="25" />
+                <FcGoogle size="20" />
                 Continue With Google
               </Button>
             </div>
           </form>
 
-          <p className="mt-4 text-xs text-slate-400 text-center">
+          <p className="text-xs text-muted-foreground text-center">
             ©2025 All rights reserved
           </p>
         </div>
