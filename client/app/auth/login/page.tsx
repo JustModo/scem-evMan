@@ -1,26 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FcGoogle } from "react-icons/fc";
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
-import { BsSunFill, BsMoonFill } from "react-icons/bs";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const [isDark, setIsDark] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const root = window.document.documentElement;
-      root.classList.toggle("dark", isDark);
-    }
-  }, [isDark]);
 
   const validateForm = () => {
     const newErrors = { email: "", password: "" };
@@ -65,6 +56,7 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side */}
+
         <div className="bg-card text-card-foreground flex items-center justify-center flex-col px-4 sm:px-10 py-4 transition-colors duration-300 relative border-2 border-primary-200 border-opacity-10">
           <div className="w-full max-w-sm mx-auto">
             <div className="w-full bg-primary-400 rounded-full mb-4 absolute top-0 left-0" />
@@ -90,9 +82,9 @@ export default function LoginPage() {
                 </div>
               </button>
             </div>
-
+            
             {/* Login Title */}
-            <h1 className="text-5xl font-bold relative w-fit">
+            <h1 className="text-5xl font-bold relative w-fit text-[#000000] dark:text-white">
               LOGIN
               <div className="h-1 w-[120px] bg-primary-400 rounded-full mt-1" />
             </h1>
@@ -105,6 +97,10 @@ export default function LoginPage() {
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                   size={20}
                 />
+
+
+
+                
                 <Input
                   className="pl-10 pr-4 py-2 bg-muted text-card-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary-400"
                   type="email"
@@ -177,11 +173,8 @@ export default function LoginPage() {
 
               {/* Google Button */}
               <Button
-                className={`flex items-center w-full gap-4 ${
-                  isDark
-                    ? "bg-card border-card-foreground text-card-foreground"
-                    : "bg-card border-muted text-card-foreground"
-                } border-2 rounded-md`}
+                className={`flex items-center w-full gap-4 bg-white dark:bg-black border-2 border-gray-300 dark:border-white text-black dark:text-white rounded-md cursor-pointer`}
+
                 variant="outline"
               >
                 <FcGoogle size="25" />
