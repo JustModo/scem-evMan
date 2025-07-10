@@ -17,7 +17,7 @@ export default function RegisterPage() {
   return (
     <div className="relative h-screen w-full bg-white dark:bg-black overflow-hidden pt-12">
       {/* green top */}
-      <div className="absolute top-0 left-0 w-full h-1/3">
+      <div className="absolute sm:-top-4 left-0 w-full h-1/3">
         <svg viewBox="0 1.5 20 10" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M 0 0 L 24 0 L 24 4 C 18 8 11 4 0 2"
@@ -29,14 +29,16 @@ export default function RegisterPage() {
       </div>
 
       {/* form */}
-      <div className="flex items-center h-full w-full px-6">
+      <div className="flex items-center justify-center h-full w-full md:w-1/2">
         <div className="w-full max-w-md p-6 space-y-4 relative">
           <div className="w-max space-y-2">
+            {/* heading */}
             <h1 className="text-4xl sm:text-5xl font-bold text-black dark:text-white mb-1.5">
               SIGN UP
             </h1>
             <hr className="bg-[#579e86] h-1.5 rounded-2xl" />
           </div>
+
           <form
             className="space-y-2"
             onSubmit={(e) => {
@@ -48,6 +50,8 @@ export default function RegisterPage() {
               }
             }}
           >
+            
+            {/* Already a User */}
             <p className="text-sm text-right text-gray-600 dark:text-slate-400">
               Already a User?{" "}
               <Link
@@ -57,6 +61,8 @@ export default function RegisterPage() {
                 Sign In
               </Link>
             </p>
+
+            {/* E-Mail */}
             <div className="relative">
               <MdEmail
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600"
@@ -108,6 +114,7 @@ export default function RegisterPage() {
               />
             </div>
 
+            {/*Password Match Message */}
             <p
               className={`text-right font-medium h-5 ${
                 matchMessage.includes("not")
@@ -146,6 +153,7 @@ export default function RegisterPage() {
               </Button>
             </div>
           </form>
+
           <p className="mt-4 text-xs text-slate-400 text-center">
             ©2025 All rights reserved
           </p>
