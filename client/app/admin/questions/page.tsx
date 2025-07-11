@@ -11,7 +11,6 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Code, Braces } from "lucide-react";
 
-
 const groupedQuestions = {
   JavaScript: [
     {
@@ -59,7 +58,7 @@ const groupedQuestions = {
 
 export default function AdminQuestionsPage() {
   return (
-    <div className="p-6 md:p-10 bg-black min-h-screen text-white overflow-x-hidden">
+    <div className="h-full w-full p-6 md:p-10 bg-black text-white overflow-y-scroll">
       <h1 className="text-4xl font-bold text-center mb-12">Manage Questions</h1>
 
       <div className="space-y-16">
@@ -109,4 +108,3 @@ export default function AdminQuestionsPage() {
     </div>
   );
 }
-

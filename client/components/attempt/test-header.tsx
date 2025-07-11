@@ -29,7 +29,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   const codingProblems = problems.filter((p) => p.type === "coding");
 
   return (
-    <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-[#00b88f]">
+    <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-primary">
       <Button
         variant="ghost"
         size="icon"

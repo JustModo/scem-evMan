@@ -41,7 +41,7 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <aside className="flex flex-col items-center w-14 py-6 space-y-6 bg-sidebar border-r border-border">
+    <aside className="flex flex-col items-center w-14 min-w-14 py-6 space-y-6 bg-sidebar border-r border-border">
       {routes.map((r) => {
         const isActive = pathname === r.link;
         return (

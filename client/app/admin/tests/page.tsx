@@ -34,7 +34,7 @@ export default function AdminTestsPage() {
   );
 
   return (
-    <div className="flex-1 min-h-screen bg-background text-foreground">
+    <div className="h-full w-full bg-background text-foreground overflow-y-scroll">
       <div className="max-w-none w-full p-4 sm:p-6 lg:p-8">
         <div className="space-y-6 sm:space-y-8">
           {/* Header */}
