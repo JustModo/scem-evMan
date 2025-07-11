@@ -59,6 +59,8 @@ interface TestData {
   endDate: string;
 }
 
+type TestStatus = "waiting" | "ongoing" | "completed";
+
 export default function AdminTestEditPage({
   params,
 }: {
@@ -139,7 +141,7 @@ export default function AdminTestEditPage({
   const updateQuestion = (
     questionId: string,
     field: keyof Question,
-    value: any
+    value: string | number | "easy" | "medium" | "hard"
   ) => {
     setTestData((prev) => ({
       ...prev,
@@ -300,7 +302,7 @@ export default function AdminTestEditPage({
                           onValueChange={(value) =>
                             setTestData((prev) => ({
                               ...prev,
-                              status: value as any,
+                              status: value as TestStatus,
                             }))
                           }
                         >
@@ -511,7 +513,7 @@ export default function AdminTestEditPage({
                         <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p className="text-lg font-medium">No questions yet</p>
                         <p className="text-sm">
-                          Click "Add Question" to get started
+                          Click &quot;Add Question&quot; to get started
                         </p>
                       </div>
                     )}

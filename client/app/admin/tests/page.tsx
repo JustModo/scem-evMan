@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
-import { getAllTests } from "@/components/tests";
+import { getAllTests } from "@/constants/test-data";
 
 export default function AdminTestsPage() {
   const [searchTerm, setSearchTerm] = useState("");
