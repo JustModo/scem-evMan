@@ -31,13 +31,13 @@ export default function JoinContestPage() {
   const allFilled = digits.every((d) => d.length === 1);
 
   return (
-    <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-600">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-2xl shadow-2xl p-10 flex flex-col items-center space-y-10 border border-gray-300 dark:border-gray-700">
+    <main className="min-h-screen w-full flex items-center justify-center bg-background">
+      <div className="w-full max-w-md bg-card text-foreground rounded-2xl shadow-2xl p-10 flex flex-col items-center space-y-10 border border-border">
         {/* Heading with underline */}
         <div className="text-center">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide relative inline-block">
             JOIN A TEST
-            <span className="block w-16 h-1 mt-2 mx-auto bg-emerald-400 rounded-full"></span>
+            <span className="block w-16 h-1 mt-2 mx-auto bg-primary rounded-full"></span>
           </h1>
         </div>
 
@@ -53,7 +53,7 @@ export default function JoinContestPage() {
               value={digit}
               onChange={(e) => handleChange(i, e)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              className="w-12 h-14 text-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-2xl font-semibold border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-12 h-14 text-center rounded-xl bg-muted text-foreground text-2xl font-semibold border border-border focus:outline-none focus:ring-2 focus:ring-primary"
               autoComplete="off"
             />
           ))}
@@ -65,8 +65,8 @@ export default function JoinContestPage() {
           className={`w-full h-11 text-lg font-semibold rounded-full shadow-md transition duration-200 ease-in-out
             ${
               allFilled
-                ? "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
             }`}
         >
           Join

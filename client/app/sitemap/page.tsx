@@ -46,7 +46,7 @@ export default function Site() {
             <ul className="space-y-1 pl-4 border-l border-border">
               {section.links.map(({ path, label }) => (
                 <li key={path}>
-                  <Link href={path} className="text-primary-600 hover:underline">
+                  <Link href={path} className="text-primary hover:underline">
                     {label}
                   </Link>
                 </li>

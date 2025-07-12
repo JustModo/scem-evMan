@@ -58,7 +58,7 @@ const groupedQuestions = {
 
 export default function AdminQuestionsPage() {
   return (
-    <div className="h-full w-full p-6 md:p-10 bg-black text-white overflow-y-scroll">
+    <div className="h-full w-full p-6 md:p-10 bg-background text-foreground overflow-y-scroll">
       <h1 className="text-4xl font-bold text-center mb-12">Manage Questions</h1>
 
       <div className="space-y-16">
@@ -74,8 +74,8 @@ export default function AdminQuestionsPage() {
             <section key={subject} className="px-2 md:px-4 w-full">
               {/* Section Header */}
               <div className="flex items-center gap-2 mb-5 pl-1">
-                <Icon className="text-[#B8E1B0] w-5 h-5" />
-                <h2 className="text-2xl font-semibold text-[#B8E1B0]">
+                <Icon className="text-primary w-5 h-5" />
+                <h2 className="text-2xl font-semibold text-primary">
                   {subject}
                 </h2>
               </div>
@@ -85,16 +85,16 @@ export default function AdminQuestionsPage() {
                 {questions.map((q) => (
                   <Card
                     key={q.id}
-                    className="rounded-xl border border-[#B8E1B0] bg-[#1a1a1a] hover:shadow-lg hover:scale-[1.01] transition duration-200"
+                    className="rounded-xl border border-border bg-card hover:shadow-lg hover:scale-[1.01] transition duration-200"
                   >
                     <CardContent className="p-5 space-y-2 overflow-hidden">
-                      <div className="text-xs font-semibold bg-[#B8E1B0] text-[#111] px-3 py-1 inline-block rounded-full">
+                      <div className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1 inline-block rounded-full">
                         {subject}
                       </div>
-                      <h3 className="text-xl font-semibold text-white">
+                      <h3 className="text-xl font-semibold text-foreground">
                         {q.title}
                       </h3>
-                      <p className="text-sm text-gray-400 break-words">
+                      <p className="text-sm text-muted-foreground break-words">
                         {q.description}
                       </p>
                     </CardContent>

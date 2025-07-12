@@ -85,10 +85,10 @@ export default function AdminTestsPage() {
   const [selected, setSelected] = useState<Contest | null>(null);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-[72px] p-4 gap-4 bg-[#1E2F23] text-white">
+    <div className="flex flex-col md:flex-row min-h-screen pt-[72px] p-4 gap-4 bg-background text-foreground">
       {/* Left Panel */}
-      <div className="md:w-[35%] w-full rounded-2xl border border-green-500 bg-[#B8E1B0] text-black p-4 shadow-xl h-[calc(100vh-100px)] overflow-auto">
-        <h2 className="text-2xl font-bold mb-5 tracking-tight text-green-900">
+      <div className="md:w-[35%] w-full rounded-2xl border border-primary bg-secondary text-foreground p-4 shadow-xl h-[calc(100vh-100px)] overflow-auto">
+        <h2 className="text-2xl font-bold mb-5 tracking-tight text-primary">
           All Tests
         </h2>
         <ScrollArea className="h-[80%] pr-2">
@@ -98,13 +98,13 @@ export default function AdminTestsPage() {
                 key={contest.id}
                 className={`p-5 rounded-xl border cursor-pointer transition-all duration-300 shadow-md ${
                   selected?.id === contest.id
-                    ? "bg-green-brand/90 border-green-800 ring-2 ring-green-700 scale-[1.02] text-black"
-                    : "bg-white hover:bg-green-100 hover:scale-[1.01] text-black"
+                    ? "bg-primary/20 border-primary ring-2 ring-primary scale-[1.02] text-foreground"
+                    : "bg-card hover:bg-secondary hover:scale-[1.01] text-foreground"
                 }`}
                 onClick={() => setSelected(contest)}
               >
                 <h3 className="text-lg font-semibold">{contest.title}</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {new Date(contest.duration.start).toLocaleString()}
                 </p>
               </Card>
@@ -114,35 +114,35 @@ export default function AdminTestsPage() {
       </div>
 
       {/* Right Panel */}
-      <div className="md:w-[65%] w-full rounded-2xl border border-green-600 bg-[#0F1B14] p-6 shadow-xl text-[#DFF5D3] h-[calc(100vh-100px)] overflow-auto">
+      <div className="md:w-[65%] w-full rounded-2xl border border-primary bg-card p-6 shadow-xl text-foreground h-[calc(100vh-100px)] overflow-auto">
         {selected ? (
           <div className="space-y-5">
             <h2 className="text-3xl font-bold tracking-tight">
               {selected.title}
             </h2>
-            <p className="text-base text-green-100">{selected.description}</p>
+            <p className="text-base text-primary/80">{selected.description}</p>
 
             <div className="grid grid-cols-2 gap-4 text-base">
               <div>
-                <span className="block font-semibold text-green-brand">
+                <span className="block font-semibold text-primary">
                   Start
                 </span>
                 <p>{new Date(selected.duration.start).toLocaleString()}</p>
               </div>
               <div>
-                <span className="block font-semibold text-green-brand">
+                <span className="block font-semibold text-primary">
                   End
                 </span>
                 <p>{new Date(selected.duration.end).toLocaleString()}</p>
               </div>
               <div>
-                <span className="block font-semibold text-green-brand">
+                <span className="block font-semibold text-primary">
                   Problems
                 </span>
                 <p>{selected.totalProblems}</p>
               </div>
               <div>
-                <span className="block font-semibold text-green-brand">
+                <span className="block font-semibold text-primary">
                   Author
                 </span>
                 <p>{selected.author}</p>
@@ -150,10 +150,10 @@ export default function AdminTestsPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-green-brand text-lg mb-2">
+              <h3 className="font-semibold text-primary text-lg mb-2">
                 Rules
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-base text-green-200">
+              <ul className="list-disc list-inside space-y-1 text-base text-muted-foreground">
                 {selected.rules.map((rule, index) => (
                   <li key={index}>{rule}</li>
                 ))}
@@ -161,7 +161,7 @@ export default function AdminTestsPage() {
             </div>
           </div>
         ) : (
-          <div className="text-green-300 text-center pt-10 text-lg">
+          <div className="text-muted-foreground text-center pt-10 text-lg">
             Select a test from the left to view its details.
           </div>
         )}

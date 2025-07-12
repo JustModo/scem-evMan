@@ -105,7 +105,7 @@ export default function TestCasePanel() {
                   <p className="text-muted-foreground">My Output:</p>
                   <pre
                     className={`px-2 py-1 rounded ${
-                      tc.output === tc.expected ? "bg-green-100" : "bg-red-100"
+                      tc.output === tc.expected ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                     }`}
                   >
                     {tc.output}
@@ -121,13 +121,13 @@ export default function TestCasePanel() {
             <div className="grid grid-cols-2 gap-4">
               <div className="border rounded-md p-4 text-center">
                 <div className="text-muted-foreground text-xs">Passed</div>
-                <div className="text-2xl font-semibold text-green-600">
+                <div className="text-2xl font-semibold text-primary">
                   {passedCount}
                 </div>
               </div>
               <div className="border rounded-md p-4 text-center">
                 <div className="text-muted-foreground text-xs">Failed</div>
-                <div className="text-2xl font-semibold text-red-600">
+                <div className="text-2xl font-semibold text-destructive">
                   {failedCount}
                 </div>
               </div>

@@ -32,7 +32,7 @@ import {
   Edit,
   BarChart3,
 } from "lucide-react";
-import { getTestById } from "@/components/tests";
+import { getTestById } from "@/constants/test-data";
 
 // Admin: Contest Details
 // Show detailed information about a specific contest.
@@ -51,22 +51,22 @@ export default async function AdminTestDetailPage({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-600 text-white";
+        return "bg-primary text-primary-foreground";
       case "ongoing":
-        return "bg-blue-600 text-white";
+        return "bg-primary/70 text-primary-foreground";
       default:
-        return "bg-amber-600 text-white";
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="h-5 w-5 text-green-400" />;
+        return <CheckCircle className="h-5 w-5 text-primary" />;
       case "ongoing":
-        return <Play className="h-5 w-5 text-blue-400" />;
+        return <Play className="h-5 w-5 text-primary/70" />;
       default:
-        return <XCircle className="h-5 w-5 text-amber-400" />;
+        return <XCircle className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -124,7 +124,7 @@ export default async function AdminTestDetailPage({
               <div className="flex flex-col sm:flex-row gap-3">
                 {test.status !== "completed" ? (
                   <Link href={`/admin/tests/${test.id}/edit`}>
-                    <Button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors w-full sm:w-auto">
+                    <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors w-full sm:w-auto">
                       <Edit className="h-4 w-4" />
                       Edit Test
                     </Button>
@@ -153,7 +153,7 @@ export default async function AdminTestDetailPage({
               <Card className="bg-card border-border shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-xl text-foreground flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-green-400" />
+                    <FileText className="h-5 w-5 text-primary" />
                     Test Information
                   </CardTitle>
                 </CardHeader>
@@ -163,7 +163,7 @@ export default async function AdminTestDetailPage({
                       Duration
                     </span>
                     <div className="flex items-center gap-2 text-foreground">
-                      <Clock className="h-4 w-4 text-blue-400" />
+                      <Clock className="h-4 w-4 text-primary/70" />
                       <span className="font-semibold">{test.duration}</span>
                     </div>
                   </div>
@@ -173,7 +173,7 @@ export default async function AdminTestDetailPage({
                       Total Questions
                     </span>
                     <div className="flex items-center gap-2 text-foreground">
-                      <FileText className="h-4 w-4 text-green-400" />
+                      <FileText className="h-4 w-4 text-primary" />
                       <span className="font-semibold">
                         {test.totalQuestions}
                       </span>
@@ -185,7 +185,7 @@ export default async function AdminTestDetailPage({
                       Created
                     </span>
                     <div className="flex items-center gap-2 text-foreground">
-                      <Calendar className="h-4 w-4 text-amber-400" />
+                      <Calendar className="h-4 w-4 text-primary/50" />
                       <span className="font-semibold text-sm sm:text-base">
                         {test.createdAt}
                       </span>
@@ -207,7 +207,7 @@ export default async function AdminTestDetailPage({
               <Card className="bg-card border-border shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-xl text-foreground flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-400" />
+                    <Users className="h-5 w-5 text-primary/70" />
                     Participation Statistics
                   </CardTitle>
                 </CardHeader>
@@ -228,7 +228,7 @@ export default async function AdminTestDetailPage({
                           Registered
                         </span>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-primary/50 rounded-full"></div>
                           <span className="text-foreground font-semibold">
                             {test.participants}
                           </span>
@@ -240,7 +240,7 @@ export default async function AdminTestDetailPage({
                           Completed
                         </span>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-primary rounded-full"></div>
                           <span className="text-foreground font-semibold">
                             {completed}
                           </span>
@@ -253,7 +253,7 @@ export default async function AdminTestDetailPage({
                             Not Started
                           </span>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                            <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
                             <span className="text-foreground font-semibold">
                               {notStarted}
                             </span>
@@ -265,7 +265,7 @@ export default async function AdminTestDetailPage({
                             In Progress
                           </span>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <div className="w-3 h-3 bg-primary/70 rounded-full"></div>
                             <span className="text-foreground font-semibold">
                               {inProgress}
                             </span>
@@ -277,7 +277,7 @@ export default async function AdminTestDetailPage({
                             Completed
                           </span>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div className="w-3 h-3 bg-primary rounded-full"></div>
                             <span className="text-foreground font-semibold">
                               {completed}
                             </span>
@@ -304,8 +304,8 @@ export default async function AdminTestDetailPage({
                         <div
                           className={`h-3 rounded-full transition-all duration-300 ${
                             test.status === "completed"
-                              ? "bg-green-500"
-                              : "bg-gradient-to-r from-blue-500 to-green-500"
+                              ? "bg-primary"
+                              : "bg-gradient-to-r from-primary/70 to-primary"
                           }`}
                           style={{
                             width: `${(completed / test.participants) * 100}%`,
@@ -332,7 +332,7 @@ export default async function AdminTestDetailPage({
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {test.status !== "completed" ? (
                     <Link href={`/admin/tests/${test.id}/edit`}>
-                      <Button className="w-full h-16 flex flex-col items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                      <Button className="w-full h-16 flex flex-col items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors">
                         <Edit className="h-5 w-5" />
                         <span className="text-xs font-medium text-center">
                           Edit Test
@@ -361,7 +361,7 @@ export default async function AdminTestDetailPage({
                   </Link>
 
                   <Link href={`/test/${test.id}`}>
-                    <Button className="w-full h-16 flex flex-col items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    <Button className="w-full h-16 flex flex-col items-center justify-center gap-2 bg-primary/70 hover:bg-primary text-primary-foreground rounded-lg transition-colors">
                       <Play className="h-5 w-5" />
                       <span className="text-xs font-medium text-center">
                         Take Test
