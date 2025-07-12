@@ -1,34 +1,15 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 export default function JoinContestPage() {
-  const [digits, setDigits] = useState(Array(6).fill(""));
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleChange = (
-    index: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const val = e.target.value;
-    if (/^\d?$/.test(val)) {
-      const newDigits = [...digits];
-      newDigits[index] = val;
-      setDigits(newDigits);
-      if (val && index < 5) inputsRef.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === "Backspace" && digits[index] === "" && index > 0) {
-      inputsRef.current[index - 1]?.focus();
-    }
-  };
-
-  const allFilled = digits.every((d) => d.length === 1);
+  const [otp, setOtp] = useState("");
+  const allFilled = otp.length === 6;
 
   return (
     <main className="min-h-screen w-full flex items-center justify-center bg-background">
@@ -42,22 +23,17 @@ export default function JoinContestPage() {
         </div>
 
         {/* 6-digit OTP input */}
-        <div className="flex justify-center gap-3">
-          {digits.map((digit, i) => (
-            <input
-              key={i}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(i, e)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              className="w-12 h-14 text-center rounded-xl bg-muted text-foreground text-2xl font-semibold border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-              autoComplete="off"
-            />
-          ))}
-        </div>
+        <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+          <InputOTPGroup className="space-x-2">
+            {[...Array(6)].map((_, i) => (
+              <InputOTPSlot
+                key={i}
+                index={i}
+                className="bg-muted rounded-xl border border-border shadow-none font-semibold text-2xl w-12 h-14 text-center text-foreground"
+              />
+            ))}
+          </InputOTPGroup>
+        </InputOTP>
 
         {/* Join Button */}
         <button
