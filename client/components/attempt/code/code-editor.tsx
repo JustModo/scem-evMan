@@ -63,7 +63,7 @@ export default function CodeEditorPanel({
             renderLineHighlight: "none",
             renderLineHighlightOnlyWhenFocus: false,
           }}
-          loading={<Skeleton className="w-full h-full" />}
+          loading={<Skeleton className="w-full h-full bg-muted" />}
         />
       </div>
     </div>
