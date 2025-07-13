@@ -31,7 +31,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   return (
     <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-primary">
       <Button
-        variant="ghost"
+        variant="secondary"
         size="icon"
         className="bg-muted rounded-none rounded-l-lg"
         onClick={() => scroll(-300)}
@@ -97,7 +97,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
       </div>
 
       <Button
-        variant="ghost"
+        variant="secondary"
         size="icon"
         className="bg-muted rounded-none rounded-r-lg"
         onClick={() => scroll(300)}
@@ -106,8 +106,8 @@ export default function TestHeader({ problems }: TestHeaderProps) {
       </Button>
 
       <Button
-        variant={"ghost"}
-        className="text-sm mx-4 text-muted-foreground bg-background"
+        variant={"secondary"}
+        className="text-sm mx-4"
       >
         Submit
         <BadgeCheck className="h-4 w-4" />

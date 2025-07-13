@@ -27,11 +27,11 @@ export default function AdminTestsPage() {
   );
 
   return (
-    <div className="h-full w-full bg-background text-foreground overflow-y-scroll">
+    <div className="h-full w-full overflow-y-scroll">
       <div className="max-w-none w-full p-4 sm:p-6 lg:p-8">
         <div className="space-y-6 sm:space-y-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 bg-card border border-border rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 bg-card border border-border rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-md">
             <div className="space-y-2 sm:space-y-3">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
                 Tests
