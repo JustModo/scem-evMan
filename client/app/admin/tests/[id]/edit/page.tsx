@@ -1,10 +1,3 @@
-// import React from "react";
-
-// // Admin: Edit Contest
-// // Form to edit contest details, questions, settings.
-// export default function AdminTestEditPage() {
-//   return <div>AdminTestEditPage Screen</div>;
-// }
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -28,16 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  ArrowLeft,
-  Save,
-  Plus,
-  Trash2,
-  Clock,
-  Users,
-  FileText,
-  Settings,
-} from "lucide-react";
+import { ArrowLeft, Save, Plus, FileText, Settings } from "lucide-react";
 
 interface Question {
   id: string;
@@ -131,30 +115,9 @@ export default function AdminTestEditPage({
     }));
   };
 
-  const removeQuestion = (questionId: string) => {
-    setTestData((prev) => ({
-      ...prev,
-      questions: prev.questions.filter((q) => q.id !== questionId),
-    }));
-  };
-
-  const updateQuestion = (
-    questionId: string,
-    field: keyof Question,
-    value: string | number | "easy" | "medium" | "hard"
-  ) => {
-    setTestData((prev) => ({
-      ...prev,
-      questions: prev.questions.map((q) =>
-        q.id === questionId ? { ...q, [field]: value } : q
-      ),
-    }));
-  };
-
-  // Show loading state until testId is resolved
   if (!testId) {
     return (
-      <div className="flex-1 min-h-screen bg-background text-foreground">
+      <div className="flex-1 h-full bg-background text-foreground">
         <div className="h-full w-full p-4 sm:p-6 lg:p-8">
           <div className="flex items-center justify-center h-96">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500" />
@@ -165,7 +128,7 @@ export default function AdminTestEditPage({
   }
 
   return (
-    <div className="flex-1 min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">
       <div className="h-full w-full">
         <div className="max-w-none w-full p-4 sm:p-6 lg:p-8">
           <div className="space-y-6 sm:space-y-8">
@@ -361,153 +324,7 @@ export default function AdminTestEditPage({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {testData.questions.map((question, index) => (
-                      <Card
-                        key={question.id}
-                        className="bg-muted border-border"
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <span className="text-lg font-semibold text-green-400 flex-shrink-0">
-                                Q{index + 1}
-                              </span>
-                              <span
-                                className={`text-sm font-medium px-2 py-1 rounded-full flex-shrink-0 ${
-                                  question.difficulty === "easy"
-                                    ? "bg-green-400/20 text-green-400"
-                                    : question.difficulty === "medium"
-                                    ? "bg-yellow-400/20 text-yellow-400"
-                                    : "bg-red-400/20 text-red-400"
-                                }`}
-                              >
-                                {question.difficulty.charAt(0).toUpperCase() +
-                                  question.difficulty.slice(1)}
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeQuestion(question.id)}
-                              className="text-red-400 hover:text-red-300 hover:bg-red-400/10 flex-shrink-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor={`title-${question.id}`}
-                              className="text-foreground"
-                            >
-                              Question Title
-                            </Label>
-                            <Input
-                              id={`title-${question.id}`}
-                              value={question.title}
-                              onChange={(e) =>
-                                updateQuestion(
-                                  question.id,
-                                  "title",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Enter question title"
-                              className="bg-input border-border text-foreground placeholder-muted-foreground focus:border-green-500"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor={`description-${question.id}`}
-                              className="text-foreground"
-                            >
-                              Description
-                            </Label>
-                            <Textarea
-                              id={`description-${question.id}`}
-                              value={question.description}
-                              onChange={(e) =>
-                                updateQuestion(
-                                  question.id,
-                                  "description",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Enter question description"
-                              rows={2}
-                              className="bg-input border-border text-foreground placeholder-muted-foreground focus:border-green-500"
-                            />
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor={`difficulty-${question.id}`}
-                                className="text-foreground"
-                              >
-                                Difficulty
-                              </Label>
-                              <Select
-                                value={question.difficulty}
-                                onValueChange={(value) =>
-                                  updateQuestion(
-                                    question.id,
-                                    "difficulty",
-                                    value
-                                  )
-                                }
-                              >
-                                <SelectTrigger className="bg-input border-border text-foreground">
-                                  <SelectValue placeholder="Select difficulty" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-popover border-border">
-                                  <SelectItem
-                                    value="easy"
-                                    className="text-foreground hover:bg-accent"
-                                  >
-                                    Easy
-                                  </SelectItem>
-                                  <SelectItem
-                                    value="medium"
-                                    className="text-foreground hover:bg-accent"
-                                  >
-                                    Medium
-                                  </SelectItem>
-                                  <SelectItem
-                                    value="hard"
-                                    className="text-foreground hover:bg-accent"
-                                  >
-                                    Hard
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor={`points-${question.id}`}
-                                className="text-foreground"
-                              >
-                                Points
-                              </Label>
-                              <Input
-                                id={`points-${question.id}`}
-                                type="number"
-                                value={question.points}
-                                onChange={(e) =>
-                                  updateQuestion(
-                                    question.id,
-                                    "points",
-                                    parseInt(e.target.value)
-                                  )
-                                }
-                                placeholder="10"
-                                className="bg-input border-border text-foreground placeholder-muted-foreground focus:border-green-500"
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    <div>TODO: TestCard</div>
                     {testData.questions.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -517,133 +334,6 @@ export default function AdminTestEditPage({
                         </p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-6 2xl:sticky 2xl:top-6 2xl:self-start">
-                {/* Test Stats */}
-                <Card className="bg-card border-border shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-foreground">
-                      Test Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Duration
-                        </span>
-                      </div>
-                      <span className="font-semibold text-foreground">
-                        {testData.duration} min
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Questions
-                        </span>
-                      </div>
-                      <span className="font-semibold text-foreground">
-                        {testData.questions.length}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Participants
-                        </span>
-                      </div>
-                      <span className="font-semibold text-foreground">
-                        {testData.participants}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Settings className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">
-                          Total Points
-                        </span>
-                      </div>
-                      <span className="font-semibold text-foreground">
-                        {testData.questions.reduce(
-                          (sum, q) => sum + q.points,
-                          0
-                        )}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Question Summary */}
-                <Card className="bg-card border-border shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-foreground">
-                      Question Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-green-400">Easy</span>
-                      <span className="font-semibold text-foreground">
-                        {
-                          testData.questions.filter(
-                            (q) => q.difficulty === "easy"
-                          ).length
-                        }
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-yellow-400">Medium</span>
-                      <span className="font-semibold text-foreground">
-                        {
-                          testData.questions.filter(
-                            (q) => q.difficulty === "medium"
-                          ).length
-                        }
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-red-400">Hard</span>
-                      <span className="font-semibold text-foreground">
-                        {
-                          testData.questions.filter(
-                            (q) => q.difficulty === "hard"
-                          ).length
-                        }
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Actions */}
-                <Card className="bg-card border-border shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-foreground">
-                      Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button
-                      variant="outline"
-                      className="w-full border-border text-foreground hover:bg-accent"
-                      onClick={() => router.push(`/admin/tests/${testId}`)}
-                    >
-                      Preview Test
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full border-border text-foreground hover:bg-accent"
-                      onClick={() => router.push("/admin/tests")}
-                    >
-                      Back to Tests
-                    </Button>
                   </CardContent>
                 </Card>
               </div>
