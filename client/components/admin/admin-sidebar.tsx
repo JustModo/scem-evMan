@@ -19,6 +19,7 @@ export default function AdminSidebar() {
       link: "/admin",
       icon: <FaChartLine />,
       label: "Home",
+      exact: true,
     },
     {
       name: "tests",
@@ -34,7 +35,7 @@ export default function AdminSidebar() {
     },
     {
       name: "settings",
-      link: "/settings",
+      link: "/admin/settings",
       icon: <FaCogs />,
       label: "Settings",
     },
@@ -43,7 +44,10 @@ export default function AdminSidebar() {
   return (
     <aside className="flex flex-col items-center w-14 min-w-14 py-6 space-y-6 bg-sidebar border-r border-border">
       {routes.map((r) => {
-        const isActive = pathname === r.link;
+        const isActive = r.exact
+          ? pathname === r.link
+          : pathname.startsWith(r.link);
+
         return (
           <Link
             key={r.name}

@@ -1,41 +1,10 @@
-// import { IdParams } from "@/types/params";
-// import React from "react";
-// import ContestCard from "@/components/contest-card";
-// import { ContestLandingData } from "@/types/contest";
-
-// export default async function TestDetails(props: { params: Promise<IdParams> }) {
-//   const params = await props.params;
-//   const { id } = params;
-
-//   // Dummy contest data - can be dynamic later
-//   const contestData: ContestLandingData = {
-//     title: `CodeMania 2025 - Round ${id}`,
-//     description: "A 3-hour online coding contest to test your skills.",
-//     duration: {
-//       start: "2025-05-01T10:00:00",
-//       end: "2025-05-01T13:00:00",
-//     },
-//     totalProblems: 5,
-//     author: "SCEM Coding Club",
-//     rules: [
-//       "No plagiarism",
-//       "Individual participation only",
-//       "Submit all answers before the end time",
-//     ],
-//   };
-
-//   return (
-//     <>
-//       {/* Render ContestCard */}
-//       <ContestCard data={contestData} />
-//     </>
-//   );
-// }
-"use client";
-
-import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
+// app/admin/tests/[id]/page.tsx
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Play } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import React from "react";
 
 interface Contest {
   id: number;
@@ -50,6 +19,7 @@ interface Contest {
   rules: string[];
 }
 
+// Mock data - replace with real fetching logic
 const contests: Contest[] = [
   {
     id: 1,
@@ -81,92 +51,110 @@ const contests: Contest[] = [
   },
 ];
 
-export default function AdminTestsPage() {
-  const [selected, setSelected] = useState<Contest | null>(null);
+export default async function AdminTestDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const contest = contests.find((c) => String(c.id) === params.id);
+  if (!contest) return notFound();
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-[72px] p-4 gap-4 bg-background text-foreground">
-      {/* Left Panel */}
-      <div className="md:w-[35%] w-full rounded-2xl border border-primary bg-secondary text-foreground p-4 shadow-xl h-[calc(100vh-100px)] overflow-auto">
-        <h2 className="text-2xl font-bold mb-5 tracking-tight text-primary">
-          All Tests
-        </h2>
-        <ScrollArea className="h-[80%] pr-2">
-          <div className="space-y-4">
-            {contests.map((contest) => (
-              <Card
-                key={contest.id}
-                className={`p-5 rounded-xl border cursor-pointer transition-all duration-300 shadow-md ${
-                  selected?.id === contest.id
-                    ? "bg-primary/20 border-primary ring-2 ring-primary scale-[1.02] text-foreground"
-                    : "bg-card hover:bg-secondary hover:scale-[1.01] text-foreground"
-                }`}
-                onClick={() => setSelected(contest)}
-              >
-                <h3 className="text-lg font-semibold">{contest.title}</h3>
+    <div className="h-screen pt-12 bg-primary text-foreground">
+      <div className="flex flex-col md:flex-row h-full">
+        {/* Main Detail Section */}
+        <div className="flex-1 p-6 bg-primary"></div>
+
+        {/* Sidebar */}
+        <div className="w-full md:w-1/3 bg-card border shadow-md flex flex-col">
+          <ScrollArea className="flex-1 min-h-0  p-6">
+            <div className="space-y-6 ">
+              {/* Title and Description */}
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">
+                  {contest.title}
+                </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {new Date(contest.duration.start).toLocaleString()}
+                  {contest.description}
                 </p>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+              </div>
 
-      {/* Right Panel */}
-      <div className="md:w-[65%] w-full rounded-2xl border border-primary bg-card p-6 shadow-xl text-foreground h-[calc(100vh-100px)] overflow-auto">
-        {selected ? (
-          <div className="space-y-5">
-            <h2 className="text-3xl font-bold tracking-tight">
-              {selected.title}
-            </h2>
-            <p className="text-base text-primary/80">{selected.description}</p>
+              {/* Test Details Grid */}
+              <div>
+                <h3 className="text-xl font-semibold mb-2 text-primary">
+                  Test Details
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-4 text-sm">
+                  <div>
+                    <span className="block font-semibold text-primary">
+                      Start
+                    </span>
+                    <p>{new Date(contest.duration.start).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="block font-semibold text-primary">
+                      End
+                    </span>
+                    <p>{new Date(contest.duration.end).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="block font-semibold text-primary">
+                      Problems
+                    </span>
+                    <p>{contest.totalProblems}</p>
+                  </div>
+                  <div>
+                    <span className="block font-semibold text-primary">
+                      Author
+                    </span>
+                    <p>{contest.author}</p>
+                  </div>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4 text-base">
+              {/* Rules (cleaned up repeated sections) */}
               <div>
-                <span className="block font-semibold text-primary">
-                  Start
-                </span>
-                <p>{new Date(selected.duration.start).toLocaleString()}</p>
+                <h4 className="text-lg font-semibold text-primary mb-2">
+                  Rules
+                </h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                  {contest.rules.map((rule, i) => (
+                    <li key={i}>{rule}</li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                <span className="block font-semibold text-primary">
-                  End
-                </span>
-                <p>{new Date(selected.duration.end).toLocaleString()}</p>
-              </div>
-              <div>
-                <span className="block font-semibold text-primary">
-                  Problems
-                </span>
-                <p>{selected.totalProblems}</p>
-              </div>
-              <div>
-                <span className="block font-semibold text-primary">
-                  Author
-                </span>
-                <p>{selected.author}</p>
+
+              {/* Summary */}
+              <div className="text-sm space-y-2 border-t pt-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Start</span>
+                  <span>
+                    {new Date(contest.duration.start).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">End</span>
+                  <span>{new Date(contest.duration.end).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Problems</span>
+                  <span>{contest.totalProblems}</span>
+                </div>
               </div>
             </div>
+          </ScrollArea>
 
-            <div>
-              <h3 className="font-semibold text-primary text-lg mb-2">
-                Rules
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-base text-muted-foreground">
-                {selected.rules.map((rule, index) => (
-                  <li key={index}>{rule}</li>
-                ))}
-              </ul>
-            </div>
+          {/* Take Test Button */}
+          <div className="pt-0 p-6">
+            <Link href={`/test/${contest.id}`}>
+              <Button className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg">
+                <Play className="w-4 h-4" />
+                Take Test
+              </Button>
+            </Link>
           </div>
-        ) : (
-          <div className="text-muted-foreground text-center pt-10 text-lg">
-            Select a test from the left to view its details.
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
 }
-

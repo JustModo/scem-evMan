@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { getAllTests } from "@/constants/test-data";
-import { AdminHeader } from "@/components/admin/test/header";
+import { TestHeader } from "@/components/admin/test/header";
 import { TestCard } from "@/components/admin/test/test-card";
-import { EmptyState } from "@/components/admin/test/empty-placeholder";
+import { EmptyState } from "@/components/admin/empty-placeholder";
 
 export default function AdminTestsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,7 +19,7 @@ export default function AdminTestsPage() {
   return (
     <div className="h-full w-full overflow-y-scroll">
       <div className="max-w-none w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
-        <AdminHeader />
+        <TestHeader />
 
         <div className="max-w-full sm:max-w-lg">
           <Input
@@ -37,7 +37,13 @@ export default function AdminTestsPage() {
             ))}
           </div>
         ) : (
-          <EmptyState searchTerm={searchTerm} />
+          <EmptyState
+            searchTerm={searchTerm}
+            title="No tests found"
+            entityName="test"
+            createUrl="/admin/tests/new/edit"
+            createLabel="Create Your First Test"
+          />
         )}
       </div>
     </div>

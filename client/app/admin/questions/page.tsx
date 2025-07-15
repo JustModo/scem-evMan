@@ -1,109 +1,46 @@
-// import React from "react";
-
-// // Admin: All Questions
-// // View a list of all questions available.
-// export default function AdminQuestionsPage() {
-//   return <div>AdminQuestionsPage Screen</div>;
-// }
 "use client";
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Code, Braces } from "lucide-react";
-
-const groupedQuestions = {
-  JavaScript: [
-    {
-      id: 1,
-      title: "What is a closure in JavaScript?",
-      description:
-        "Closures allow a function to access variables from its outer scope even after the outer function has returned.",
-    },
-    {
-      id: 2,
-      title: "How does hoisting work in JavaScript?",
-      description:
-        "Hoisting moves declarations to the top of the scope. Only function and variable declarations are hoisted, not initializations.",
-    },
-  ],
-  React: [
-    {
-      id: 3,
-      title: "What is the difference between useEffect and useLayoutEffect?",
-      description:
-        "useEffect runs after the component renders, while useLayoutEffect runs before the paint phase, useful for layout calculations.",
-    },
-    {
-      id: 4,
-      title: "How do state and props differ in React?",
-      description:
-        "Props are passed to components and are read-only. State is managed within the component and can change over time.",
-    },
-  ],
-  DSA: [
-    {
-      id: 5,
-      title: "How does binary search algorithm work?",
-      description:
-        "Binary search finds the target by repeatedly dividing a sorted array in half, achieving O(log n) time complexity.",
-    },
-    {
-      id: 6,
-      title: "What is the difference between stack and queue?",
-      description:
-        "A stack follows LIFO (last-in, first-out), while a queue follows FIFO (first-in, first-out).",
-    },
-  ],
-};
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { getAllTests, Test } from "@/constants/test-data";
+import { TestCard } from "@/components/admin/test/test-card";
+import { EmptyState } from "@/components/admin/empty-placeholder";
+import { QuestionHeader } from "@/components/admin/question/header";
 
 export default function AdminQuestionsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const tests = getAllTests();
+  const filteredTests: Test[] = [];
+
   return (
-    <div className="h-full w-full p-6 md:p-10 bg-background text-foreground overflow-y-scroll">
-      <h1 className="text-4xl font-bold text-center mb-12">Manage Questions</h1>
+    <div className="h-full w-full overflow-y-scroll">
+      <div className="max-w-none w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+        <QuestionHeader />
 
-      <div className="space-y-16">
-        {Object.entries(groupedQuestions).map(([subject, questions]) => {
-          const Icon =
-            subject === "JavaScript"
-              ? Braces
-              : subject === "React"
-              ? Code
-              : BookOpen;
+        <div className="max-w-full sm:max-w-lg">
+          <Input
+            placeholder="Search tests..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-input border-border"
+          />
+        </div>
 
-          return (
-            <section key={subject} className="px-2 md:px-4 w-full">
-              {/* Section Header */}
-              <div className="flex items-center gap-2 mb-5 pl-1">
-                <Icon className="text-primary w-5 h-5" />
-                <h2 className="text-2xl font-semibold text-primary">
-                  {subject}
-                </h2>
-              </div>
-
-              {/* Cards */}
-              <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6">
-                {questions.map((q) => (
-                  <Card
-                    key={q.id}
-                    className="rounded-xl border border-border bg-card hover:shadow-lg hover:scale-[1.01] transition duration-200"
-                  >
-                    <CardContent className="p-5 space-y-2 overflow-hidden">
-                      <div className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1 inline-block rounded-full">
-                        {subject}
-                      </div>
-                      <h3 className="text-xl font-semibold text-foreground">
-                        {q.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground break-words">
-                        {q.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        {filteredTests.length > 0 ? (
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            {filteredTests.map((test) => (
+              <TestCard key={test.id} test={test} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            searchTerm={searchTerm}
+            title="No questions found"
+            entityName="question"
+            createUrl="/admin/questions/new/edit"
+            createLabel="Create Your First Question"
+          />
+        )}
       </div>
     </div>
   );

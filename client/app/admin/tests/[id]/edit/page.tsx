@@ -120,7 +120,7 @@ export default function AdminTestEditPage({
       <div className="flex-1 h-full bg-background text-foreground">
         <div className="h-full w-full p-4 sm:p-6 lg:p-8">
           <div className="flex items-center justify-center h-96">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 bg-primary" />
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@ export default function AdminTestEditPage({
                 <Card className="bg-card border-border shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-foreground">
-                      <FileText className="h-5 w-5 text-green-400" />
+                      <FileText className="h-5 w-5 text-primary" />
                       Basic Information
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
@@ -216,7 +216,6 @@ export default function AdminTestEditPage({
                           }))
                         }
                         placeholder="Enter test title"
-                        className="bg-input border-border text-foreground placeholder-muted-foreground focus:border-green-500"
                       />
                     </div>
                     <div className="space-y-2">
@@ -234,7 +233,6 @@ export default function AdminTestEditPage({
                         }
                         placeholder="Enter test description"
                         rows={3}
-                        className="bg-input border-border text-foreground placeholder-muted-foreground focus:border-green-500"
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -253,7 +251,6 @@ export default function AdminTestEditPage({
                             }))
                           }
                           placeholder="120"
-                          className="bg-input border-border text-foreground placeholder-muted-foreground focus:border-green-500"
                         />
                       </div>
                       <div className="space-y-2">
@@ -269,28 +266,13 @@ export default function AdminTestEditPage({
                             }))
                           }
                         >
-                          <SelectTrigger className="bg-input border-border text-foreground">
+                          <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
-                          <SelectContent className="bg-popover border-border">
-                            <SelectItem
-                              value="waiting"
-                              className="text-foreground hover:bg-accent"
-                            >
-                              Waiting
-                            </SelectItem>
-                            <SelectItem
-                              value="ongoing"
-                              className="text-foreground hover:bg-accent"
-                            >
-                              Ongoing
-                            </SelectItem>
-                            <SelectItem
-                              value="completed"
-                              className="text-foreground hover:bg-accent"
-                            >
-                              Completed
-                            </SelectItem>
+                          <SelectContent>
+                            <SelectItem value="waiting">Waiting</SelectItem>
+                            <SelectItem value="ongoing">Ongoing</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
