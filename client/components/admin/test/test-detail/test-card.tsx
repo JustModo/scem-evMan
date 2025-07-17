@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, FileText, Calendar } from "lucide-react";
-import { Test } from "@/constants/test-data";
+import { Test } from "@/types/test";
 
 interface TestInformationCardProps {
   test: Test;

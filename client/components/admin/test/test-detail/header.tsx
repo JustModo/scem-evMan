@@ -9,7 +9,7 @@ import {
   XCircle,
   Play,
 } from "lucide-react";
-import { Test } from "@/constants/test-data";
+import { Test } from "@/types/test";
 
 interface TestDetailHeaderProps {
   test: Test;
@@ -91,7 +91,7 @@ export function TestDetailHeader({ test }: TestDetailHeaderProps) {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          {test.status !== "completed" ? (
+          {test.status === "waiting" ? (
             <Link href={`/admin/tests/${test.id}/edit`}>
               <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors w-full sm:w-auto">
                 <Edit className="h-4 w-4" />
@@ -104,7 +104,7 @@ export function TestDetailHeader({ test }: TestDetailHeaderProps) {
               className="flex items-center gap-2 bg-muted text-muted-foreground px-4 py-2 rounded-lg cursor-not-allowed w-full sm:w-auto"
             >
               <Edit className="h-4 w-4" />
-              Edit Test (Completed)
+              Edit Test
             </Button>
           )}
           <Link href={`/admin/tests/${test.id}/result`}>

@@ -5,6 +5,7 @@ import { TestDetailHeader } from "@/components/admin/test/test-detail/header";
 import { TestInformationCard } from "@/components/admin/test/test-detail/test-card";
 import { ParticipationStatisticsCard } from "@/components/admin/test/test-detail/participation-card";
 import { QuickActionsCard } from "@/components/admin/test/test-detail/actions-card";
+import TestEditQuestions from "@/components/admin/test/questions-list";
 
 interface IdParams {
   id: string;
@@ -35,6 +36,7 @@ export default async function AdminTestDetailPage({
               <ParticipationStatisticsCard test={test} />
             </div>
 
+            <TestEditQuestions questions={test.problems} />
             <QuickActionsCard test={test} />
           </div>
         </div>

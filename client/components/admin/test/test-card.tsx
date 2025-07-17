@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Test } from "@/constants/test-data";
+import { Test } from "@/types/test";
 
 export function TestCard({ test }: { test: Test }) {
   return (
@@ -52,9 +52,6 @@ export function TestCard({ test }: { test: Test }) {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-primary rounded-full" />
               <div className="text-center">
-                {/* <div className="text-lg font-semibold text-foreground">
-                  Waiting
-                </div> */}
                 <div className="text-sm text-muted-foreground">Waiting</div>
               </div>
             </div>
@@ -100,7 +97,7 @@ export function TestCard({ test }: { test: Test }) {
             </Button>
           </Link>
 
-          {test.status !== "completed" ? (
+          {test.status === "waiting" ? (
             <Link href={`/admin/tests/${test.id}/edit`} className="flex-1">
               <Button variant="outline" className="w-full text-sm">
                 Edit
@@ -112,7 +109,7 @@ export function TestCard({ test }: { test: Test }) {
               variant="outline"
               className="flex-1 w-full text-sm bg-muted cursor-not-allowed"
             >
-              Completed
+              Edit
             </Button>
           )}
 

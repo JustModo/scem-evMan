@@ -8,4 +8,5 @@ export interface Test {
   status: "waiting" | "ongoing" | "completed";
   participantsInProgress: number;
   participantsCompleted: number;
+  problems: number[];
 }

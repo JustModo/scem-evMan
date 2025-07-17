@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, BarChart3, Play } from "lucide-react";
-import { Test } from "@/constants/test-data";
+import { Test } from "@/types/test";
 
 interface QuickActionsCardProps {
   test: Test;
@@ -28,7 +28,7 @@ export function QuickActionsCard({ test }: QuickActionsCardProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-4">
-          {status !== "completed" ? (
+          {status === "waiting" ? (
             <Link href={`/admin/tests/${testId}/edit`}>
               <Button className="w-full h-16 flex flex-col items-center justify-center gap-2">
                 <Edit className="h-5 w-5" />
@@ -43,9 +43,7 @@ export function QuickActionsCard({ test }: QuickActionsCardProps) {
               className="w-full h-16 flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground rounded-lg cursor-not-allowed"
             >
               <Edit className="h-5 w-5" />
-              <span className="text-xs font-medium text-center">
-                Test Completed
-              </span>
+              <span className="text-xs font-medium text-center">Edit Test</span>
             </Button>
           )}
 

@@ -1,4 +1,5 @@
 import { Problem } from "@/types/problem";
+import { Test } from "@/types/test";
 
 export const problems: Problem[] = [
   {
@@ -193,19 +194,6 @@ export const problems: Problem[] = [
   },
 ];
 
-export interface Test {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  totalQuestions: number;
-  startsAt: string;
-  status: "waiting" | "ongoing" | "completed";
-
-  participantsInProgress: number;
-  participantsCompleted: number;
-}
-
 export const testsData: Test[] = [
   {
     id: "1",
@@ -217,6 +205,7 @@ export const testsData: Test[] = [
     participantsCompleted: 12,
     status: "ongoing",
     startsAt: "2025-07-10 10:00 AM",
+    problems: [],
   },
   {
     id: "2",
@@ -228,6 +217,7 @@ export const testsData: Test[] = [
     participantsCompleted: 0,
     status: "waiting",
     startsAt: "2025-07-12 11:30 AM",
+    problems: [2, 3, 6, 8, 10, 12],
   },
   {
     id: "3",
@@ -239,6 +229,7 @@ export const testsData: Test[] = [
     participantsCompleted: 32,
     status: "completed",
     startsAt: "2025-07-08 09:00 AM",
+    problems: [1, 3, 4, 6, 7, 8, 11],
   },
   {
     id: "4",
@@ -250,6 +241,7 @@ export const testsData: Test[] = [
     participantsCompleted: 15,
     status: "ongoing",
     startsAt: "2025-07-15 02:00 PM",
+    problems: [2, 5, 6, 9, 10],
   },
   {
     id: "5",
@@ -261,6 +253,7 @@ export const testsData: Test[] = [
     participantsCompleted: 18,
     status: "completed",
     startsAt: "2025-07-05 01:30 PM",
+    problems: [1, 3, 4, 7, 8, 9, 11, 12],
   },
 ];
 
