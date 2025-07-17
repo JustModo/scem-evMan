@@ -1,4 +1,4 @@
-import { BaseProblem } from "@/types/test";
+import { BaseProblem } from "@/types/problem";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Code, HelpCircle, Star } from "lucide-react";

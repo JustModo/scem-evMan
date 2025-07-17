@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { CodeXml } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CodingProblem } from "@/types/test";
+import { CodingProblem } from "@/types/problem";
 
 type Language = keyof CodingProblem["boilerplate"];
 

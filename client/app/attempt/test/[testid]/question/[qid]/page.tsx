@@ -1,7 +1,7 @@
 import { problems } from "@/constants/test-data";
 import { CodeScreen } from "@/components/attempt/code";
 import React from "react";
-import { CodingProblem } from "@/types/test";
+import { CodingProblem } from "@/types/problem";
 import MCQScreen from "@/components/attempt/mcq";
 
 interface Props {

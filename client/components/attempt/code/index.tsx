@@ -7,7 +7,7 @@ import {
 import CodeEditorPanel from "./code-editor";
 import DescriptionPanel from "./description";
 import TestCasePanel from "./test-case";
-import { CodingProblem } from "@/types/test";
+import { CodingProblem } from "@/types/problem";
 
 export function CodeScreen({ problem }: { problem: CodingProblem }) {
   return (

@@ -1,4 +1,4 @@
-import { Problem } from "@/types/test";
+import { Problem } from "@/types/problem";
 
 export const problems: Problem[] = [
   {

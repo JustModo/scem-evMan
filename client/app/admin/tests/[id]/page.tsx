@@ -1,4 +1,3 @@
-import { IdParams } from "@/types/params";
 import React from "react";
 import { notFound } from "next/navigation";
 import { getTestById } from "@/constants/test-data";
@@ -6,6 +5,10 @@ import { TestDetailHeader } from "@/components/admin/test/test-detail/header";
 import { TestInformationCard } from "@/components/admin/test/test-detail/test-card";
 import { ParticipationStatisticsCard } from "@/components/admin/test/test-detail/participation-card";
 import { QuickActionsCard } from "@/components/admin/test/test-detail/actions-card";
+
+interface IdParams {
+  id: string;
+}
 
 export default async function AdminTestDetailPage({
   params,
