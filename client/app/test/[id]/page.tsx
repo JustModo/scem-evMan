@@ -51,7 +51,7 @@ const contests: Contest[] = [
   },
 ];
 
-export default async function AdminTestDetailPage({
+export default async function TestPage({
   params,
 }: {
   params: { id: string };
@@ -147,7 +147,7 @@ export default async function AdminTestDetailPage({
           {/* Take Test Button */}
           <div className="pt-0 p-6">
             <Link href={`/test/${contest.id}`}>
-              <Button className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg">
+              <Button className="w-full gap-2">
                 <Play className="w-4 h-4" />
                 Take Test
               </Button>

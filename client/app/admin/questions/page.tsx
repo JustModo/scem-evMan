@@ -2,15 +2,19 @@
 
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { getAllTests, Test } from "@/constants/test-data";
-import { TestCard } from "@/components/admin/test/test-card";
 import { EmptyState } from "@/components/admin/empty-placeholder";
 import { QuestionHeader } from "@/components/admin/question/header";
+import QuestionCard from "@/components/admin/question/question-card";
+import { problems } from "@/constants/test-data";
 
 export default function AdminQuestionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const tests = getAllTests();
-  const filteredTests: Test[] = [];
+
+  const filteredProblems = problems.filter(
+    (problem) =>
+      problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      problem.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="h-full w-full overflow-y-scroll">
@@ -19,17 +23,16 @@ export default function AdminQuestionsPage() {
 
         <div className="max-w-full sm:max-w-lg">
           <Input
-            placeholder="Search tests..."
+            placeholder="Search questions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-input border-border"
           />
         </div>
-
-        {filteredTests.length > 0 ? (
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-            {filteredTests.map((test) => (
-              <TestCard key={test.id} test={test} />
+        {filteredProblems.length > 0 ? (
+          <div className="space-y-3">
+            {filteredProblems.map((problem) => (
+              <QuestionCard key={problem.id} problem={problem} />
             ))}
           </div>
         ) : (

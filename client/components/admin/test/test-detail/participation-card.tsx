@@ -10,16 +10,12 @@ interface ParticipationStatisticsCardProps {
 export function ParticipationStatisticsCard({
   test,
 }: ParticipationStatisticsCardProps) {
-  const {
-    status,
-    participants,
-    participantsInProgress,
-    participantsCompleted,
-  } = test;
+  const { status, participantsInProgress, participantsCompleted } = test;
 
   const inProgress = participantsInProgress;
   const completed = participantsCompleted;
-  const notStarted = participants - inProgress - completed;
+
+  const total = inProgress + completed;
 
   return (
     <Card className="bg-card border-border shadow-md">
@@ -35,81 +31,37 @@ export function ParticipationStatisticsCard({
             Total Participants
           </span>
           <span className="text-2xl sm:text-3xl font-bold text-foreground">
-            {participants}
+            {total}
           </span>
         </div>
 
         <div className="space-y-4">
-          {status === "waiting" ? (
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground font-medium">
-                Registered
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground font-medium">
+              In Progress
+            </span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-primary/70 rounded-full"></div>
+              <span className="text-foreground font-semibold">
+                {inProgress}
               </span>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary/50 rounded-full"></div>
-                <span className="text-foreground font-semibold">
-                  {participants}
-                </span>
-              </div>
             </div>
-          ) : status === "completed" ? (
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground font-medium">
-                Completed
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary rounded-full"></div>
-                <span className="text-foreground font-semibold">
-                  {completed}
-                </span>
-              </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground font-medium">Completed</span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-primary rounded-full"></div>
+              <span className="text-foreground font-semibold">{completed}</span>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground font-medium">
-                  Not Started
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
-                  <span className="text-foreground font-semibold">
-                    {notStarted}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground font-medium">
-                  In Progress
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary/70 rounded-full"></div>
-                  <span className="text-foreground font-semibold">
-                    {inProgress}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground font-medium">
-                  Completed
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary rounded-full"></div>
-                  <span className="text-foreground font-semibold">
-                    {completed}
-                  </span>
-                </div>
-              </div>
-            </>
-          )}
+          </div>
         </div>
 
-        {status !== "waiting" && (
+        {status !== "waiting" && total > 0 && (
           <div className="pt-4">
             <div className="flex justify-between text-sm text-muted-foreground mb-2">
               <span>{status === "completed" ? "Completion" : "Progress"}</span>
-              <span>{Math.round((completed / participants) * 100)}%</span>
+              <span>{Math.round((completed / total) * 100)}%</span>
             </div>
             <div className="w-full bg-muted rounded-full h-3">
               <div
@@ -119,7 +71,7 @@ export function ParticipationStatisticsCard({
                     : "bg-gradient-to-r from-primary/70 to-primary"
                 }`}
                 style={{
-                  width: `${(completed / participants) * 100}%`,
+                  width: `${(completed / total) * 100}%`,
                 }}
               ></div>
             </div>

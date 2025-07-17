@@ -1,4 +1,4 @@
-interface BaseProblem {
+export interface BaseProblem {
   id: number;
   title: string;
   description: string;

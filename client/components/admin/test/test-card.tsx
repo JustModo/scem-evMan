@@ -14,11 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Test } from "@/constants/test-data";
 
 export function TestCard({ test }: { test: Test }) {
-  const notStarted =
-    test.participants -
-    test.participantsInProgress -
-    test.participantsCompleted;
-
   return (
     <Card className="shadow-md bg-card border-border">
       <CardHeader>
@@ -47,8 +42,8 @@ export function TestCard({ test }: { test: Test }) {
         {/* Created At */}
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4 p-3 bg-muted border rounded-lg">
           <Clock className="h-4 w-4 text-foreground flex-shrink-0" />
-          <span className="font-medium">Started:</span>
-          <span className="truncate">{test.createdAt}</span>
+          <span className="font-medium">Starts:</span>
+          <span className="truncate">{test.startsAt}</span>
         </div>
 
         {/* Status Stats */}
@@ -57,10 +52,10 @@ export function TestCard({ test }: { test: Test }) {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-primary rounded-full" />
               <div className="text-center">
-                <div className="text-lg font-semibold text-foreground">
-                  {test.participants}
-                </div>
-                <div className="text-xs text-muted-foreground">Registered</div>
+                {/* <div className="text-lg font-semibold text-foreground">
+                  Waiting
+                </div> */}
+                <div className="text-sm text-muted-foreground">Waiting</div>
               </div>
             </div>
           </div>
@@ -77,12 +72,7 @@ export function TestCard({ test }: { test: Test }) {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <StatusBox
-              color="bg-muted-foreground"
-              label="Not Started"
-              value={notStarted}
-            />
+          <div className="grid grid-cols-2 gap-2 mb-4">
             <StatusBox
               color="bg-primary/70"
               label="In Progress"
@@ -100,7 +90,6 @@ export function TestCard({ test }: { test: Test }) {
         <div className="space-y-3 mb-6 p-4 bg-muted rounded-lg border border-border">
           <MetaRow label="Duration" value={test.duration} />
           <MetaRow label="Questions" value={test.totalQuestions} />
-          <MetaRow label="Total Participants" value={test.participants} />
         </div>
 
         {/* Actions */}

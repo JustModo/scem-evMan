@@ -29,7 +29,7 @@ export function EmptyState({
   const defaultSearch = `Try adjusting your search terms or create a new ${entityName} to get started.`;
 
   return (
-    <Card className="text-center py-12 sm:py-16 border-2 border-dashed border-border shadow-lg bg-card">
+    <Card className="text-center py-8 sm:py-16 border-2 border-dashed border-border shadow-lg bg-card">
       <CardContent className="space-y-6 sm:space-y-8 px-4">
         <div className="w-20 h-20 sm:w-24 sm:h-24 bg-muted rounded-full flex items-center justify-center mx-auto shadow-inner">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full opacity-80 animate-pulse" />

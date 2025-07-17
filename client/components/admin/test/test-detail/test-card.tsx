@@ -40,7 +40,7 @@ export function TestInformationCard({ test }: TestInformationCardProps) {
           <div className="flex items-center gap-2 text-foreground">
             <Calendar className="h-4 w-4 text-primary/50" />
             <span className="font-semibold text-sm sm:text-base">
-              {test.createdAt}
+              {test.startsAt}
             </span>
           </div>
         </div>
