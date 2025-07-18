@@ -56,28 +56,42 @@ export default function AdminQuestionEditPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [constraints, setConstraints] = useState<string[]>([""]);
-  const [supportedLanguages, setSupportedLanguages] = useState<string[]>(["C", "C++", "Java", "Python", "JavaScript"]);
+  const [supportedLanguages, setSupportedLanguages] = useState<string[]>([
+    "C",
+    "C++",
+    "Java",
+    "Python",
+    "JavaScript",
+  ]);
 
-  const [languageOptions] = useState<string[]>(["C", "C++", "Java", "Python", "JavaScript"]);
+  const [languageOptions] = useState<string[]>([
+    "C",
+    "C++",
+    "Java",
+    "Python",
+    "JavaScript",
+  ]);
   const [selectedTab, setSelectedTab] = useState<string>("C");
-const [boilerplate, setBoilerplate] = useState<{ [key: string]: string }>({
-  C: "",
-  "C++": "",
-  Java: "",
-  Python: "",
-  JavaScript: "", 
-});
-
+  const [boilerplate, setBoilerplate] = useState<{ [key: string]: string }>({
+    C: "",
+    "C++": "",
+    Java: "",
+    Python: "",
+    JavaScript: "",
+  });
 
   const [inputFormat, setInputFormat] = useState("");
-const [outputFormat, setOutputFormat] = useState("");
+  const [outputFormat, setOutputFormat] = useState("");
 
   const initialState = {
-  success: false,
-  message: "",
-};
+    success: false,
+    message: "",
+  };
 
-const [state, formAction, isPending] = useActionState(saveQuestion, initialState);
+  const [state, formAction, isPending] = useActionState(
+    saveQuestion,
+    initialState
+  );
 
   useEffect(() => {
     document.body.style.overflow = "auto";
@@ -114,10 +128,15 @@ const [state, formAction, isPending] = useActionState(saveQuestion, initialState
     <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">
       <div className="h-full w-full">
         <div className="max-w-none w-full p-4 sm:p-6 lg:p-8">
-          <div className="space-y-6 sm:space-y-8 max-w-screen-xl mx-auto">
+          <div className="space-y-6 sm:space-y-8">
             <div className="w-full bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items- gap-4">
-                <Button variant="outline" size="icon" className="border-border text-foreground hover:bg-accent flex-shrink-0" onClick={() => router.back()}>
+              <div className="flex gap-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="border-border text-foreground hover:bg-accent flex-shrink-0"
+                  onClick={() => router.back()}
+                >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div className="space-y-1 min-w-0">
@@ -133,7 +152,12 @@ const [state, formAction, isPending] = useActionState(saveQuestion, initialState
                 <span className="px-3 py-1 text-sm font-medium rounded-full whitespace-nowrap bg-muted text-muted-foreground">
                   Waiting
                 </span>
-                <Button type="submit" form="question-form" disabled={isLoading} className="font-semibold px-4 sm:px-6 py-2 transition-all duration-200 shadow-lg hover:shadow-xl bg-green-600 hover:bg-green-700 whitespace-nowrap">
+                <Button
+                  type="submit"
+                  form="question-form"
+                  disabled={isLoading}
+                  className="font-semibold px-4 sm:px-6 py-2 transition-all duration-200 bg-green-600 hover:bg-green-700 whitespace-nowrap"
+                >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -153,9 +177,13 @@ const [state, formAction, isPending] = useActionState(saveQuestion, initialState
             <div className="grid grid-cols-1 2xl:grid-cols-4 gap-6 lg:gap-8">
               <div className="2xl:col-span-3 space-y-6">
                 <Form {...form}>
-                  <form id="question-form" action={formAction} className="space-y-6">
+                  <form
+                    id="question-form"
+                    action={formAction}
+                    className="space-y-6"
+                  >
                     {/* Basic Info */}
-                    <Card className="bg-card border-border shadow-lg">
+                    <Card className="bg-card border-border">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-foreground">
                           <FileText className="h-5 w-5 text-green-400" />
@@ -167,80 +195,121 @@ const [state, formAction, isPending] = useActionState(saveQuestion, initialState
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2">
-                          <FormField control={form.control} name="type" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="bg-input border-border text-foreground">
-                                    <SelectValue placeholder="Select type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="bg-popover border-border">
-                                  <SelectItem value="code">Code</SelectItem>
-                                  <SelectItem value="mcq">MCQ</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
+                          <FormField
+                            control={form.control}
+                            name="type"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="bg-input border-border text-foreground">
+                                      <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="bg-popover border-border">
+                                    <SelectItem value="code">Code</SelectItem>
+                                    <SelectItem value="mcq">MCQ</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                          <FormField control={form.control} name="difficulty" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Difficulty</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="bg-input border-border text-foreground">
-                                    <SelectValue placeholder="Select difficulty" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="bg-popover border-border">
-                                  <SelectItem value="easy">Easy</SelectItem>
-                                  <SelectItem value="medium">Medium</SelectItem>
-                                  <SelectItem value="hard">Hard</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
+                          <FormField
+                            control={form.control}
+                            name="difficulty"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Difficulty</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="bg-input border-border text-foreground">
+                                      <SelectValue placeholder="Select difficulty" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="bg-popover border-border">
+                                    <SelectItem value="easy">Easy</SelectItem>
+                                    <SelectItem value="medium">
+                                      Medium
+                                    </SelectItem>
+                                    <SelectItem value="hard">Hard</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                          <FormField control={form.control} name="points" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Points</FormLabel>
-                              <FormControl>
-                                <Input type="number" placeholder="10" className="bg-input border-border text-foreground" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
+                          <FormField
+                            control={form.control}
+                            name="points"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Points</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    placeholder="10"
+                                    className="bg-input border-border text-foreground"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField control={form.control} name="title" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Title</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter title" className="bg-input border-border text-foreground" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
-                          <FormField control={form.control} name="description" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Description</FormLabel>
-                              <FormControl>
-                                <Textarea rows={3} placeholder="Enter description" className="bg-input border-border text-foreground" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
+                          <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Title</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter title"
+                                    className="bg-input border-border text-foreground"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    rows={3}
+                                    placeholder="Enter description"
+                                    className="bg-input border-border text-foreground"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </CardContent>
                     </Card>
-                    
 
                     {/* Constraints */}
-                    <Card className="bg-card border-border shadow-lg">
+                    <Card className="bg-card border-border">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-foreground">
                           <Settings className="h-5 w-5 text-green-400" />
@@ -269,95 +338,111 @@ const [state, formAction, isPending] = useActionState(saveQuestion, initialState
                             </button>
                           </div>
                         ))}
-                        <Button type="button" onClick={() => setConstraints([...constraints, ""])} variant="outline" size="sm">
+                        <Button
+                          type="button"
+                          onClick={() => setConstraints([...constraints, ""])}
+                          variant="outline"
+                          size="sm"
+                        >
                           + Add Constraint
                         </Button>
                       </CardContent>
                     </Card>
 
                     {/* Boilerplate */}
-                  <Card className="bg-card border border-border shadow-lg">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2 text-foreground">
-      <Settings className="h-5 w-5 text-green-400" />
-      Boilerplate Code
-    </CardTitle>
-  </CardHeader>
+                    <Card className="bg-card border border-border">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                          <Settings className="h-5 w-5 text-green-400" />
+                          Boilerplate Code
+                        </CardTitle>
+                      </CardHeader>
 
-  <CardContent className="space-y-4">
-    {/* Language Selector Buttons */}
-    <div className="flex flex-wrap gap-2">
-      {languageOptions.map((lang) => (
-        <Button
-          key={lang}
-          type="button"
-          variant={supportedLanguages.includes(lang) ? "default" : "outline"}
-          size="sm"
-          onClick={() => toggleLanguage(lang)}
-        >
-          {supportedLanguages.includes(lang) ? `✓ ${lang}` : lang}
-        </Button>
-      ))}
-    </div>
+                      <CardContent className="space-y-4">
+                        {/* Language Selector Buttons */}
+                        <div className="flex flex-wrap gap-2">
+                          {languageOptions.map((lang) => (
+                            <Button
+                              key={lang}
+                              type="button"
+                              variant={
+                                supportedLanguages.includes(lang)
+                                  ? "default"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() => toggleLanguage(lang)}
+                            >
+                              {supportedLanguages.includes(lang)
+                                ? `✓ ${lang}`
+                                : lang}
+                            </Button>
+                          ))}
+                        </div>
 
-    {/* Tabs for each selected language */}
-    {supportedLanguages.length > 0 && (
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mt-4 w-full">
-        <TabsList className="overflow-x-auto flex">
-          {supportedLanguages.map((lang) => (
-            <TabsTrigger key={lang} value={lang}>
-              {lang}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+                        {/* Tabs for each selected language */}
+                        {supportedLanguages.length > 0 && (
+                          <Tabs
+                            value={selectedTab}
+                            onValueChange={setSelectedTab}
+                            className="mt-4 w-full"
+                          >
+                            <TabsList className="overflow-x-auto flex">
+                              {supportedLanguages.map((lang) => (
+                                <TabsTrigger key={lang} value={lang}>
+                                  {lang}
+                                </TabsTrigger>
+                              ))}
+                            </TabsList>
 
-        {supportedLanguages.map((lang) => (
-          <TabsContent key={lang} value={lang} forceMount>
-            <Textarea
-              placeholder={`${lang} boilerplate code...`}
-              value={boilerplate[lang] || ""}
-              onChange={(e) =>
-                setBoilerplate((prev) => ({ ...prev, [lang]: e.target.value }))
-              }
-              className="min-h-[120px] font-mono bg-input border-border text-foreground"
-            />
-          </TabsContent>
-        ))}
-      </Tabs>
-    )}
-  </CardContent>
-</Card>
-
+                            {supportedLanguages.map((lang) => (
+                              <TabsContent key={lang} value={lang} forceMount>
+                                <Textarea
+                                  placeholder={`${lang} boilerplate code...`}
+                                  value={boilerplate[lang] || ""}
+                                  onChange={(e) =>
+                                    setBoilerplate((prev) => ({
+                                      ...prev,
+                                      [lang]: e.target.value,
+                                    }))
+                                  }
+                                  className="min-h-[120px] font-mono bg-input border-border text-foreground"
+                                />
+                              </TabsContent>
+                            ))}
+                          </Tabs>
+                        )}
+                      </CardContent>
+                    </Card>
 
                     {/* Input & Output Format */}
-<Card className="bg-card border-border shadow-lg">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2 text-foreground">
-      <FileText className="h-5 w-5 text-green-400" />
-      Input & Output Format
-    </CardTitle>
-    <CardDescription className="text-muted-foreground">
-      Define how inputs and outputs should be structured
-    </CardDescription>
-  </CardHeader>
-  <CardContent className="space-y-4">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Textarea
-        placeholder="e.g., Two integers a and b"
-        value={inputFormat}
-        onChange={(e) => setInputFormat(e.target.value)}
-        className="min-h-[100px] bg-input border-border text-foreground"
-      />
-      <Textarea
-        placeholder="e.g., An integer representing their sum"
-        value={outputFormat}
-        onChange={(e) => setOutputFormat(e.target.value)}
-        className="min-h-[100px] bg-input border-border text-foreground"
-      />
-    </div>
-  </CardContent>
-</Card>
-
+                    <Card className="bg-card border-border">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                          <FileText className="h-5 w-5 text-green-400" />
+                          Input & Output Format
+                        </CardTitle>
+                        <CardDescription className="text-muted-foreground">
+                          Define how inputs and outputs should be structured
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Textarea
+                            placeholder="e.g., Two integers a and b"
+                            value={inputFormat}
+                            onChange={(e) => setInputFormat(e.target.value)}
+                            className="min-h-[100px] bg-input border-border text-foreground"
+                          />
+                          <Textarea
+                            placeholder="e.g., An integer representing their sum"
+                            value={outputFormat}
+                            onChange={(e) => setOutputFormat(e.target.value)}
+                            className="min-h-[100px] bg-input border-border text-foreground"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
                   </form>
                 </Form>
               </div>

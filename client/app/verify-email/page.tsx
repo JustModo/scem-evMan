@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSignUp } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";

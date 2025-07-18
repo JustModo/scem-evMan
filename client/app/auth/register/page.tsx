@@ -24,7 +24,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (isSignedIn) router.push("/dashboard");
-  }, [isSignedIn]);
+  }, [isSignedIn,router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
