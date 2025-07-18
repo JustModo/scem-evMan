@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSignUp, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -10,14 +12,64 @@ import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 
 export default function RegisterPage() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [matchMessage, setMatchMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const { signUp, isLoaded } = useSignUp();
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isSignedIn) router.push("/dashboard");
+  }, [isSignedIn]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMatchMessage("");
+    setError("");
+
+    if (password !== confirmPassword) {
+      setMatchMessage("Passwords do not match");
+      return;
+    }
+
+    if (!isLoaded || isSignedIn) return;
+
+    try {
+      await signUp.create({
+        emailAddress: email,
+        password,
+      });
+
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      router.push("/verify-email");
+    } catch (err: any) {
+      const errMsg = err.errors?.[0]?.message || "Registration failed";
+      setError(errMsg);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!isLoaded || isSignedIn) return;
+
+    try {
+      await signUp.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/dashboard",
+      });
+    } catch (err) {
+      console.error("Google sign-up failed", err);
+    }
+  };
 
   return (
     <main className="h-screen flex items-center justify-center p-0 pt-12">
-    {/* Green Top Background SVG */}
-     <div className="absolute top-12 left-0 w-full h-1/3 z-15">
+      {/* Green Top Background SVG */}
+      <div className="absolute top-12 left-0 w-full h-1/3 z-15">
         <svg
           viewBox="0 0 24 10"
           xmlns="http://www.w3.org/2000/svg"
@@ -32,9 +84,10 @@ export default function RegisterPage() {
           />
         </svg>
       </div>
+
       <div className="z-30 grid w-full h-full grid-cols-1 md:grid-cols-2 relative">
         {/* Left Side (Form) */}
-        <div className=" flex items-center justify-center px-4 sm:px-10 py-8 order-2 md:order-1">
+        <div className="flex items-center justify-center px-4 sm:px-10 py-8 order-2 md:order-1">
           <div className="w-full max-w-sm space-y-6">
             {/* Register Title */}
             <div className="space-y-2">
@@ -45,21 +98,11 @@ export default function RegisterPage() {
             </div>
 
             {/* Form */}
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setMatchMessage(
-                  password === confirmPassword
-                    ? "Passwords match"
-                    : "Passwords do not match"
-                );
-              }}
-            >
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Login Link */}
               <p className="text-right text-foreground text-sm">
                 Already a User?{" "}
-                <Link className="hover:underline text-primary " href="/auth/login">
+                <Link className="hover:underline text-primary" href="/auth/login">
                   Login
                 </Link>
               </p>
@@ -77,6 +120,8 @@ export default function RegisterPage() {
                   placeholder="E-Mail ID"
                   className="pl-12 pr-4 py-3 bg-muted text-foreground placeholder:text-muted-foreground"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
@@ -116,18 +161,18 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Password Match Message */}
-              <p
-                className={`text-right font-medium text-sm h-5 ${
-                  matchMessage.includes("not")
-                    ? "text-destructive"
-                    : matchMessage
-                    ? "text-green-600"
-                    : ""
-                }`}
-              >
-                {matchMessage || ""}
-              </p>
+              {/* Password Match or Error */}
+              {(matchMessage || error) && (
+                <p
+                  className={`text-right font-medium text-sm h-5 ${
+                    matchMessage.includes("not") || error
+                      ? "text-destructive"
+                      : "text-green-600"
+                  }`}
+                >
+                  {matchMessage || error}
+                </p>
+              )}
 
               <div className="flex flex-col gap-4 pt-2">
                 {/* Continue */}
@@ -138,13 +183,21 @@ export default function RegisterPage() {
                   Continue
                 </Button>
 
-               
+                {/* OR Divider */}
+                <div className="flex items-center my-6">
+                  <hr className="flex-grow border-muted" />
+                  <span className="px-4 text-sm text-muted-foreground">OR</span>
+                  <hr className="flex-grow border-muted" />
+                </div>
+
                 {/* Google Sign Up */}
                 <Button
+                  type="button"
+                  onClick={handleGoogleSignIn}
                   className="flex items-center justify-center w-full gap-3 bg-background border-2 border-input text-foreground rounded-md py-3 hover:bg-accent cursor-pointer z-40"
                   variant="outline"
                 >
-                  <FcGoogle size="20" />
+                  <FcGoogle size={20} />
                   Continue With Google
                 </Button>
               </div>
@@ -156,10 +209,8 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Right Side (Primary Color Box) */}
-        <div className=" flex items-center justify-center order-1 md:order-2">
-          {/* Optional: Add a logo/illustration */}
-        </div>
+        {/* Right Side */}
+        <div className="flex items-center justify-center order-1 md:order-2"></div>
       </div>
     </main>
   );
