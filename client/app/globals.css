@@ -130,6 +130,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  html {
+    @apply overflow-hidden;
+  }
 }
 
 @layer utilities {

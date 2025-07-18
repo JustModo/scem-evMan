@@ -53,6 +53,7 @@ export const problems: Problem[] = [
       { id: "b", text: "A function with no parameters" },
       { id: "c", text: "A function that calls itself" },
     ],
+    correctOptionIds: ["a"],
   },
   {
     id: 4,
@@ -78,12 +79,13 @@ export const problems: Problem[] = [
     points: 8,
     difficulty: "medium",
     type: "mcq",
-    questionType: "single",
+    questionType: "multiple",
     options: [
       { id: "a", text: "Directly assign a new value to the state variable" },
       { id: "b", text: "Use setState with a new value" },
       { id: "c", text: "Use the useState setter function" },
     ],
+    correctOptionIds: ["c", "a"],
   },
   {
     id: 6,
@@ -115,6 +117,7 @@ export const problems: Problem[] = [
       { id: "c", text: "3NF" },
       { id: "d", text: "BCNF" },
     ],
+    correctOptionIds: ["c"],
   },
   {
     id: 8,
@@ -146,6 +149,7 @@ export const problems: Problem[] = [
       { id: "b", text: "O(log n)" },
       { id: "c", text: "O(1)" },
     ],
+    correctOptionIds: ["b"],
   },
   {
     id: 10,
@@ -190,9 +194,14 @@ export const problems: Problem[] = [
       { id: "b", text: "4" },
       { id: "c", text: "5" },
     ],
+    correctOptionIds: ["b"],
     points: 5,
   },
 ];
+
+export function getQuestionById(id: number) {
+  return problems.find((problem) => problem.id === id) ?? null;
+}
 
 export const testsData: Test[] = [
   {

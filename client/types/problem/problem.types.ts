@@ -23,6 +23,7 @@ export interface MCQProblem extends BaseProblem {
     id: string;
     text: string;
   }[];
+  correctOptionIds: string[];
 }
 
 export type Problem = CodingProblem | MCQProblem;
