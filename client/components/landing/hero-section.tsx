@@ -3,8 +3,21 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+
+  const handleJoinClick = () => {
+    if (!isSignedIn) {
+      router.push("/auth/register");
+    } else {
+      router.push("/join");
+    }
+  };
+
   return (
     <section className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-background px-5">
       <div className="text-center space-y-4 mx-auto">
@@ -16,9 +29,9 @@ export default function HeroSection() {
           modern, reliable platform.
         </p>
         <div className="flex gap-4 justify-center mt-8">
-          <Link href="/join">
-            <Button>Join a Test</Button>
-          </Link>
+          <Button onClick={handleJoinClick}>
+            Join a Test
+          </Button>
         </div>
       </div>
     </section>
