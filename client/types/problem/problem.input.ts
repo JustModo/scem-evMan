@@ -19,7 +19,11 @@ const codingSchema = z.object({
   inputFormat: z.string().min(1),
   outputFormat: z.string().min(1),
   constraints: z.array(z.string().min(1)),
-  boilerplate: z.record(z.string()),
+  boilerplate: z
+    .record(z.string().optional())
+    .refine((val) => Object.values(val).some((v) => v && v.trim() !== ""), {
+      message: "At least one boilerplate must be filled.",
+    }),
 });
 
 const mcqSchema = z.object({
@@ -37,7 +41,9 @@ const mcqSchema = z.object({
       })
     )
     .length(4, "Exactly 4 options are required"),
-  correctOptionIds: z.array(z.string()).min(1),
+  correctOptionIds: z
+    .array(z.string())
+    .min(1, "Please select at least one correct option."),
 });
 
 export const formSchema = z.discriminatedUnion("type", [

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, Fragment } from "react";
+import { useEffect, Fragment, useActionState, useTransition } from "react";
 import { FormSchema, formSchema } from "@/types/problem";
 import { saveQuestion } from "@/app/actions/save-question";
 
@@ -13,7 +13,6 @@ import Link from "next/link";
 import BasicInfoCard from "./shared/info-card";
 import MCQCard from "./mcq/mcq-card";
 import CodingCard from "./coding";
-import { serializeToFormData } from "@/lib/helper";
 
 interface Props {
   type: "coding" | "mcq";
@@ -33,7 +32,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         inputFormat: "",
         outputFormat: "",
         constraints: [""],
-        boilerplate: {},
+        boilerplate: { c: "", cpp: "", java: "", python: "", javascript: "" },
       };
     } else {
       return {
@@ -67,9 +66,17 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
     }
   }, [initialData, type]);
 
-  const handleFormSubmit = form.handleSubmit(async (data) => {
-    const formData = serializeToFormData(data);
-    await saveQuestion(formData);
+  const [state, formAction] = useActionState(saveQuestion, {
+    success: false,
+    message: "",
+  });
+
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = form.handleSubmit((data) => {
+    startTransition(() => {
+      formAction(data);
+    });
   });
 
   return (
@@ -93,7 +100,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         <Button
           type="submit"
           form="question-form"
-          // disabled={isPending}
+          disabled={isPending}
           className="bg-green-600 hover:bg-green-700 text-white"
         >
           <Save className="h-4 w-4 mr-2" />
@@ -102,11 +109,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       </div>
 
       <Form {...form}>
-        <form
-          id="question-form"
-          onSubmit={handleFormSubmit}
-          className="space-y-6"
-        >
+        <form id="question-form" onSubmit={handleSubmit} className="space-y-6">
           <BasicInfoCard />
 
           <input type="hidden" {...form.register("type")} value={type} />

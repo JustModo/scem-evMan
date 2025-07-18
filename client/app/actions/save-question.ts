@@ -1,45 +1,37 @@
 "use server";
 
-export async function saveQuestion(formData: FormData) {
-  const type = formData.get("type") as string;
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const difficulty = formData.get("difficulty") as string;
-  const constraints = formData.get("constraints") as string;
-  const boilerplate = formData.get("boilerplate") as string;
-  const inputFormat = formData.get("inputFormat") as string;
-  const outputFormat = formData.get("outputFormat") as string;
-  const points = formData.get("points") as string;
-  const options = formData.get("options") as string;
-  const correctOptionIds = formData.get("correctOptionIds") as string;
+import { formSchema, type FormSchema } from "@/types/problem";
 
-  const base = {
-    title,
-    description,
-    difficulty,
-    type,
-    points,
-  };
-
+export async function saveQuestion(_prevState: any, data: FormSchema) {
   try {
-    if (type === "coding") {
+    const validatedData = formSchema.parse(data);
+
+    console.log("Validated question data:", validatedData);
+
+    if (validatedData.type === "coding") {
       console.log("Saving coding question:", {
-        ...base,
-        constraints,
-        boilerplate,
-        inputFormat,
-        outputFormat,
+        title: validatedData.title,
+        constraints: validatedData.constraints,
+        boilerplate: validatedData.boilerplate,
       });
-    } else if (type === "mcq") {
+    } else if (validatedData.type === "mcq") {
       console.log("Saving MCQ question:", {
-        ...base,
-        options,
-        correctOptionIds,
+        title: validatedData.title,
+        options: validatedData.options,
+        correctOptionIds: validatedData.correctOptionIds,
       });
     }
 
-    return { success: true, message: "Question saved successfully" };
+    return {
+      success: true,
+      message: "Question saved successfully",
+    };
   } catch (error) {
-    return { success: false, message: "Failed to save question" };
+    console.error("Error saving question:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to save question",
+    };
   }
 }

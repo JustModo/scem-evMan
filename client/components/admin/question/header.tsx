@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Plus } from "lucide-react";
 
 export function QuestionHeader() {
@@ -15,11 +21,23 @@ export function QuestionHeader() {
           Create and manage questions
         </p>
       </div>
-      <Link href="/admin/questions/new/edit">
-        <Button>
-          <Plus /> Create New Question
-        </Button>
-      </Link>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4" />
+            Create New
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <Link href="/admin/questions/mcq/new">
+            <DropdownMenuItem>MCQ Format</DropdownMenuItem>
+          </Link>
+          <Link href="/admin/questions/coding/new">
+            <DropdownMenuItem>Coding Format</DropdownMenuItem>
+          </Link>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

@@ -18,8 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil } from "lucide-react";
-import { useFormContext, UseFormReturn } from "react-hook-form";
-import { FormSchema } from "@/types/problem";
+import { useFormContext } from "react-hook-form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function MCQCard() {
@@ -29,7 +28,7 @@ export default function MCQCard() {
   const correctOptionIds = watch("correctOptionIds") || [];
   const options = watch("options") || [];
 
-  // Ensure options array has exactly 4 elements
+  // Ensure 4 options are initialized
   if (options.length !== 4) {
     setValue(
       "options",
@@ -60,6 +59,7 @@ export default function MCQCard() {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Question Type */}
         <FormField
           control={control}
           name="questionType"
@@ -82,77 +82,74 @@ export default function MCQCard() {
           )}
         />
 
-        <FormLabel className="text-base">Options</FormLabel>
-
-        <div className="space-y-4">
-          {questionType === "single" && (
-            <RadioGroup
-              value={correctOptionIds[0] || ""}
-              onValueChange={handleSingleSelect}
-              className="space-y-4"
-            >
-              {Array.from({ length: 4 }, (_, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 border p-3 rounded"
-                >
-                  <FormField
-                    control={control}
-                    name={`options.${index}.text`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel className="text-sm">
-                          Option {index + 1}
-                        </FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Option text" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <RadioGroupItem value={`${index}`} />
-                  <FormLabel>Correct</FormLabel>
-                </div>
-              ))}
-            </RadioGroup>
-          )}
-
-          {questionType === "multiple" &&
-            Array.from({ length: 4 }, (_, index) => {
-              const optionId = options[index]?.id || `${index}`;
-              return (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 border p-3 rounded"
-                >
-                  <FormField
-                    control={control}
-                    name={`options.${index}.text`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel className="text-sm">
-                          Option {index + 1}
-                        </FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Option text" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Checkbox
-                    checked={correctOptionIds.includes(optionId)}
-                    onCheckedChange={(checked) =>
-                      handleMultiToggle(optionId, !!checked)
-                    }
-                  />
-                  <FormLabel>Correct</FormLabel>
-                </div>
-              );
-            })}
+        {/* Option Inputs */}
+        <div className="space-y-2">
+          <FormLabel className="text-base">Options</FormLabel>
+          {Array.from({ length: 4 }, (_, index) => (
+            <FormField
+              key={index}
+              control={control}
+              name={`options.${index}.text`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Option {index + 1}</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Option text" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
         </div>
+
+        {/* Correct Option Selection with validation */}
+        <FormField
+          control={control}
+          name="correctOptionIds"
+          render={() => (
+            <FormItem>
+              <FormLabel className="text-base mt-6">
+                Select Correct Option(s)
+              </FormLabel>
+              <FormControl>
+                <div className="space-y-4">
+                  {questionType === "single" && (
+                    <RadioGroup
+                      value={correctOptionIds[0] || ""}
+                      onValueChange={handleSingleSelect}
+                      className="space-y-1"
+                    >
+                      {Array.from({ length: 4 }, (_, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <RadioGroupItem value={`${index}`} />
+                          <FormLabel>Option {index + 1}</FormLabel>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+
+                  {questionType === "multiple" &&
+                    Array.from({ length: 4 }, (_, index) => {
+                      const optionId = options[index]?.id || `${index}`;
+                      return (
+                        <div key={index} className="flex items-center gap-3">
+                          <Checkbox
+                            checked={correctOptionIds.includes(optionId)}
+                            onCheckedChange={(checked) =>
+                              handleMultiToggle(optionId, !!checked)
+                            }
+                          />
+                          <FormLabel>Option {index + 1}</FormLabel>
+                        </div>
+                      );
+                    })}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
     </Card>
   );

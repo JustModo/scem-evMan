@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,14 +15,13 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Pencil } from "lucide-react";
 
-const languageList = ["C", "Cpp", "Java", "Python", "JavaScript"];
+const languageList = ["c", "cpp", "java", "python", "javascript"];
 
 export default function BoilerplateCard() {
   const { control } = useFormContext();
 
   const [supportedLanguages, setSupportedLanguages] =
     useState<string[]>(languageList);
-  const [selectedTab, setSelectedTab] = useState("C");
 
   const toggleLanguage = (lang: string) => {
     if (supportedLanguages.includes(lang)) {
@@ -48,6 +46,7 @@ export default function BoilerplateCard() {
             <Button
               key={lang}
               type="button"
+              className="uppercase"
               variant={
                 supportedLanguages.includes(lang) ? "default" : "outline"
               }
@@ -59,43 +58,26 @@ export default function BoilerplateCard() {
           ))}
         </div>
 
-        {supportedLanguages.length > 0 && (
-          <Tabs
-            value={selectedTab}
-            onValueChange={setSelectedTab}
-            className="mt-4 w-full"
-          >
-            <TabsList className="overflow-x-auto flex">
-              {supportedLanguages.map((lang) => (
-                <TabsTrigger key={lang} value={lang}>
-                  {lang}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {supportedLanguages.map((lang) => (
-              <TabsContent key={lang} value={lang}>
-                <FormField
-                  control={control}
-                  name={`boilerplate.${lang}`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{lang} Boilerplate</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          placeholder={`${lang} boilerplate code...`}
-                          className="min-h-[120px] font-mono"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-            ))}
-          </Tabs>
-        )}
+        {supportedLanguages.map((lang) => (
+          <FormField
+            key={lang}
+            control={control}
+            name={`boilerplate.${lang}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel><span className="uppercase">{lang}</span> Boilerplate</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder={`${lang} boilerplate code...`}
+                    className="min-h-[120px] font-mono"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
       </CardContent>
     </Card>
   );
