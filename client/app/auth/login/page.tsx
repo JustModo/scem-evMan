@@ -22,7 +22,7 @@ export default function LoginPage() {
   // Redirect logged-in users away from login page
   useEffect(() => {
     if (isSignedIn) {
-      router.push("/dashboard");
+      router.replace("/");
     }
   }, [isSignedIn]);
 
@@ -52,7 +52,7 @@ export default function LoginPage() {
       });
 
       if (result.status === "complete") {
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (err: any) {
       const errorMsg = err.errors?.[0]?.message || "Login failed";
@@ -66,8 +66,8 @@ export default function LoginPage() {
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/auth/sso-callback",     // Clerk intermediate
-        redirectUrlComplete: "/dashboard",     // Final destination
+        redirectUrl: "/auth/sso-callback",
+        redirectUrlComplete: "/",
       });
     } catch (err) {
       console.error("Google sign-in failed", err);
@@ -75,21 +75,26 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="h-screen flex items-center justify-center p-0 pt-12">
+    <main className="h-screen flex items-center justify-center p-0">
       <div className="grid w-full h-full grid-cols-1 md:grid-cols-2">
         <div className="bg-primary flex items-center justify-center" />
 
         <div className="bg-background flex items-center justify-center px-4 sm:px-10 py-8">
           <div className="w-full max-w-sm space-y-6">
             <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl font-bold text-foreground">LOGIN</h1>
+              <h1 className="text-4xl sm:text-5xl font-bold text-foreground">
+                LOGIN
+              </h1>
               <div className="h-1 w-24 bg-primary rounded-full" />
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <div className="relative">
-                  <MdEmail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                  <MdEmail
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                    size={20}
+                  />
                   <Input
                     className="pl-12 pr-4 py-3 bg-muted text-foreground rounded-md"
                     type="email"
@@ -98,12 +103,17 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <div className="relative">
-                  <RiLockPasswordFill className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                  <RiLockPasswordFill
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                    size={20}
+                  />
                   <Input
                     className="pl-12 pr-4 py-3 bg-muted text-foreground rounded-md"
                     type="password"
@@ -112,22 +122,37 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
               </div>
 
+              <div id="clerk-captcha"></div>
+
               <div className="text-right">
-                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
                   Forgot Password?
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-3">
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-3"
+              >
                 Login
               </Button>
 
               <div className="text-center">
-                <span className="text-sm text-muted-foreground">New user? </span>
-                <Link href="/auth/register" className="text-sm text-primary hover:underline">
+                <span className="text-sm text-muted-foreground">
+                  New user?{" "}
+                </span>
+                <Link
+                  href="/auth/register"
+                  className="text-sm text-primary hover:underline"
+                >
                   Sign Up
                 </Link>
               </div>
@@ -149,7 +174,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <p className="text-xs text-muted-foreground text-center">©2025 All rights reserved</p>
+            <p className="text-xs text-muted-foreground text-center">
+              ©2025 All rights reserved
+            </p>
           </div>
         </div>
       </div>

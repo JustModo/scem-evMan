@@ -4,14 +4,18 @@ import React from "react";
 import Link from "next/link";
 import { ModeToggle } from "./theme-toggle";
 import { usePathname } from "next/navigation";
-import dynamic from "next/dynamic";
-
-// Dynamically import AuthNav with SSR disabled to avoid hydration errors
-const AuthNav = dynamic(() => import("./AuthNav"), { ssr: false });
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
+import { Button } from "./ui/button";
+import { LogIn } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const showNavbar = !pathname.startsWith("/attempt");
+  const hiddenPaths = ["/attempt", "/auth"];
+
+  const showNavbar = !hiddenPaths.some((path) => pathname.startsWith(path));
+
+  const { isLoaded, isSignedIn } = useUser();
 
   if (!showNavbar) return null;
 
@@ -28,10 +32,26 @@ export default function Navbar() {
         </div>
 
         {/* Right side */}
-        <ul className="flex items-center space-x-2">
-          <AuthNav />
+        <ul className="flex items-center space-x-4">
           <li>
             <ModeToggle />
+          </li>
+
+          <li className="min-w-8 flex items-center">
+            {!isLoaded ? (
+              <Skeleton className="w-8 h-8 rounded-full bg-background" />
+            ) : isSignedIn ? (
+              <UserButton />
+            ) : (
+              <Link href="/auth/login">
+                <Button
+                  variant="ghost"
+                  className="w-8 h-8 p-0 rounded-full flex items-center justify-center"
+                >
+                  <LogIn size={16} />
+                </Button>
+              </Link>
+            )}
           </li>
         </ul>
       </nav>

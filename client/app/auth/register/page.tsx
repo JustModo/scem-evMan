@@ -17,14 +17,15 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [matchMessage, setMatchMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { signUp, isLoaded } = useSignUp();
   const { isSignedIn } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (isSignedIn) router.push("/dashboard");
-  }, [isSignedIn,router]);
+    if (isSignedIn) router.replace("/");
+  }, [isSignedIn, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,19 +37,29 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Invalid email address");
+      return;
+    }
+
     if (!isLoaded || isSignedIn) return;
 
     try {
+      setLoading(true);
+
       await signUp.create({
         emailAddress: email,
         password,
       });
 
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      router.push("/verify-email");
+
+      router.push("/auth/verify-email");
     } catch (err: any) {
       const errMsg = err.errors?.[0]?.message || "Registration failed";
       setError(errMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,7 +70,7 @@ export default function RegisterPage() {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/dashboard",
+        redirectUrlComplete: "/",
       });
     } catch (err) {
       console.error("Google sign-up failed", err);
@@ -67,9 +78,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="h-screen flex items-center justify-center p-0 pt-12">
-      {/* Green Top Background SVG */}
-      <div className="absolute top-12 left-0 w-full h-1/3 z-15">
+    <main className="h-screen flex items-center justify-center p-0">
+      <div className="absolute top-0 left-0 w-full h-1/3 z-15">
         <svg
           viewBox="0 0 24 10"
           xmlns="http://www.w3.org/2000/svg"
@@ -89,7 +99,6 @@ export default function RegisterPage() {
         {/* Left Side (Form) */}
         <div className="flex items-center justify-center px-4 sm:px-10 py-8 order-2 md:order-1">
           <div className="w-full max-w-sm space-y-6">
-            {/* Register Title */}
             <div className="space-y-2">
               <h1 className="text-4xl sm:text-5xl font-bold text-foreground z-40">
                 SIGN UP
@@ -97,17 +106,17 @@ export default function RegisterPage() {
               <div className="h-1 w-24 bg-primary rounded-full" />
             </div>
 
-            {/* Form */}
             <form className="space-y-4" onSubmit={handleSubmit}>
-              {/* Login Link */}
               <p className="text-right text-foreground text-sm">
                 Already a User?{" "}
-                <Link className="hover:underline text-primary" href="/auth/login">
+                <Link
+                  className="hover:underline text-primary"
+                  href="/auth/login"
+                >
                   Login
                 </Link>
               </p>
 
-              {/* E-Mail */}
               <div className="relative">
                 <MdEmail
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
@@ -125,7 +134,6 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Password */}
               <div className="relative">
                 <RiLockPasswordFill
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
@@ -143,7 +151,6 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Confirm Password */}
               <div className="relative">
                 <FaCheckCircle
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
@@ -161,10 +168,9 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* Password Match or Error */}
               {(matchMessage || error) && (
                 <p
-                  className={`text-right font-medium text-sm h-5 ${
+                  className={`text-right text-sm transition-all ${
                     matchMessage.includes("not") || error
                       ? "text-destructive"
                       : "text-green-600"
@@ -174,23 +180,23 @@ export default function RegisterPage() {
                 </p>
               )}
 
-              <div className="flex flex-col gap-4 pt-2">
-                {/* Continue */}
+              <div id="clerk-captcha"></div>
+
+              <div className="flex flex-col gap-4">
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full py-3 cursor-pointer"
+                  disabled={loading}
                 >
-                  Continue
+                  {loading ? "Loading..." : "Continue"}
                 </Button>
 
-                {/* OR Divider */}
-                <div className="flex items-center my-6">
+                <div className="flex items-center my-2">
                   <hr className="flex-grow border-muted" />
                   <span className="px-4 text-sm text-muted-foreground">OR</span>
                   <hr className="flex-grow border-muted" />
                 </div>
 
-                {/* Google Sign Up */}
                 <Button
                   type="button"
                   onClick={handleGoogleSignIn}

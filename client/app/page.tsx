@@ -1,26 +1,17 @@
-import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
-import Footer from "@/components/landing/Footer";
+import Footer from "@/components/landing/footer";
 import AboutSection from "@/components/landing/about-section";
 import FeaturesSection from "@/components/landing/features-section";
 import HeroSection from "@/components/landing/hero-section";
 
 export default function HomePage() {
   return (
-    <main>
-      <HeroSection />
-
-      <div className="flex justify-end px-6 py-2">
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
-        <SignedOut>
-          <SignInButton mode="modal" />
-        </SignedOut>
+    <main className="w-screen h-screen pt-12">
+      <div className="overflow-y-auto h-full">
+        <HeroSection />
+        <AboutSection />
+        <FeaturesSection />
+        <Footer />
       </div>
-
-      <AboutSection />
-      <FeaturesSection />
-      <Footer />
     </main>
   );
 }

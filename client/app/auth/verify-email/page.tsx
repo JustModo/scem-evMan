@@ -26,7 +26,7 @@ export default function VerifyEmailPage() {
       });
 
       if (completeSignUp.status === "complete") {
-        router.push("/auth/login");
+        router.replace("/");
       } else {
         setError("Verification failed. Try again.");
       }

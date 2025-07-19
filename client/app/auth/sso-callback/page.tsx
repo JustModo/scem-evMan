@@ -1,21 +1,15 @@
-import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/nextjs";
+import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 
 export default function SSOCallback() {
   return (
-    <>
-      <SignedIn>
-        {/* If user is signed in after OAuth, redirect manually */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            window.location.href = "/dashboard";
-          `,
-        }} />
-      </SignedIn>
-
-      <SignedOut>
-        {/* If something went wrong */}
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
+        <p className="text-muted-foreground">Redirecting...</p>
+      </div>
+      <div className="hidden">
+        <AuthenticateWithRedirectCallback />
+      </div>
+    </div>
   );
 }
