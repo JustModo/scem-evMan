@@ -3,7 +3,6 @@ export interface BaseProblem {
   title: string;
   description: string;
   points: number;
-  tags?: string[];
   difficulty: "easy" | "medium" | "hard";
   type: "coding" | "mcq";
 }

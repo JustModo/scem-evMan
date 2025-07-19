@@ -38,17 +38,6 @@ export default function TestEditHeader({
       </div>
 
       <div className="flex items-center gap-3">
-        <span
-          className={`px-3 py-1 text-sm font-medium rounded-full ${
-            testData.status === "completed"
-              ? "bg-green-600 text-white"
-              : testData.status === "ongoing"
-              ? "bg-blue-600 text-white"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {testData.status.charAt(0).toUpperCase() + testData.status.slice(1)}
-        </span>
         <Button
           onClick={handleSave}
           disabled={isLoading}

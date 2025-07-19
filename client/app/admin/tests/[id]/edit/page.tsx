@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
-import TestEditHeader from "@/components/admin/test/test-edit/header";
-import TestEditForm from "@/components/admin/test/test-edit/edit-form";
-import TestQuestions from "@/components/admin/test/questions-list";
+import TestEditHeader from "@/components/admin/test/test-form/header";
 import { getTestById } from "@/constants/test-data";
-import QuestionAddForm from "@/components/admin/test/test-edit/add-question";
+import TestForm from "@/components/admin/test/test-form";
 
 interface IdParams {
   id: string;
@@ -17,7 +15,7 @@ export default async function AdminTestEditPage({
   const { id } = await params;
   const testData = getTestById(id);
 
-  if (!testData) {
+  if (!testData || testData.status !== "waiting") {
     return notFound();
   }
 
@@ -28,9 +26,7 @@ export default async function AdminTestEditPage({
           <TestEditHeader testData={testData} />
           <div className="grid grid-cols-1 2xl:grid-cols-4 gap-6 lg:gap-8">
             <div className="2xl:col-span-3 space-y-6">
-              <TestEditForm testData={testData} />
-              <QuestionAddForm />
-              <TestQuestions questions={testData.problems} />
+              <TestForm testData={testData} />
             </div>
           </div>
         </div>

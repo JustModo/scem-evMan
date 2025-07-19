@@ -1,9 +1,15 @@
+"use client";
 import { BaseProblem } from "@/types/problem";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Code, HelpCircle, Star } from "lucide-react";
 
-export default function QuestionCard({ problem }: { problem: BaseProblem }) {
+interface Props {
+  problem: BaseProblem;
+  onClickQuestion?: (id: number) => void;
+}
+
+export default function QuestionCard({ problem, onClickQuestion }: Props) {
   const getDifficultyVariant = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
@@ -25,8 +31,15 @@ export default function QuestionCard({ problem }: { problem: BaseProblem }) {
     );
   };
 
+  const handleClick = () => {
+    if (onClickQuestion) onClickQuestion(problem.id);
+  };
+
   return (
-    <div className="border rounded-lg p-4 transition-colors hover:bg-muted cursor-pointer">
+    <div
+      className="border rounded-lg p-4 transition-colors hover:bg-muted cursor-pointer"
+      onClick={handleClick}
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-lg leading-tight mb-1">
@@ -57,21 +70,6 @@ export default function QuestionCard({ problem }: { problem: BaseProblem }) {
             {problem.type.toUpperCase()}
           </Badge>
         </div>
-
-        {problem.tags && problem.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {problem.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {problem.tags.length > 3 && (
-              <Badge variant="secondary" className="text-xs">
-                +{problem.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
