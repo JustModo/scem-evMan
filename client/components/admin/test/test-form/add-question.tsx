@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFormContext } from "react-hook-form";
 
-export default function QuestionAddForm() {
+export default function QuestionAddCard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("");
@@ -44,6 +45,20 @@ export default function QuestionAddForm() {
       return matchesSearch && matchesType && matchesDifficulty;
     });
   }, [searchTerm, typeFilter, difficultyFilter]);
+
+  const { setValue, watch } = useFormContext();
+  const problemIds = watch("problems") as number[];
+
+  const toggleProblemId = (id: number) => {
+    if (problemIds.includes(id)) {
+      setValue(
+        "problems",
+        problemIds.filter((pid) => pid !== id)
+      );
+    } else {
+      setValue("problems", [...problemIds, id]);
+    }
+  };
 
   return (
     <Card>
@@ -85,7 +100,7 @@ export default function QuestionAddForm() {
           </Select>
         </div>
 
-        <ScrollArea className="h-[50vh] pr-4">
+        <ScrollArea className="h-[52vh] pr-4">
           {filteredProblems.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -98,7 +113,8 @@ export default function QuestionAddForm() {
                 <QuestionCard
                   key={problem.id}
                   problem={problem}
-                  onClickQuestion={(e) => console.log(e)}
+                  onClickQuestion={toggleProblemId}
+                  selected={problemIds.includes(problem.id)}
                 />
               ))}
             </div>

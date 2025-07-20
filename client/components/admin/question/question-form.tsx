@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, Fragment, useActionState, useTransition } from "react";
-import { FormSchema, formSchema } from "@/types/problem";
+import { QuestionSchema, questionSchema } from "@/types/problem";
 import { saveQuestion } from "@/app/actions/save-question";
 
 import { Form } from "@/components/ui/form";
@@ -17,11 +17,11 @@ import CodingCard from "./coding";
 interface Props {
   type: "coding" | "mcq";
   isCreating: boolean;
-  initialData?: Partial<FormSchema> | null;
+  initialData?: Partial<QuestionSchema> | null;
 }
 
 export default function QuestionForm({ type, isCreating, initialData }: Props) {
-  const getDefaultValues = (): FormSchema => {
+  const getDefaultValues = (): QuestionSchema => {
     if (type === "coding") {
       return {
         type: "coding",
@@ -53,8 +53,8 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
     }
   };
 
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<QuestionSchema>({
+    resolver: zodResolver(questionSchema),
     defaultValues: initialData || getDefaultValues(),
   });
 

@@ -46,9 +46,9 @@ const mcqSchema = z.object({
     .min(1, "Please select at least one correct option."),
 });
 
-export const formSchema = z.discriminatedUnion("type", [
+export const questionSchema = z.discriminatedUnion("type", [
   codingSchema,
   mcqSchema,
 ]);
 
-export type FormSchema = z.infer<typeof formSchema>;
+export type QuestionSchema = z.infer<typeof questionSchema>;

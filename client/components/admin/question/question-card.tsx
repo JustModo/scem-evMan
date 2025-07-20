@@ -6,10 +6,15 @@ import { Code, HelpCircle, Star } from "lucide-react";
 
 interface Props {
   problem: BaseProblem;
+  selected?: boolean;
   onClickQuestion?: (id: number) => void;
 }
 
-export default function QuestionCard({ problem, onClickQuestion }: Props) {
+export default function QuestionCard({
+  problem,
+  selected,
+  onClickQuestion,
+}: Props) {
   const getDifficultyVariant = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
@@ -37,7 +42,9 @@ export default function QuestionCard({ problem, onClickQuestion }: Props) {
 
   return (
     <div
-      className="border rounded-lg p-4 transition-colors hover:bg-muted cursor-pointer"
+      className={`border rounded-lg p-4 transition-colors cursor-pointer ${
+        selected ? "bg-muted border-primary" : "hover:bg-muted"
+      }`}
       onClick={handleClick}
     >
       <div className="flex items-start justify-between mb-3">
