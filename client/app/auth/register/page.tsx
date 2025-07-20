@@ -1,81 +1,108 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
-import { useSignUp, useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { FcGoogle } from "react-icons/fc";
-import { FaCheckCircle } from "react-icons/fa";
-import { MdEmail } from "react-icons/md";
-import { RiLockPasswordFill } from "react-icons/ri";
+import type React from "react"
+import { useState, useEffect } from "react"
+import { useSignUp } from "@clerk/nextjs"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import Link from "next/link"
+import { FcGoogle } from "react-icons/fc"
+import { FaCheckCircle } from "react-icons/fa"
+import { MdEmail } from "react-icons/md"
+import { RiLockPasswordFill } from "react-icons/ri"
+import { Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [matchMessage, setMatchMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [matchMessage, setMatchMessage] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [ssoError, setSsoError] = useState("")
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
-  const { signUp, isLoaded } = useSignUp();
-  const { isSignedIn } = useAuth();
-  const router = useRouter();
+  const { signUp, isLoaded } = useSignUp()
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
+  // Check for SSO errors
   useEffect(() => {
-    if (isSignedIn) router.replace("/");
-  }, [isSignedIn, router]);
+    const error = searchParams.get("error")
+    if (error === "sso_failed") {
+      setSsoError("Authentication failed. Please try again.")
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMatchMessage("");
-    setError("");
+    e.preventDefault()
+    setMatchMessage("")
+    setError("")
 
     if (password !== confirmPassword) {
-      setMatchMessage("Passwords do not match");
-      return;
+      setMatchMessage("Passwords do not match")
+      return
     }
 
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Invalid email address");
-      return;
+      setError("Invalid email address")
+      return
     }
 
-    if (!isLoaded || isSignedIn) return;
+    if (!isLoaded) return
 
     try {
-      setLoading(true);
+      setLoading(true)
 
       await signUp.create({
         emailAddress: email,
         password,
-      });
+      })
 
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" })
 
-      router.push("/auth/verify-email");
+      router.push("/auth/verify-email")
     } catch (err: any) {
-      const errMsg = err.errors?.[0]?.message || "Registration failed";
-      setError(errMsg);
+      const errMsg = err.errors?.[0]?.message || "Registration failed"
+      setError(errMsg)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleGoogleSignIn = async () => {
-    if (!isLoaded || isSignedIn) return;
+    if (!isLoaded || isGoogleLoading) return
+
+    setIsGoogleLoading(true)
+    setSsoError("")
 
     try {
+      // Add a small delay to prevent rate limiting
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
+        redirectUrl: "/auth/sso-callback?from=register",
         redirectUrlComplete: "/",
-      });
-    } catch (err) {
-      console.error("Google sign-up failed", err);
+      })
+    } catch (err: any) {
+      console.error("Google sign-up failed", err)
+
+      const errorMessage = err.errors?.[0]?.message || err.message || "Failed to initiate Google sign-up"
+
+      if (errorMessage.includes("rate") || errorMessage.includes("limit")) {
+        setSsoError("Too many requests. Please wait a moment and try again.")
+      } else if (errorMessage.includes("oauth")) {
+        setSsoError("OAuth configuration error. Please contact support.")
+      } else {
+        setSsoError("Failed to initiate Google sign-up. Please try again.")
+      }
+
+      setIsGoogleLoading(false)
     }
-  };
+  }
 
   return (
     <main className="h-screen flex items-center justify-center p-0">
@@ -96,23 +123,23 @@ export default function RegisterPage() {
       </div>
 
       <div className="z-30 grid w-full h-full grid-cols-1 md:grid-cols-2 relative">
-        {/* Left Side (Form) */}
         <div className="flex items-center justify-center px-4 sm:px-10 py-8 order-2 md:order-1">
           <div className="w-full max-w-sm space-y-6">
             <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl font-bold text-foreground z-40">
-                SIGN UP
-              </h1>
+              <h1 className="text-4xl sm:text-5xl font-bold text-foreground z-40">SIGN UP</h1>
               <div className="h-1 w-24 bg-primary rounded-full" />
             </div>
+
+            {ssoError && (
+              <Alert variant="destructive">
+                <AlertDescription>{ssoError}</AlertDescription>
+              </Alert>
+            )}
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <p className="text-right text-foreground text-sm">
                 Already a User?{" "}
-                <Link
-                  className="hover:underline text-primary"
-                  href="/auth/login"
-                >
+                <Link className="hover:underline text-primary" href="/auth/login">
                   Login
                 </Link>
               </p>
@@ -171,9 +198,7 @@ export default function RegisterPage() {
               {(matchMessage || error) && (
                 <p
                   className={`text-right text-sm transition-all ${
-                    matchMessage.includes("not") || error
-                      ? "text-destructive"
-                      : "text-green-600"
+                    matchMessage.includes("not") || error ? "text-destructive" : "text-green-600"
                   }`}
                 >
                   {matchMessage || error}
@@ -200,24 +225,31 @@ export default function RegisterPage() {
                 <Button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="flex items-center justify-center w-full gap-3 bg-background border-2 border-input text-foreground rounded-md py-3 hover:bg-accent cursor-pointer z-40"
+                  disabled={isGoogleLoading}
+                  className="flex items-center justify-center w-full gap-3 bg-background border-2 border-input text-foreground rounded-md py-3 hover:bg-accent cursor-pointer z-40 disabled:opacity-50"
                   variant="outline"
                 >
-                  <FcGoogle size={20} />
-                  Continue With Google
+                  {isGoogleLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <FcGoogle size={20} />
+                      Continue With Google
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
 
-            <p className="text-xs text-muted-foreground text-center">
-              ©2025 All rights reserved
-            </p>
+            <p className="text-xs text-muted-foreground text-center">©2025 All rights reserved</p>
           </div>
         </div>
 
-        {/* Right Side */}
         <div className="flex items-center justify-center order-1 md:order-2"></div>
       </div>
     </main>
-  );
+  )
 }
