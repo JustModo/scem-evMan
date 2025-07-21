@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Fragment } from "react";
 import Link from "next/link";
 import { ModeToggle } from "./theme-toggle";
 import { usePathname } from "next/navigation";
@@ -11,11 +11,11 @@ import { Skeleton } from "./ui/skeleton";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const hiddenPaths = ["/attempt", "/auth"];
+  const hiddenPaths = ["/attempt"];
 
   const showNavbar = !hiddenPaths.some((path) => pathname.startsWith(path));
 
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded } = useUser();
 
   if (!showNavbar) return null;
 
@@ -40,17 +40,22 @@ export default function Navbar() {
           <li className="min-w-8 flex items-center">
             {!isLoaded ? (
               <Skeleton className="w-8 h-8 rounded-full bg-background" />
-            ) : isSignedIn ? (
-              <UserButton />
             ) : (
-              <Link href="/auth/login">
-                <Button
-                  variant="ghost"
-                  className="w-8 h-8 p-0 rounded-full flex items-center justify-center"
-                >
-                  <LogIn size={16} />
-                </Button>
-              </Link>
+              <Fragment>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+                <SignedOut>
+                  <Link href="/auth/login">
+                    <Button
+                      variant="ghost"
+                      className="w-8 h-8 p-0 rounded-full flex items-center justify-center"
+                    >
+                      <LogIn size={16} />
+                    </Button>
+                  </Link>
+                </SignedOut>
+              </Fragment>
             )}
           </li>
         </ul>
