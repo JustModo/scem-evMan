@@ -13,6 +13,7 @@ import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [ssoError, setSsoError] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { signUp, isLoaded } = useSignUp();
   const { isSignedIn } = useAuth();
@@ -34,41 +37,43 @@ export default function RegisterPage() {
     }
   }, [searchParams]);
 
+  const validateForm = () => {
+    const errors: string[] = [];
+
+    if (!email.trim()) {
+      errors.push("Email is required.");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push("Please enter a valid email address");
+    }
+
+    if (!password.trim()) {
+      errors.push("Password is required.");
+    }
+
+    if (!confirmPassword.trim()) {
+      errors.push("Please confirm your password.");
+    }
+
+    if (password && confirmPassword && password !== confirmPassword) {
+      errors.push("Passwords do not match.");
+    }
+
+    if (email && password && email === password) {
+      errors.push("Email and password should not be the same.");
+    }
+
+    if (errors.length > 0) {
+      errors.forEach((err, i) => setTimeout(() => toast.error(err), i * 100));
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email) {
-      toast.error("Email is required");
-      return;
-    }
-
-    if (!password) {
-      toast.error("Password is required");
-      return;
-    }
-
-    if (!confirmPassword) {
-      toast.error("Please confirm your password");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    if (email === password) {
-      toast.error("Email and password should not be the same");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error(
-        "Please enter a valid email address (e.g., user@example.com)"
-      );
-      return;
-    }
-
-    if (!isLoaded || isSignedIn) return;
+    if (!validateForm() || !isLoaded || isSignedIn) return;
 
     try {
       setLoading(true);
@@ -171,12 +176,14 @@ export default function RegisterPage() {
             <form className="space-y-4" onSubmit={handleSubmit}>
               <p className="text-right text-foreground text-sm">
                 Already a User?{" "}
-                <Link
-                  className="hover:underline text-primary"
-                  href="/auth/login"
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 text-sm text-primary hover:no-underline cursor-pointer"
+                  onClick={() => router.replace("/auth/login")}
                 >
                   Login
-                </Link>
+                </Button>
               </p>
 
               <div className="relative">
@@ -192,19 +199,24 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-
               <div className="relative">
                 <RiLockPasswordFill
                   className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                   size={20}
                 />
                 <Input
-                  className="pl-12 pr-4 py-3 bg-muted text-foreground rounded-md"
-                  type="password"
+                  className="pl-12 pr-10 py-3 bg-muted text-foreground rounded-md"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <div
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground cursor-pointer "
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </div>
               </div>
 
               <div className="relative">
@@ -213,12 +225,22 @@ export default function RegisterPage() {
                   size={18}
                 />
                 <Input
-                  className="pl-12 pr-4 py-3 bg-muted text-foreground rounded-md"
-                  type="password"
+                  className="pl-12 pr-10 py-3 bg-muted text-foreground rounded-md"
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                <div
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground cursor-pointer"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="select-none" size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
+                </div>
               </div>
 
               <div id="clerk-captcha"></div>

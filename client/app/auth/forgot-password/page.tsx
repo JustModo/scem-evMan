@@ -17,12 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Mail, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface FormState {
   email: string;
   isLoading: boolean;
   isComplete: boolean;
-  error: string;
 }
 
 export default function ForgotPasswordPage() {
@@ -30,7 +30,6 @@ export default function ForgotPasswordPage() {
     email: "",
     isLoading: false,
     isComplete: false,
-    error: "",
   });
 
   const { signIn, isLoaded } = useSignIn();
@@ -50,11 +49,11 @@ export default function ForgotPasswordPage() {
     if (!isLoaded || !signIn) return;
 
     if (!validateEmail(state.email)) {
-      updateState({ error: "Please enter a valid email address" });
+      toast.error("Please enter a valid email address");
       return;
     }
 
-    updateState({ isLoading: true, error: "" });
+    updateState({ isLoading: true });
 
     try {
       await signIn.create({
@@ -72,14 +71,18 @@ export default function ForgotPasswordPage() {
       if (err.message && err.message.includes("Rate exceeded")) {
         errorMessage =
           "Too many password reset attempts. Please wait a few minutes before trying again.";
-        updateState({ error: errorMessage, isLoading: false });
+        toast.error(errorMessage);
+        updateState({ isLoading: false });
+
         return;
       }
 
       // Handle JSON parsing errors that might contain rate limit info
       if (err.message && err.message.includes("Unexpected token")) {
         errorMessage = "Too many requests. Please wait a moment and try again.";
-        updateState({ error: errorMessage, isLoading: false });
+        toast.error(errorMessage);
+        updateState({ isLoading: false });
+
         return;
       }
 
@@ -124,7 +127,8 @@ export default function ForgotPasswordPage() {
         }
       }
 
-      updateState({ error: errorMessage, isLoading: false });
+      toast.error(errorMessage);
+      updateState({ isLoading: false });
     } finally {
       updateState({ isLoading: false });
     }
@@ -135,7 +139,6 @@ export default function ForgotPasswordPage() {
       email: "",
       isLoading: false,
       isComplete: false,
-      error: "",
     });
   };
 
@@ -219,35 +222,16 @@ export default function ForgotPasswordPage() {
               <Label htmlFor="email">Email address</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 placeholder="Enter your email"
                 value={state.email}
-                onChange={(e) =>
-                  updateState({ email: e.target.value, error: "" })
-                }
+                onChange={(e) => updateState({ email: e.target.value })}
                 required
                 disabled={state.isLoading}
                 autoComplete="email"
                 className="w-full"
               />
             </div>
-
-            {state.error && (
-              <Alert variant="destructive">
-                <AlertDescription>{state.error}</AlertDescription>
-              </Alert>
-            )}
-
-            {state.error && state.error.includes("not registered") && (
-              <div className="mt-2 text-center">
-                <Link
-                  href="/auth/register"
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
-                >
-                  Create an account with this email
-                </Link>
-              </div>
-            )}
 
             <Button
               type="submit"
