@@ -12,6 +12,7 @@ import { RiLockPasswordFill } from "react-icons/ri";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [ssoError, setSsoError] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isEmailPasswordLoading, setIsEmailPasswordLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { signIn, isLoaded } = useSignIn();
   const router = useRouter();
@@ -39,7 +41,7 @@ export default function LoginPage() {
       toast.error("Email is required.");
       valid = false;
     } else if (!emailRegex.test(email)) {
-      toast.error("Invalid input.");
+      toast.error("Please enter a valid email address");
       valid = false;
     }
 
@@ -172,12 +174,18 @@ export default function LoginPage() {
                     size={20}
                   />
                   <Input
-                    className="pl-12 pr-4 py-3 bg-muted text-foreground rounded-md"
-                    type="password"
+                    className="pl-12 pr-10 py-3 bg-muted text-foreground rounded-md"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                  <div
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground cursor-pointer"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </div>
                 </div>
               </div>
 
@@ -188,7 +196,7 @@ export default function LoginPage() {
               <div className="text-right -mt-2">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:no-underline"
                 >
                   Forgot Password?
                 </Link>
@@ -213,18 +221,20 @@ export default function LoginPage() {
                 <span className="text-sm text-muted-foreground">
                   New user?{" "}
                 </span>
-                <Link
-                  href="/auth/register"
-                  className="text-sm text-primary hover:underline"
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 text-sm text-primary hover:no-underline cursor-pointer"
+                  onClick={() => router.replace("/auth/register")}
                 >
                   Sign Up
-                </Link>
+                </Button>
               </div>
 
               <div className="flex items-center my-6">
                 <hr className="flex-grow border-muted" />
                 <span className="px-4 text-sm text-muted-foreground">OR</span>
-                <hr className="flex-grow border-muted" />
+                <hr className="flex-grow border-muted " />
               </div>
 
               <Button
@@ -256,4 +266,4 @@ export default function LoginPage() {
       </div>
     </main>
   );
-}
+} 
