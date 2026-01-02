@@ -7,12 +7,12 @@ const sitemap = [
     links: [
       { path: "/admin", label: "Dashboard" },
       { path: "/admin/questions", label: "Questions" },
-      { path: "/admin/questions/123", label: "View Question" },
-      { path: "/admin/questions/123/edit", label: "Edit Question" },
+      { path: "/admin/questions/mcq/new", label: "New Question (MCQ)" },
+      { path: "/admin/questions/coding/1/edit", label: "Edit Question" },
       { path: "/admin/tests", label: "Tests" },
-      { path: "/admin/tests/123", label: "View Test" },
-      { path: "/admin/tests/123/edit", label: "Edit Test" },
-      { path: "/admin/tests/123/result", label: "Test Result" },
+      { path: "/admin/tests/2", label: "View Test" },
+      { path: "/admin/tests/2/edit", label: "Edit Test" },
+      { path: "/admin/tests/2/result", label: "Test Result" },
     ],
   },
   {
@@ -20,6 +20,9 @@ const sitemap = [
     links: [
       { path: "/auth/login", label: "Login" },
       { path: "/auth/register", label: "Register" },
+      { path: "/auth/forgot-password", label: "Forgot Password" },
+      { path: "/auth/reset-password", label: "Reset Password" },
+      { path: "/auth/verify-email", label: "Verify Email" },
     ],
   },
   {
@@ -31,8 +34,11 @@ const sitemap = [
     ],
   },
   {
-    heading: "Test",
-    links: [{ path: "/test/123", label: "Test Page" }],
+    heading: "Test Taking",
+    links: [
+      { path: "/test/123", label: "Test Start Page" },
+      { path: "/attempt/test/123/question/1", label: "Test Attempt Page" }
+    ],
   },
 ];
 
