@@ -17,21 +17,21 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider afterSignOutUrl="/">
-      <html lang="en" suppressHydrationWarning>
-        <body className="antialiased">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Navbar />
-            <Toaster position="top-center" expand />
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar />
+          <Toaster position="top-center" expand />
 
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
     </ClerkProvider>
   );
 }
