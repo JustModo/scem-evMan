@@ -218,8 +218,8 @@ export const testsData: Test[] = [
   },
   {
     id: "2",
-    title: "React Components",
-    description: "Understanding React components and props",
+    title: "SOSC Annual Hiring Challenge 2026",
+    description: "Phase 1: Online Coding Assessment testing DSA and Core CS Concepts.",
     duration: "01:30:00",
     totalQuestions: 15,
     participantsInProgress: 0,

@@ -1,3 +1,12 @@
+export interface TestParticipant {
+  userId: string;
+  name: string;
+  email: string;
+  score: number;
+  status: "PASSED" | "FAILED";
+  submittedAt: string;
+}
+
 export interface Test {
   id: string;
   title: string;
@@ -9,4 +18,5 @@ export interface Test {
   participantsInProgress: number;
   participantsCompleted: number;
   problems: number[];
+  participants?: TestParticipant[];
 }
