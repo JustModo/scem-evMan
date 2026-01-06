@@ -18,6 +18,14 @@ const contestSchema = new mongoose.Schema({
     required: true,
   },
   questions: [String],
+  author: {
+    type: String,
+    required: true,
+  },
+  rules: {
+    type: [String],
+    default: [],
+  },
   visibility: {
     type: String,
     enum: ['public', 'private'],

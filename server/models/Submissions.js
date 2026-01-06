@@ -17,6 +17,22 @@ const submissionSchema = new mongoose.Schema({
     required: true,
   },
   answer: mongoose.Schema.Types.Mixed,
+  // Coding specific fields
+  language: String,
+  status: {
+    type: String,
+    enum: ['Accepted', 'Wrong Answer', 'Time Limit Exceeded', 'Runtime Error', 'Compilation Error', 'Pending'],
+  },
+  testCaseResults: [{
+    testCase: Number,
+    passed: Boolean,
+    input: String,
+    expectedOutput: String,
+    actualOutput: String,
+    error: String,
+  }],
+  executionTime: Number, // in milliseconds
+  memoryUsed: Number, // in KB
   score: {
     type: Number,
     default: 0,
