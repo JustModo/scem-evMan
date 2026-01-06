@@ -7,11 +7,13 @@ import z from "zod";
 // export type TestUpdate = UpdateFrom<Test>;
 
 export const testSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   duration: z.string().min(1, "Duration is required"),
   startsAt: z.iso.datetime(),
-  problems: z.array(z.number()),
+  problems: z.array(z.string()),
+  status: z.enum(["waiting", "ongoing", "completed"]).optional(),
 });
 
 export type TestSchema = z.infer<typeof testSchema>;
