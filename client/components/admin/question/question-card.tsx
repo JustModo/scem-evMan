@@ -1,83 +1,116 @@
 "use client";
-import { BaseProblem } from "@/types/problem";
-import React from "react";
+// forcing revalidation
 import { Badge } from "@/components/ui/badge";
-import { Code, HelpCircle, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Code, HelpCircle, Star, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { BaseProblem } from "@/types/problem/problem.types";
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { deleteQuestionAction } from "@/app/actions/delete-question";
 
 interface Props {
   problem: BaseProblem;
   selected?: boolean;
-  onClickQuestion?: (id: number) => void;
+  onClickQuestion?: (id: string | number) => void;
+  className?: string;
+  hideActions?: boolean;
 }
 
 export default function QuestionCard({
   problem,
   selected,
   onClickQuestion,
+  className,
+  hideActions = false,
 }: Props) {
-  const getDifficultyVariant = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy":
-        return "default";
-      case "medium":
-        return "secondary";
-      case "hard":
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    return type === "coding" ? (
+  const getTypeIcon = (type: string | undefined) => {
+    return type === "coding" || type === "Coding" ? (
       <Code className="w-4 h-4" />
     ) : (
       <HelpCircle className="w-4 h-4" />
     );
   };
+  const getDifficultyColor = (diff: string) => {
+    switch (diff?.toLowerCase()) {
+      case "easy":
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      case "medium":
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "hard":
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const getDifficultyText = (diff: string) => {
+      // Ensure Title Case for display
+      if (!diff) return "Unknown";
+      return diff.charAt(0).toUpperCase() + diff.slice(1).toLowerCase();
+  }
 
   const handleClick = () => {
-    if (onClickQuestion) onClickQuestion(problem.id);
+    // @ts-ignore
+    if (onClickQuestion) onClickQuestion(problem._id || problem.id);
   };
 
   return (
     <div
-      className={`border rounded-lg p-4 transition-colors cursor-pointer ${
-        selected ? "bg-muted border-primary" : "hover:bg-muted"
-      }`}
+      className={cn(
+        "group flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors cursor-pointer",
+        className
+      )}
       onClick={handleClick}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-lg leading-tight mb-1">
-            {problem.title}
-          </h3>
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {problem.description}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-1 text-muted-foreground ml-4 flex-shrink-0">
-          <Star className="w-4 h-4" />
-          <span className="text-sm font-medium">{problem.points}</span>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
+      <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <Badge
-            variant={getDifficultyVariant(problem.difficulty)}
-            className="capitalize"
+          <h4 className="font-medium text-foreground">{problem.title}</h4>
+          <span
+            className={cn(
+              "text-xs px-2 py-0.5 rounded-full font-medium",
+              getDifficultyColor(problem.difficulty)
+            )}
           >
-            {problem.difficulty}
-          </Badge>
+            {getDifficultyText(problem.difficulty)}
+          </span>
 
           <Badge variant="outline" className="flex items-center gap-1">
-            {getTypeIcon(problem.type)}
-            {problem.type.toUpperCase()}
+            {getTypeIcon(problem.type || "coding")}
+            {(problem.questionType || problem.type || "Unknown").toUpperCase()}
           </Badge>
         </div>
       </div>
+      
+      {!hideActions && (
+      <div className="flex items-center gap-2">
+         <Link 
+            href={`/admin/questions/${(problem.type || "coding").toLowerCase()}/${problem._id || problem.id}/edit`}
+            onClick={(e) => e.stopPropagation()}
+         >
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                <Pencil className="h-4 w-4" />
+            </Button>
+         </Link>
+         <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+            onClick={async (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              if (confirm("Are you sure you want to delete this question?")) {
+                const res = await deleteQuestionAction(String(problem._id || problem.id));
+                if (!res.success) {
+                  alert(res.message);
+                }
+              }
+            }}
+         >
+            <Trash2 className="h-4 w-4" />
+         </Button>
+      </div>
+      )}
     </div>
   );
 }
