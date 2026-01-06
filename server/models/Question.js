@@ -15,7 +15,7 @@ const questionSchema = new mongoose.Schema({
   // MCQ specific fields
   questionType: {
     type: String,
-    enum: ['Single Correct', 'Multiple Correct'],
+    enum: ['Single Correct', 'Multiple Correct', 'Coding'],
   },
   options: [String],
   correctAnswer: String,
