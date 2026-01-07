@@ -8,7 +8,8 @@ services:
 
   server:
     build:
-      context: ./server
+      context: .
+      dockerfile: ./server/Dockerfile
     environment:
       - MONGODB_URI=mongodb://mongo:27017/scem-evMan
       - PORT=8080
@@ -19,7 +20,8 @@ services:
 
   seed:
     build:
-      context: ./server
+      context: .
+      dockerfile: ./server/Dockerfile
     command: node scripts/seed.js
     environment:
       - MONGODB_URI=mongodb://mongo:27017/scem-evMan
