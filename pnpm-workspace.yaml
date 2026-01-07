@@ -1,4 +1,9 @@
 packages:
-  - "packages/*"
-  - "server"
-  - "client"
+  - packages/*
+  - server
+  - client
+
+onlyBuiltDependencies:
+  - '@clerk/shared'
+  - sharp
+  - unrs-resolver
