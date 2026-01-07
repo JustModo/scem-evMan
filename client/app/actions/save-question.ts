@@ -11,29 +11,58 @@ const STATS_FILE = path.join(process.cwd(), "data", "statistics.json");
 export async function saveQuestion(_prevState: any, data: QuestionSchema) {
   try {
     const validatedData = questionSchema.parse(data);
+    const { getToken } = await auth();
+    const token = await getToken();
 
-    // 1. Save the full Question to questions.json
-    const questionsContent = await fs.readFile(QUESTIONS_FILE, "utf-8");
-    const questions = JSON.parse(questionsContent);
-    const newId = questions.length > 0 ? Math.max(...questions.map((q: any) => q.id)) + 1 : 1;
-    const newQuestion = { id: newId, ...validatedData };
-    questions.push(newQuestion);
-    await fs.writeFile(QUESTIONS_FILE, JSON.stringify(questions, null, 2));
+    console.log("Saving question:", validatedData);
 
-    // 2. Update Statistics JSON locally
-    const statsContent = await fs.readFile(STATS_FILE, "utf-8");
-    const stats = JSON.parse(statsContent);
+    // Transform to backend schema
+    const payload = {
+      title: validatedData.title,
+      description: validatedData.description,
+      difficulty: validatedData.difficulty.charAt(0).toUpperCase() + validatedData.difficulty.slice(1), // 'easy' -> 'Easy'
+      marks: validatedData.points, // Form uses points, backend uses marks
+      type: validatedData.type, // REQUIRED: coding or mcq
+      questionType: validatedData.type === 'coding' ? 'Coding' :
+        (validatedData.questionType === 'single' ? 'Single Correct' : 'Multiple Correct'),
 
-    stats.totalQuestions += 1;
-    if (validatedData.difficulty === "easy") stats.easyQuestions += 1;
-    else if (validatedData.difficulty === "medium") stats.mediumQuestions += 1;
-    else if (validatedData.difficulty === "hard") stats.hardQuestions += 1;
+      // Coding specific
+      inputFormat: validatedData.type === 'coding' ? validatedData.inputFormat : undefined,
+      outputFormat: validatedData.type === 'coding' ? validatedData.outputFormat : undefined,
+      constraints: validatedData.type === 'coding' ? String(validatedData.constraints) : undefined, // Expecting String
+      boilerplateCode: validatedData.type === 'coding' ? validatedData.boilerplate : undefined, // Map boilerplate -> boilerplateCode
+      functionName: validatedData.type === 'coding' ? validatedData.functionName : undefined,
+      inputVariables: validatedData.type === 'coding' ? validatedData.inputVariables : undefined,
+      testcases: validatedData.type === 'coding' ? validatedData.testCases : undefined,
 
-    await fs.writeFile(STATS_FILE, JSON.stringify(stats, null, 2));
+      // MCQ specific
+      options: validatedData.type === 'mcq' ? validatedData.options.map(o => o.text) : undefined,
+      correctAnswer: validatedData.type === 'mcq' ? validatedData.correctOptionIds[0] : undefined // Assuming single correct for now or comma joined
+    };
 
-    // 3. Revalidate Dashboard
-    revalidatePath("/admin");
+    // Determine URL and Method
+    const isUpdate = !!validatedData.id;
+    const url = isUpdate
+      ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/questions/${validatedData.id}/edit`
+      : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/questions/create`;
+    const method = isUpdate ? "PUT" : "POST";
 
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+
+    if (!res.ok || !json.success) {
+      throw new Error(json.error || `Failed to ${isUpdate ? 'update' : 'save'} question`);
+    }
+
+    revalidatePath("/admin/questions");
     return {
       success: true,
       message: "Question added! Full data saved to data/questions.json and stats updated.",

@@ -30,7 +30,18 @@ const questionSchema = new mongoose.Schema({
     python: String,
     javascript: String,
   },
-  testcases: String,
+  functionName: String,
+  inputVariables: [{
+    name: String,
+    type: {
+      type: String,
+      enum: ['int', 'float', 'char', 'string', 'int_array', 'float_array', 'string_array']
+    }
+  }],
+  testcases: [{
+    input: Object,
+    output: String
+  }],
 }, { timestamps: true });
 
 module.exports = mongoose.models.Question || mongoose.model('Question', questionSchema);
