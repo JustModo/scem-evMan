@@ -7,7 +7,7 @@ import { BaseProblem } from "@/types/problem/problem.types";
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { deleteQuestionAction } from "@/app/actions/delete-question";
+import { deleteQuestion } from "@/app/actions/delete-question";
 
 interface Props {
   problem: BaseProblem;
@@ -100,7 +100,7 @@ export default function QuestionCard({
               e.stopPropagation();
               e.preventDefault();
               if (confirm("Are you sure you want to delete this question?")) {
-                const res = await deleteQuestionAction(String(problem._id || problem.id));
+                const res = await deleteQuestion(String(problem._id || problem.id));
                 if (!res.success) {
                   alert(res.message);
                 }

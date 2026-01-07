@@ -40,9 +40,9 @@ export default async function AdminAnalyticsPage() {
       (acc, curr) => acc + (curr.participantsInProgress || 0) + (curr.participantsCompleted || 0),
       0
     ),
-    easyQuestions: problems.filter((p) => p.difficulty === "easy").length,
-    mediumQuestions: problems.filter((p) => p.difficulty === "medium").length,
-    hardQuestions: problems.filter((p) => p.difficulty === "hard").length,
+    easyQuestions: problems.filter((p) => p.difficulty === "Easy").length,
+    mediumQuestions: problems.filter((p) => p.difficulty === "Medium").length,
+    hardQuestions: problems.filter((p) => p.difficulty === "Hard").length,
   };
 
   const stats = { ...defaultStats, ...statsData };
