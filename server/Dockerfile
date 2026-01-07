@@ -1,18 +1,21 @@
 FROM node:18-alpine
 
-WORKDIR /app
-
-# Enable pnpm
+# Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy root workspace configuration
+WORKDIR /app
+
+# Copy workspace configs
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
+# Copy all packages (required for workspace dependencies like code-gen)
 COPY packages ./packages
 COPY server ./server
 
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies
+RUN pnpm install
 
+# Change to the server directory
 WORKDIR /app/server
 
 EXPOSE 8080
