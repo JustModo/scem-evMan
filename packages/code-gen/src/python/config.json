@@ -1,0 +1,35 @@
+{
+    "language": "python",
+    "boilerplate": "def {method}({args}):\n    # TODO: Implement solution\n    print(\"Output goes here\")",
+    "template": "import sys\n\n{code}\n\nif __name__ == '__main__':\n    try:\n        input_data = sys.stdin.read().split()\n        iterator = iter(input_data)\n\n{input_reading_code}\n    except Exception as e:\n        sys.stderr.write(str(e))\n        sys.exit(1)",
+    "types": {
+        "int": {
+            "reader": "int(next(iterator))",
+            "hint": "int"
+        },
+        "float": {
+            "reader": "float(next(iterator))",
+            "hint": "float"
+        },
+        "char": {
+            "reader": "next(iterator)",
+            "hint": "str"
+        },
+        "string": {
+            "reader": "next(iterator)",
+            "hint": "str"
+        },
+        "int_array": {
+            "reader": "list(map(int, list(iterator)))",
+            "hint": "list[int]"
+        },
+        "float_array": {
+            "reader": "list(map(float, list(iterator)))",
+            "hint": "list[float]"
+        },
+        "string_array": {
+            "reader": "list(iterator)",
+            "hint": "list[str]"
+        }
+    }
+}
