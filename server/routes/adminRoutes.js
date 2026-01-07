@@ -10,7 +10,8 @@ const {
     createContest,
     updateContest,
     getAdminContestResults,
-    deleteContest
+    deleteContest,
+    getAdminStats
 } = require('../controllers/adminCon');
 
 const router = express.Router();
@@ -30,5 +31,8 @@ router.post('/tests/create', requireAuth(options), createContest);
 router.put('/tests/:id/edit', requireAuth(options), updateContest);
 router.delete('/tests/:id', requireAuth(options), deleteContest);
 router.get('/tests/:id/result', requireAuth(options), getAdminContestResults);
+
+// Dashboard Stats
+router.get('/stats', requireAuth(options), getAdminStats);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const Question = require('../models/Question');
 const Contest = require('../models/Contest');
+const Submission = require('../models/Submissions');
 const { connectDB } = require('./dbCon');
 
 // --- Questions ---
@@ -222,6 +223,70 @@ const deleteContest = async (req, res) => {
     }
 };
 
+// @desc Get admin dashboard statistics
+const getAdminStats = async (req, res) => {
+    try {
+        await connectDB();
+        const now = new Date();
+
+        const [
+            activeContests,
+            totalQuestions,
+            draftTests,
+            totalParticipants,
+            recentTestsData,
+            questionBankData
+        ] = await Promise.all([
+            Contest.countDocuments({ startTime: { $lte: now }, endTime: { $gte: now } }),
+            Question.countDocuments({}),
+            Contest.countDocuments({ startTime: { $gt: now } }),
+            Submission.countDocuments({}),
+            Contest.find().sort({ createdAt: -1 }).limit(4).lean(),
+            Question.aggregate([
+                { $group: { _id: "$difficulty", count: { $sum: 1 } } }
+            ])
+        ]);
+
+        const recentTests = await Promise.all(recentTestsData.map(async (contest) => {
+            const participants = await Submission.countDocuments({ contest: contest._id });
+            return {
+                ...contest,
+                participants
+            };
+        }));
+
+        // Process question bank data to match UI structure
+        const difficultyMap = { Easy: 0, Medium: 0, Hard: 0 };
+        let totalQBank = 0;
+        questionBankData.forEach(item => {
+            if (item._id && difficultyMap.hasOwnProperty(item._id)) {
+                difficultyMap[item._id] = item.count;
+                totalQBank += item.count;
+            }
+        });
+
+        const questionBank = {
+            easy: difficultyMap.Easy,
+            medium: difficultyMap.Medium,
+            hard: difficultyMap.Hard,
+            total: totalQBank
+        };
+
+        return res.status(200).json({
+            success: true,
+            activeContests,
+            totalQuestions,
+            draftTests,
+            totalParticipants,
+            recentTests,
+            questionBank
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 module.exports = {
     createProblem,
     updateProblem,
@@ -232,5 +297,6 @@ module.exports = {
     updateContest,
     getAdminContestResults,
     deleteQuestion,
-    deleteContest
+    deleteContest,
+    getAdminStats
 };
