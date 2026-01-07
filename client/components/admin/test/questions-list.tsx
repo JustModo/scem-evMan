@@ -6,13 +6,33 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Settings } from "lucide-react";
-import { problems } from "@/constants/test-data";
+import { BaseProblem } from "@/types/problem/problem.types";
 import QuestionCard from "../question/question-card";
 
-export default function TestQuestions({ questions }: { questions: number[] }) {
-  const filteredProblems = questions
-    .map((id) => problems.find((problem) => problem.id === id))
-    .filter((problem): problem is NonNullable<typeof problem> => !!problem);
+interface TestQuestionsProps {
+    questions: string[] | BaseProblem[];
+    availableQuestions?: BaseProblem[];
+}
+
+export default function TestQuestions({ questions, availableQuestions = [] }: TestQuestionsProps) {
+  let filteredProblems: BaseProblem[] = [];
+
+  if (Array.isArray(questions) && questions.length > 0) {
+      if (typeof questions[0] === 'string') {
+          // It's a list of IDs, resolve them
+          filteredProblems = (questions as string[])
+            .map((id) => availableQuestions.find((problem) => 
+                (problem._id && problem._id === id) || (String(problem.id) === id)
+            ))
+            .filter((problem): problem is BaseProblem => !!problem);
+      } else {
+          // It's already populated objects
+          filteredProblems = questions as BaseProblem[];
+      }
+  } else if (Array.isArray(questions)) {
+      // Empty array
+      filteredProblems = [];
+  }
 
   return (
     <Card>
@@ -37,7 +57,7 @@ export default function TestQuestions({ questions }: { questions: number[] }) {
         ) : (
           <div className="space-y-4">
             {filteredProblems.map((problem) => (
-              <QuestionCard key={problem.id} problem={problem} />
+              <QuestionCard key={problem._id || problem.id} problem={problem} hideActions={true} />
             ))}
           </div>
         )}

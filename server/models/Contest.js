@@ -18,11 +18,24 @@ const contestSchema = new mongoose.Schema({
     required: true,
   },
   questions: [String],
+  author: {
+    type: String,
+    required: true,
+  },
+  rules: {
+    type: [String],
+    default: [],
+  },
   visibility: {
     type: String,
     enum: ['public', 'private'],
     default: 'private',
   },
+  status: {
+    type: String,
+    enum: ['waiting', 'ongoing', 'completed'],
+    default: 'waiting',
+  },
 }, { timestamps: true });
 
-module.exports = mongoose.models.Contest||mongoose.model('Contest', contestSchema);
+module.exports = mongoose.models.Contest || mongoose.model('Contest', contestSchema);

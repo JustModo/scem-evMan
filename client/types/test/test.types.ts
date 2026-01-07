@@ -17,6 +17,7 @@ export interface Test {
   status: "waiting" | "ongoing" | "completed";
   participantsInProgress: number;
   participantsCompleted: number;
-  problems: number[];
+  problems: number[] | string[] | any[];
   participants?: TestParticipant[];
+  createdAt: string;
 }

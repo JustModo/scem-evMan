@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "packages/*"
+            ]
+        },
+        "esModuleInterop": true
+    }
+}

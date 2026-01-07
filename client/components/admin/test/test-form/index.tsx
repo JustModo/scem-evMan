@@ -13,10 +13,17 @@ import { useActionState, useTransition } from "react";
 import TestQuestions from "../questions-list";
 import { saveTest } from "@/app/actions/save-test";
 
-export default function TestForm({ testData }: { testData: Test }) {
+export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: any[] }) {
   const form = useForm<TestSchema>({
     resolver: zodResolver(testSchema),
-    defaultValues: testData,
+    defaultValues: {
+      title: "",
+      description: "",
+      duration: "00:00:00",
+      status: "waiting",
+      problems: [],
+      ...testData,
+    },
   });
 
   const [state, formAction] = useActionState(saveTest, {
@@ -32,20 +39,20 @@ export default function TestForm({ testData }: { testData: Test }) {
     });
   });
 
-  const questions = form.watch("problems") as number[];
+  const questions = form.watch("problems") as string[];
 
   return (
     <div className="max-w-none w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href={`/admin/tests/${testData.id}`}>
+          <Link href={`/admin/tests/${testData?.id || ''}`}>
             <Button variant="outline" size="icon" className="text-foreground">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div className="space-y-1 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold truncate">
-              Edit Test
+              {testData ? "Edit Test" : "Create Test"}
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base">
               Modify test details, questions, and settings
@@ -70,8 +77,8 @@ export default function TestForm({ testData }: { testData: Test }) {
           <Form {...form}>
             <form id="test-form" onSubmit={handleSubmit} className="space-y-6">
               <TestBasicCard />
-              <QuestionAddCard />
-              <TestQuestions questions={questions} />
+              <QuestionAddCard availableQuestions={availableQuestions} />
+              <TestQuestions questions={questions} availableQuestions={availableQuestions} />
             </form>
           </Form>
         </div>
