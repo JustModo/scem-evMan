@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus, Settings } from "lucide-react";
-import { problems } from "@/constants/test-data";
+// import { problems } from "@/constants/test-data"; // Removed hardcoded data
 import QuestionCard from "../../question/question-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -20,15 +20,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
+import { BaseProblem } from "@/types/problem/problem.types";
 
-export default function QuestionAddCard() {
+interface QuestionAddCardProps {
+    availableQuestions: BaseProblem[];
+}
+
+export default function QuestionAddCard({ availableQuestions = [] }: QuestionAddCardProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("");
 
   const filteredProblems = useMemo(() => {
     const term = searchTerm.toLowerCase();
-    return problems.filter((problem) => {
+    return availableQuestions.filter((problem) => {
       const matchesSearch =
         problem.title.toLowerCase().includes(term) ||
         problem.description.toLowerCase().includes(term);
@@ -47,9 +52,9 @@ export default function QuestionAddCard() {
   }, [searchTerm, typeFilter, difficultyFilter]);
 
   const { setValue, watch } = useFormContext();
-  const problemIds = watch("problems") as number[];
+  const problemIds = (watch("problems") as string[]) || [];
 
-  const toggleProblemId = (id: number) => {
+  const toggleProblemId = (id: string) => {
     if (problemIds.includes(id)) {
       setValue(
         "problems",
@@ -111,10 +116,11 @@ export default function QuestionAddCard() {
             <div className="space-y-4">
               {filteredProblems.map((problem) => (
                 <QuestionCard
-                  key={problem.id}
+                  key={problem._id || problem.id}
                   problem={problem}
-                  onClickQuestion={toggleProblemId}
-                  selected={problemIds.includes(problem.id)}
+                  onClickQuestion={() => toggleProblemId(problem._id || String(problem.id))}
+                  selected={problemIds.includes(problem._id || String(problem.id))}
+                  hideActions={true}
                 />
               ))}
             </div>

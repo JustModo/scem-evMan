@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, FileText, Calendar } from "lucide-react";
@@ -36,11 +38,11 @@ export function TestInformationCard({ test }: TestInformationCardProps) {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground font-medium">Created</span>
+          <span className="text-muted-foreground font-medium">Starts At</span>
           <div className="flex items-center gap-2 text-foreground">
             <Calendar className="h-4 w-4 text-primary/50" />
             <span className="font-semibold text-sm sm:text-base">
-              {test.startsAt}
+              {new Date(test.startsAt).toLocaleString()}
             </span>
           </div>
         </div>

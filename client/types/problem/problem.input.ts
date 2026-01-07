@@ -11,6 +11,7 @@ import z from "zod/v3";
 // export type MCQProblemUpdate = UpdateFrom<MCQProblem>;
 
 const codingSchema = z.object({
+  id: z.string().optional(),
   type: z.literal("coding"),
   title: z.string().min(1),
   description: z.string().min(1),
@@ -27,6 +28,7 @@ const codingSchema = z.object({
 });
 
 const mcqSchema = z.object({
+  id: z.string().optional(),
   type: z.literal("mcq"),
   title: z.string().min(1),
   description: z.string().min(1),

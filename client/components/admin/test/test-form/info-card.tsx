@@ -153,6 +153,12 @@ export default function TestBasicCard() {
             </div>
           </div>
         </div>
+        {/* Hidden status field to ensure it is passed */}
+        <FormField
+          control={control}
+          name="status"
+          render={({ field }) => <input type="hidden" {...field} />}
+        />
       </CardContent>
     </Card>
   );
