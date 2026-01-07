@@ -27,7 +27,9 @@ export async function saveQuestion(_prevState: any, data: QuestionSchema) {
       outputFormat: validatedData.type === 'coding' ? validatedData.outputFormat : undefined,
       constraints: validatedData.type === 'coding' ? String(validatedData.constraints) : undefined, // Expecting String
       boilerplateCode: validatedData.type === 'coding' ? validatedData.boilerplate : undefined, // Map boilerplate -> boilerplateCode
-      testcases: validatedData.type === 'coding' ? "http://placeholder-url.com/testcases.zip" : undefined, // Placeholder for now
+      functionName: validatedData.type === 'coding' ? validatedData.functionName : undefined,
+      inputVariables: validatedData.type === 'coding' ? validatedData.inputVariables : undefined,
+      testcases: validatedData.type === 'coding' ? validatedData.testCases : undefined,
 
       // MCQ specific
       options: validatedData.type === 'mcq' ? validatedData.options.map(o => o.text) : undefined,
