@@ -5,7 +5,7 @@ import { TestInformationCard } from "@/components/admin/test/test-detail/test-ca
 import { ParticipationStatisticsCard } from "@/components/admin/test/test-detail/participation-card";
 import { QuickActionsCard } from "@/components/admin/test/test-detail/actions-card";
 import TestEditQuestions from "@/components/admin/test/questions-list";
-import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
 
 interface IdParams {
   id: string;
@@ -17,51 +17,35 @@ export default async function AdminTestDetailPage({
   params: Promise<IdParams>;
 }) {
   const { id } = await params;
-  const { getToken } = await auth();
-  const token = await getToken();
-
   let test = null;
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/tests/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
+    const data = await db.findOne("contests", { _id: id });
+    if (data) {
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      const diffMs = end.getTime() - start.getTime();
+      const totalSeconds = Math.floor(diffMs / 1000);
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
 
-    if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.contest) {
-            const data = json.contest;
-            // Map backend data to frontend Test interface
-            test = {
-                id: data._id,
-                title: data.title,
-                description: data.description,
-                duration: (() => {
-                    const start = new Date(data.startTime);
-                    const end = new Date(data.endTime);
-                    const diffMs = end.getTime() - start.getTime();
-                    const totalSeconds = Math.floor(diffMs / 1000);
-                    const h = Math.floor(totalSeconds / 3600);
-                    const m = Math.floor((totalSeconds % 3600) / 60);
-                    const s = totalSeconds % 60;
-                    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                })(),
-                startsAt: data.startTime,
-                problems: data.questions.map((q: any) => ({
-                    ...q,
-                    id: q._id
-                })), 
-                status: data.status,
-                participantsInProgress: 0,
-                participantsCompleted: 0,
-                totalQuestions: data.questions?.length || 0,
-                createdAt: data.createdAt,
-            };
-        }
+      test = {
+        id: data._id,
+        title: data.title,
+        description: data.description,
+        duration: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
+        startsAt: data.startTime,
+        problems: (data.questions || []).map((q: any) => ({
+          ...q,
+          id: q?._id ?? q?.id,
+        })),
+        status: data.status,
+        participantsInProgress: 0,
+        participantsCompleted: 0,
+        totalQuestions: data.questions?.length || 0,
+        createdAt: data.createdAt,
+      };
     }
   } catch (error) {
     console.error("Error fetching test detail:", error);
