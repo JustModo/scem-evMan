@@ -15,6 +15,11 @@ const submissionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  status: {
+    type: String,
+    enum: ['Ongoing', 'Completed'],
+    default: 'Ongoing',
+  },
   submittedAt: Date,
   totalScore: {
     type: Number,
@@ -25,7 +30,7 @@ const submissionSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Question',
     },
-    answer: mongoose.Schema.Types.Mixed,
+    answer: [String], // MCQ answers (e.g., ["A"] or ["A", "C", "D"])
     // Coding specific fields
     language: String,
     status: {
