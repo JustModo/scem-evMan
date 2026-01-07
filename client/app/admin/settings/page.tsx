@@ -34,7 +34,7 @@ export default async function SettingsPage() {
                     </p>
                 </div>
 
-                {/* Question Management Section */}
+                {/* Question Management Section
                 <Card className="border-border shadow-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export default async function SettingsPage() {
                             </div>
                         )}
                     </CardContent>
-                </Card>
+                </Card> */}
 
                 {/* Danger Zone */}
                 <Card className="border-destructive/20 bg-destructive/5 shadow-sm">
