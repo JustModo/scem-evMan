@@ -53,14 +53,22 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
     }
   };
 
+
+
   const form = useForm<QuestionSchema>({
     resolver: zodResolver(questionSchema),
-    defaultValues: initialData || getDefaultValues(),
+    defaultValues: {
+      ...getDefaultValues(),
+      ...initialData,
+    },
   });
 
   useEffect(() => {
     if (initialData) {
-      form.reset(initialData);
+      form.reset({
+        ...getDefaultValues(),
+        ...initialData,
+      } as QuestionSchema);
     } else {
       form.reset(getDefaultValues());
     }

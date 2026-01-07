@@ -676,6 +676,7 @@ const contests = [
       'Time limit: 3 hours',
     ],
     visibility: 'public',
+    status: 'waiting',
   },
   {
     title: 'Data Structures Challenge',
@@ -692,6 +693,7 @@ const contests = [
       'Time limit: 4 hours',
     ],
     visibility: 'public',
+    status: 'waiting',
   },
   {
     title: 'Algorithm Masterclass',
@@ -708,6 +710,7 @@ const contests = [
       'Time limit: 5 hours',
     ],
     visibility: 'private',
+    status: 'waiting',
   },
   {
     title: 'Quick MCQ Quiz',
@@ -724,6 +727,7 @@ const contests = [
       'Time limit: 1 hour',
     ],
     visibility: 'public',
+    status: 'waiting',
   },
   {
     title: 'Mixed Assessment Test',
@@ -740,6 +744,7 @@ const contests = [
       'Time limit: 5 hours',
     ],
     visibility: 'public',
+    status: 'waiting',
   },
   // Edge case: Contest that has already ended
   {
@@ -752,6 +757,7 @@ const contests = [
     author: '',
     rules: ['Contest has ended', 'Check leaderboard for results'],
     visibility: 'public',
+    status: 'completed',
   },
   // Edge case: Contest starting very soon
   {
@@ -764,6 +770,20 @@ const contests = [
     author: '',
     rules: ['Be on time', 'No late entries'],
     visibility: 'public',
+    status: 'waiting',
+  },
+  // Edge case: Currently Ongoing Contest
+  {
+    title: 'Live Hackathon 2026',
+    description: 'This contest is currently live! Join now.',
+    type: 'mixed',
+    startTime: new Date('2026-01-01T00:00:00Z'),
+    endTime: new Date('2026-01-31T23:59:59Z'),
+    questions: [],
+    author: '',
+    rules: ['Live contest rules'],
+    visibility: 'public',
+    status: 'ongoing',
   },
   // Edge case: Very long duration contest
   {
@@ -781,6 +801,7 @@ const contests = [
       'Community discussion allowed after first week',
     ],
     visibility: 'public',
+    status: 'waiting',
   },
   // Edge case: Private contest with no description
   {
@@ -793,6 +814,7 @@ const contests = [
     author: '',
     rules: [],
     visibility: 'private',
+    status: 'waiting',
   },
 ];
 
@@ -849,11 +871,14 @@ const seedDatabase = async () => {
     contests[6].questions = mcqQuestionIds.slice(0, 5); // Starting soon
     contests[6].author = adminUser.clerkId;
 
-    contests[7].questions = codingQuestionIds; // Marathon
+    contests[7].questions = [...codingQuestionIds.slice(0, 2), ...mcqQuestionIds.slice(0, 3)]; // Live Hackathon
     contests[7].author = adminUser.clerkId;
 
-    contests[8].questions = [...mcqQuestionIds.slice(0, 2), ...codingQuestionIds.slice(0, 1)]; // Internal
+    contests[8].questions = codingQuestionIds; // Marathon
     contests[8].author = adminUser.clerkId;
+
+    contests[9].questions = [...mcqQuestionIds.slice(0, 2), ...codingQuestionIds.slice(0, 1)]; // Internal
+    contests[9].author = adminUser.clerkId;
 
     // Seed Contests
     console.log('Seeding contests...');

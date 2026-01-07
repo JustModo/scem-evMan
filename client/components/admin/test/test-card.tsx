@@ -9,9 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Test } from "@/types/test";
+import { deleteTestAction } from "@/app/actions/delete-test";
 
 export function TestCard({ test }: { test: Test }) {
   return (
@@ -43,7 +44,12 @@ export function TestCard({ test }: { test: Test }) {
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4 p-3 bg-muted border rounded-lg">
           <Clock className="h-4 w-4 text-foreground flex-shrink-0" />
           <span className="font-medium">Starts:</span>
-          <span className="truncate">{test.startsAt}</span>
+          <span className="truncate">
+            {new Date(test.startsAt).toLocaleString(undefined, {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </span>
         </div>
 
         {/* Status Stats */}
@@ -114,7 +120,7 @@ export function TestCard({ test }: { test: Test }) {
           )}
 
           <div className="flex-1">
-            <Button className={`w-full text-sm font-medium shadow-md`}>
+            <Button className={`w-full text-sm font-medium shadow-md pointer-events-none`}>
               {test.status === "completed"
                 ? "Completed"
                 : test.status === "ongoing"
@@ -122,6 +128,26 @@ export function TestCard({ test }: { test: Test }) {
                 : "Waiting"}
             </Button>
           </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 shrink-0"
+            disabled={test.status === "ongoing"}
+            title={test.status === "ongoing" ? "Cannot delete active test" : "Delete Test"}
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (confirm("Are you sure you want to delete this test?")) {
+                const res = await deleteTestAction(test.id as string);
+                if (!res.success) {
+                  alert(res.message);
+                }
+              }
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
     </Card>
