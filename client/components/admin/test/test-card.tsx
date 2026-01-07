@@ -33,8 +33,8 @@ export function TestCard({ test }: { test: Test }) {
             {test.status === "completed"
               ? "Completed"
               : test.status === "ongoing"
-              ? "Active"
-              : "Waiting"}
+                ? "Active"
+                : "Waiting"}
           </Badge>
         </div>
       </CardHeader>
@@ -124,8 +124,8 @@ export function TestCard({ test }: { test: Test }) {
               {test.status === "completed"
                 ? "Completed"
                 : test.status === "ongoing"
-                ? "Active"
-                : "Waiting"}
+                  ? "Active"
+                  : "Waiting"}
             </Button>
           </div>
 
