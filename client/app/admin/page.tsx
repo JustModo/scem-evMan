@@ -1,55 +1,63 @@
 import React from "react";
 import HeroSection, { DashboardStats } from "@/components/admin/hero-section";
-import { testsData, problems } from "@/constants/test-data";
-import fs from "fs/promises";
-import path from "path";
-
-const STATS_FILE = path.join(process.cwd(), "data", "statistics.json");
-const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-async function getStats() {
+async function getAdminStats() {
   try {
-    const data = await fs.readFile(STATS_FILE, "utf-8");
-    return JSON.parse(data);
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token");
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/stats`, {
+      headers: {
+        Authorization: `Bearer ${token?.value}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.error("Failed to fetch admin stats:", await res.text());
+      return null;
+    }
+
+    return await res.json();
   } catch (error) {
+    console.error("Error fetching admin stats:", error);
     return null;
   }
 }
 
-async function getQuestions() {
-  try {
-    const data = await fs.readFile(QUESTIONS_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-}
-
 export default async function AdminAnalyticsPage() {
-  const statsData = await getStats();
+  const apiData = await getAdminStats();
 
-  // Fallback default stats from mock data
   const defaultStats: DashboardStats = {
-    activeContests: testsData.filter((t) => t.status === "ongoing").length,
-    draftedTests: testsData.filter((t) => t.status === "waiting").length,
-    completedTests: testsData.filter((t) => t.status === "completed").length,
-    totalQuestions: problems.length,
-    totalParticipants: testsData.reduce(
-      (acc, curr) => acc + (curr.participantsInProgress || 0) + (curr.participantsCompleted || 0),
-      0
-    ),
-    easyQuestions: problems.filter((p) => p.difficulty === "Easy").length,
-    mediumQuestions: problems.filter((p) => p.difficulty === "Medium").length,
-    hardQuestions: problems.filter((p) => p.difficulty === "Hard").length,
+    activeContests: 0,
+    draftedTests: 0,
+    completedTests: 0,
+    totalQuestions: 0,
+    totalParticipants: 0,
+    easyQuestions: 0,
+    mediumQuestions: 0,
+    hardQuestions: 0,
   };
 
-  const stats = { ...defaultStats, ...statsData };
+  let stats = defaultStats;
+  let recentTests = [];
 
-  const recentTests = [...testsData]
-    .sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime())
-    .slice(0, 4);
+  if (apiData && apiData.success) {
+    stats = {
+      activeContests: apiData.activeContests || 0,
+      draftedTests: apiData.draftTests || 0,
+      completedTests: apiData.completedTests || 0,
+      totalQuestions: apiData.totalQuestions || 0,
+      totalParticipants: apiData.totalParticipants || 0,
+      easyQuestions: apiData.questionBank?.easy || 0,
+      mediumQuestions: apiData.questionBank?.medium || 0,
+      hardQuestions: apiData.questionBank?.hard || 0,
+    };
+    recentTests = apiData.recentTests || [];
+  }
 
   return (
     <div className="h-full w-full overflow-y-scroll">
