@@ -1,16 +1,20 @@
 {
+  "name": "server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@clerk/express": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "install": "^0.13.0",
     "mongoose": "^8.14.0",
     "nodemon": "^3.1.9",
-    "npm": "^11.3.0"
+    "code-gen": "workspace:*"
   },
-  "scripts": {
-    "start": "node index.js"
+  "engines": {
+    "node": ">=18"
   }
 }

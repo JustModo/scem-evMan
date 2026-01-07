@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { BsMoonFill, BsSunFill } from "react-icons/bs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export function ModeToggle() {
   const { resolvedTheme, setTheme } = useTheme();

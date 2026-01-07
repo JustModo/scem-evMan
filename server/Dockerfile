@@ -2,12 +2,19 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-RUN npm install
+# Copy root workspace configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 
-COPY . .
+COPY packages ./packages
+COPY server ./server
+
+RUN pnpm install --no-frozen-lockfile
+
+WORKDIR /app/server
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
