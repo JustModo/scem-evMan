@@ -1,4 +1,5 @@
-const User = require('../models/User'); 
+const User = require('../models/User');
+
 const isAdmin = async (req, res, next) => {
   try {
     const clerkUserId = req.auth?.userId;
@@ -17,7 +18,7 @@ const isAdmin = async (req, res, next) => {
       return res.status(403).json({ message: 'Forbidden: Admin access only' });
     }
 
-    next(); // User is verified admin → continue
+    next();
   } catch (error) {
     console.error('isAdmin Middleware Error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
