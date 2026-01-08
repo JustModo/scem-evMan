@@ -25,6 +25,31 @@ const codingSchema = z.object({
     .refine((val) => Object.values(val).some((v) => v && v.trim() !== ""), {
       message: "At least one boilerplate must be filled.",
     }),
+  functionName: z.string().min(1, "Function name is required"),
+  inputVariables: z
+    .array(
+      z.object({
+        name: z.string().min(1, "Variable name is required"),
+        type: z.enum([
+          "int",
+          "float",
+          "char",
+          "string",
+          "int_array",
+          "float_array",
+          "string_array",
+        ]),
+      })
+    )
+    .min(1, "At least one input variable is required"),
+  testCases: z
+    .array(
+      z.object({
+        input: z.record(z.string()),
+        output: z.string().min(1, "Expected output is required"),
+      })
+    )
+    .optional(), // Optional initially, but encouraged
 });
 
 const mcqSchema = z.object({

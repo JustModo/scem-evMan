@@ -1,8 +1,12 @@
 "use server";
 
-import { questionSchema, type QuestionSchema } from "@/types/problem";
-import { auth } from "@clerk/nextjs/server";
+import fs from "fs/promises";
+import path from "path";
 import { revalidatePath } from "next/cache";
+import { questionSchema, type QuestionSchema } from "@/types/problem";
+
+const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
+const STATS_FILE = path.join(process.cwd(), "data", "statistics.json");
 
 export async function saveQuestion(_prevState: any, data: QuestionSchema) {
   try {
@@ -27,7 +31,9 @@ export async function saveQuestion(_prevState: any, data: QuestionSchema) {
       outputFormat: validatedData.type === 'coding' ? validatedData.outputFormat : undefined,
       constraints: validatedData.type === 'coding' ? String(validatedData.constraints) : undefined, // Expecting String
       boilerplateCode: validatedData.type === 'coding' ? validatedData.boilerplate : undefined, // Map boilerplate -> boilerplateCode
-      testcases: validatedData.type === 'coding' ? "http://placeholder-url.com/testcases.zip" : undefined, // Placeholder for now
+      functionName: validatedData.type === 'coding' ? validatedData.functionName : undefined,
+      inputVariables: validatedData.type === 'coding' ? validatedData.inputVariables : undefined,
+      testcases: validatedData.type === 'coding' ? validatedData.testCases : undefined,
 
       // MCQ specific
       options: validatedData.type === 'mcq' ? validatedData.options.map(o => o.text) : undefined,
@@ -59,14 +65,13 @@ export async function saveQuestion(_prevState: any, data: QuestionSchema) {
     revalidatePath("/admin/questions");
     return {
       success: true,
-      message: `Question ${isUpdate ? 'updated' : 'saved'} successfully`,
+      message: "Question added! Full data saved to data/questions.json and stats updated.",
     };
   } catch (error) {
     console.error("Error saving question:", error);
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to save question",
+      message: error instanceof Error ? error.message : "Failed to save question",
     };
   }
 }

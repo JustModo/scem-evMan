@@ -1,7 +1,7 @@
 import { problems } from "@/constants/test-data";
 import { CodeScreen } from "@/components/attempt/code";
 import React from "react";
-import { CodingProblem } from "@/types/problem";
+import { CodingProblem, MCQProblem } from "@/types/problem";
 import MCQScreen from "@/components/attempt/mcq";
 
 interface Props {
@@ -29,7 +29,7 @@ export default async function TestContentPage(props: Props) {
       {problem.type === "coding" ? (
         <CodeScreen problem={problem as CodingProblem} />
       ) : (
-        <MCQScreen />
+        <MCQScreen problem={problem as MCQProblem} problems={problems} />
       )}
     </div>
   );
