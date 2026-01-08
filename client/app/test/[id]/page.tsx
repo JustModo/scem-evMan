@@ -54,9 +54,10 @@ const contests: Contest[] = [
 export default async function TestPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const contest = contests.find((c) => String(c.id) === params.id);
+  const { id } = await params;
+  const contest = contests.find((c) => String(c.id) === id);
   if (!contest) return notFound();
 
   return (
