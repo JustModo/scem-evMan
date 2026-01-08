@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil } from "lucide-react";
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -28,16 +29,19 @@ export default function MCQCard() {
   const correctOptionIds = watch("correctOptionIds") || [];
   const options = watch("options") || [];
 
-  // Ensure 4 options are initialized
-  if (options.length !== 4) {
-    setValue(
-      "options",
-      Array.from(
-        { length: 4 },
-        (_, i) => options[i] || { id: `${i}`, text: "" }
-      )
-    );
-  }
+  useEffect(() => {
+    if (options.length !== 4) {
+      setValue(
+        "options",
+        Array.from({ length: 4 }, (_, i) => {
+          const existing = options[i];
+          return existing
+            ? { id: existing.id ?? `${i}`, text: existing.text ?? "" }
+            : { id: `${i}`, text: "" };
+        })
+      );
+    }
+  }, [options, setValue]);
 
   const handleSingleSelect = (selectedId: string) => {
     setValue("correctOptionIds", [selectedId]);

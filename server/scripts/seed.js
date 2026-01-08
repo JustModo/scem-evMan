@@ -168,10 +168,8 @@ Input: nums = [3,3], target = 6
 Output: [0,1]`,
     difficulty: 'Easy',
     marks: 30,
-    constraints: `2 <= nums.length <= 10^4
--10^9 <= nums[i] <= 10^9
--10^9 <= target <= 10^9
-Only one valid answer exists.`,
+    constraints:
+      '2 <= nums.length <= 10^4, -10^9 <= nums[i] <= 10^9, -10^9 <= target <= 10^9, Only one valid answer exists.',
     inputFormat: 'First line contains n (size of array) and target\nSecond line contains n space-separated integers',
     outputFormat: 'Two space-separated integers representing the indices',
     boilerplateCode: {
@@ -394,8 +392,8 @@ Explanation: The answer is "wke", with the length of 3.
 Notice that the answer must be a substring, "pwke" is a subsequence and not a substring.`,
     difficulty: 'Medium',
     marks: 40,
-    constraints: `0 <= s.length <= 5 * 10^4
-s consists of English letters, digits, symbols and spaces.`,
+    constraints:
+      '0 <= s.length <= 5 * 10^4, s consists of English letters / digits / symbols / spaces.',
     inputFormat: 'A single string s',
     outputFormat: 'An integer representing the length of longest substring',
     boilerplateCode: {
@@ -496,11 +494,8 @@ Input: lists = [[]]
 Output: []`,
     difficulty: 'Hard',
     marks: 50,
-    constraints: `k == lists.length
-0 <= k <= 10^4
-0 <= lists[i].length <= 500
--10^4 <= lists[i][j] <= 10^4
-lists[i] is sorted in ascending order.`,
+    constraints:
+      'k == lists.length, 0 <= k <= 10^4, 0 <= lists[i].length <= 500, -10^4 <= lists[i][j] <= 10^4, each lists[i] is sorted in ascending order.',
     inputFormat: 'First line contains k (number of lists)\nNext k lines contain space-separated integers for each list',
     outputFormat: 'Space-separated integers representing the merged sorted list',
     boilerplateCode: {
@@ -640,7 +635,7 @@ int main() {
     description: 'Add two numbers.',
     difficulty: 'Easy',
     marks: 10,
-    constraints: '-1000 <= a, b <= 1000',
+    constraints: '-1000 <= a and b <= 1000',
     inputFormat: 'Two space-separated integers',
     outputFormat: 'Sum of the two integers',
     boilerplateCode: {
