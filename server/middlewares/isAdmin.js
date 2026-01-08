@@ -1,20 +1,10 @@
-const User = require('../models/User');
-
-const isAdmin = async (req, res, next) => {
+const isAdmin = (req, res, next) => {
   try {
-    const clerkUserId = req.auth?.userId;
-
-    if (!clerkUserId) {
-      return res.status(401).json({ message: 'Unauthorized: No Clerk user ID found' });
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized: No user data' });
     }
 
-    const user = await User.findOne({ clerkId: clerkUserId });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found in database' });
-    }
-
-    if (user.role !== 'admin') {
+    if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Forbidden: Admin access only' });
     }
 

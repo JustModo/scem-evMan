@@ -1,5 +1,5 @@
 const express = require("express");
-const { requireAuth, options } = require("../middlewares/checkAuth");
+const { requireAuth } = require("../middlewares/checkAuth");
 const {
   checkTestId,
   getContestLanding,
@@ -11,16 +11,12 @@ const {
 
 const router = express.Router();
 
-router.get("/pgs", (req, res) => {
-  res.send("I'm up");
-});
-
 // User Contest Flow
 router.post("/check_valid", checkTestId);
-router.get("/test/data", requireAuth(options), getContestData); // Protected
+router.get("/test/data", requireAuth(), getContestData); // Protected
 router.get("/test/:id", getContestLanding);
-router.post("/start_test", requireAuth(options), startTest);
-router.post("/test/submit", requireAuth(options), submitSolution);
-router.post("/test/end", requireAuth(options), endContest);
+router.post("/start_test", requireAuth(), startTest);
+router.post("/test/submit", requireAuth(), submitSolution);
+router.post("/test/end", requireAuth(), endContest);
 
 module.exports = router;

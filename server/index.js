@@ -6,7 +6,7 @@ const app = express();
 
 const { connectDB } = require("./controllers/dbCon");
 
-const compRoutes = require("./routes/compilerRoutes");
+// const compRoutes = require("./routes/compilerRoutes");
 const testRoutes = require("./routes/contestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const dataRoutes = require("./routes/dataRoutes");
@@ -32,11 +32,14 @@ app.get("/", (req, res) => {
 // Compiler Routes
 // app.use("/cmp", compRoutes);
 
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
+
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/data", dataRoutes);
 
-app.use("/api", testRoutes);
+app.use("/api/test", testRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
