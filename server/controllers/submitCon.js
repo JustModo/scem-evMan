@@ -98,7 +98,8 @@ const submitCode = async (req, res) => {
             const expectedOutput = tc.output.trim();
 
             try {
-                const response = await fetch(`${process.env.cmpAPI}?base64_encoded=false&wait=true`, {
+                const judge0Url = process.env.JUDGE0_URL || 'http://localhost:2358';
+                const response = await fetch(`${judge0Url}/submissions?base64_encoded=false&wait=true`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
