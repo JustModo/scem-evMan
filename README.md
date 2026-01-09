@@ -5,7 +5,7 @@
 #### Run Judge0 + Mongo only
 
 ```bash
-docker compose --project-name pomelo --env-file .env -f docker/app/docker-compose.dev.yaml -f docker/judge0/docker-compose.yaml --project-directory . up mongo judge0-server judge0-workers -d
+docker compose --project-name pomelo --env-file .env -f docker/app/docker-compose.dev.yaml -f docker/judge0/docker-compose.yaml --project-directory . up mongo judge0-server judge0-workers seed -d
 ```
 ---
 

@@ -5,8 +5,7 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "clean": "rm -rf dist",
-        "start": "ts-node src/index.ts"
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@types/node": "^25.0.3"
