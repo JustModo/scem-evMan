@@ -1,12 +1,11 @@
-x-logging:
-  &default-logging
+x-logging: &default-logging
   logging:
     driver: json-file
     options:
       max-size: 100M
 
 services:
-  server:
+  judge0-server:
     image: judge0/judge0:1.13.1
     volumes:
       - ./judge0.conf:/judge0.conf:ro
@@ -16,7 +15,7 @@ services:
     <<: *default-logging
     restart: always
 
-  workers:
+  judge0-workers:
     image: judge0/judge0:1.13.1
     command: ["./scripts/workers"]
     volumes:
@@ -25,7 +24,7 @@ services:
     <<: *default-logging
     restart: always
 
-  db:
+  judge0-db:
     image: postgres:16.2
     env_file: judge0.conf
     volumes:
@@ -33,12 +32,14 @@ services:
     <<: *default-logging
     restart: always
 
-  redis:
+  judge0-redis:
     image: redis:7.2.4
-    command: [
-      "bash", "-c",
-      'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"'
-    ]
+    command:
+      [
+        "bash",
+        "-c",
+        'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"',
+      ]
     env_file: judge0.conf
     <<: *default-logging
     restart: always

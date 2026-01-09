@@ -1,0 +1,1 @@
+docker compose --env-file .env.dev -f docker/app/docker-compose.dev.yaml --project-directory . up --watch
