@@ -12,7 +12,12 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import BasicInfoCard from "./shared/info-card";
 import MCQCard from "./mcq/mcq-card";
-import CodingCard from "./coding";
+
+
+import ConstraintsCard from "./coding/constraint-card";
+import BoilerplateCard from "./coding/boilerplate-card";
+import IOFormatCard from "./coding/ioformat-card";
+import TestCaseCard from "./coding/test-case-card";
 
 interface Props {
   type: "coding" | "mcq";
@@ -33,6 +38,8 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         outputFormat: "",
         constraints: [""],
         boilerplate: { c: "", cpp: "", java: "", python: "", javascript: "" },
+        functionName: "",
+        inputVariables: [],
       };
     } else {
       return {
@@ -118,13 +125,29 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
 
       <Form {...form}>
         <form id="question-form" onSubmit={handleSubmit} className="space-y-6">
-          <BasicInfoCard />
-
           <input type="hidden" {...form.register("type")} value={type} />
 
-          {type === "coding" && <CodingCard />}
+          {type === "coding" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* General Section */}
+              <div className="space-y-6">
+                <BasicInfoCard />
+                <ConstraintsCard />
+                <IOFormatCard />
+              </div>
 
-          {type === "mcq" && <MCQCard />}
+              {/* Technical Section */}
+              <div className="space-y-6">
+                <BoilerplateCard />
+                <TestCaseCard />
+              </div>
+            </div>
+          ) : (
+            <>
+              <BasicInfoCard />
+              <MCQCard />
+            </>
+          )}
         </form>
       </Form>
     </Fragment>
