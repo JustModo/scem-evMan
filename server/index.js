@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 // Routes
 
 // Compiler Routes
-// app.use("/cmp", compRoutes);
+// app.use("/cmp", compRoutes); 
 
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
