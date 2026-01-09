@@ -1,55 +1,11 @@
-// app/admin/tests/[id]/page.tsx
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import React from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Play } from "lucide-react";
+import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
 
-interface Contest {
-  id: number;
-  title: string;
-  description: string;
-  duration: {
-    start: string;
-    end: string;
-  };
-  totalProblems: number;
-  author: string;
-  rules: string[];
-}
-
-// Mock data - replace with real fetching logic
-const contests: Contest[] = [
-  {
-    id: 1,
-    title: "CodeMania 2025 - Round 1",
-    description: "A 3-hour online coding contest.",
-    duration: {
-      start: "2025-08-01T10:00:00",
-      end: "2025-08-01T13:00:00",
-    },
-    totalProblems: 5,
-    author: "SCEM Coding Club",
-    rules: [
-      "No plagiarism",
-      "Individual participation only",
-      "Submit before deadline",
-    ],
-  },
-  {
-    id: 2,
-    title: "CodeSprint 2025 - Round 2",
-    description: "A 2-hour sprint for coding enthusiasts.",
-    duration: {
-      start: "2025-09-01T15:00:00",
-      end: "2025-09-01T17:00:00",
-    },
-    totalProblems: 4,
-    author: "SCEM Coding Club",
-    rules: ["No cheating", "Solo only", "Submit on time"],
-  },
-];
+export const dynamic = "force-dynamic";
 
 export default async function TestPage({
   params,
@@ -57,102 +13,90 @@ export default async function TestPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const contest = contests.find((c) => String(c.id) === id);
+
+  const contest = await db.findOne("contests", { _id: id });
+
   if (!contest) return notFound();
 
+  const firstQuestionId = contest.questions?.[0] || "";
+
   return (
-    <div className="h-screen pt-12 bg-primary text-foreground">
-      <div className="flex flex-col md:flex-row h-full">
-        {/* Main Detail Section */}
-        <div className="flex-1 p-6 bg-primary"></div>
+    <div className="min-h-screen pt-12 bg-primary text-foreground">
+      <div className="flex flex-col md:flex-row min-h-[calc(100vh-3rem)]">
+        {/* Main Detail Section - Empty or could show logo/image */}
+        <div className="flex-1 p-6 bg-primary/5 hidden md:block">
+        </div>
 
         {/* Sidebar */}
-        <div className="w-full md:w-1/3 bg-card border shadow-md flex flex-col">
-          <ScrollArea className="flex-1 min-h-0  p-6">
-            <div className="space-y-6 ">
+        <div className="w-full md:w-1/3 bg-card border-l shadow-xl flex flex-col">
+          <ScrollArea className="flex-1 min-h-0 p-6">
+            <div className="space-y-8">
               {/* Title and Description */}
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold tracking-tight text-primary">
                   {contest.title}
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-muted-foreground leading-relaxed">
                   {contest.description}
                 </p>
               </div>
 
               {/* Test Details Grid */}
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-primary">
-                  Test Details
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold border-b pb-2">
+                  Session Information
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-1 gap-4 text-sm">
-                  <div>
-                    <span className="block font-semibold text-primary">
-                      Start
-                    </span>
-                    <p>{new Date(contest.duration.start).toLocaleString()}</p>
+                <div className="grid grid-cols-1 gap-4 text-sm">
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                    <span className="font-medium text-muted-foreground">Start Time</span>
+                    <span className="font-semibold">{new Date(contest.startTime).toLocaleString()}</span>
                   </div>
-                  <div>
-                    <span className="block font-semibold text-primary">
-                      End
-                    </span>
-                    <p>{new Date(contest.duration.end).toLocaleString()}</p>
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                    <span className="font-medium text-muted-foreground">End Time</span>
+                    <span className="font-semibold">{new Date(contest.endTime).toLocaleString()}</span>
                   </div>
-                  <div>
-                    <span className="block font-semibold text-primary">
-                      Problems
-                    </span>
-                    <p>{contest.totalProblems}</p>
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                    <span className="font-medium text-muted-foreground">Total Problems</span>
+                    <span className="font-semibold">{contest.questions?.length || 0}</span>
                   </div>
-                  <div>
-                    <span className="block font-semibold text-primary">
-                      Author
-                    </span>
-                    <p>{contest.author}</p>
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
+                    <span className="font-medium text-muted-foreground">Host</span>
+                    <span className="font-semibold">{contest.author}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Rules (cleaned up repeated sections) */}
-              <div>
-                <h4 className="text-lg font-semibold text-primary mb-2">
-                  Rules
-                </h4>
-                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                  {contest.rules.map((rule, i) => (
-                    <li key={i}>{rule}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Summary */}
-              <div className="text-sm space-y-2 border-t pt-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Start</span>
-                  <span>
-                    {new Date(contest.duration.start).toLocaleString()}
-                  </span>
+              {/* Rules */}
+              {contest.rules && contest.rules.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold">Assessment Rules</h4>
+                  <ul className="space-y-3">
+                    {contest.rules.map((rule: string, i: number) => (
+                      <li key={i} className="flex gap-3 text-sm text-muted-foreground">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                        {rule}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">End</span>
-                  <span>{new Date(contest.duration.end).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Problems</span>
-                  <span>{contest.totalProblems}</span>
-                </div>
-              </div>
+              )}
             </div>
           </ScrollArea>
 
           {/* Take Test Button */}
-          <div className="pt-0 p-6">
-            <Link href={`/test/${contest.id}`}>
-              <Button className="w-full gap-2">
-                <Play className="w-4 h-4" />
-                Take Test
+          <div className="p-6 border-t bg-card">
+            {firstQuestionId ? (
+              <Link href={`/attempt/test/${id}/question/${firstQuestionId}`}>
+                <Button className="w-full py-6 text-lg font-bold gap-3 shadow-lg shadow-primary/20">
+                  <Play className="w-5 h-5 fill-current" />
+                  Begin Assessment
+                </Button>
+              </Link>
+            ) : (
+              <Button disabled className="w-full py-6 text-lg font-bold opacity-50">
+                No Questions Available
               </Button>
-            </Link>
+            )}
           </div>
         </div>
       </div>
