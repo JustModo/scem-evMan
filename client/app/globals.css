@@ -131,7 +131,7 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply overflow-hidden;
+    @apply scroll-smooth;
   }
 }
 
