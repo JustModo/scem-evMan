@@ -17,7 +17,7 @@ async function mintBackendToken(user: any) {
     })
         .setProtectedHeader({ alg })
         .setIssuedAt()
-        .setExpirationTime('1h') // Short lived
+        .setExpirationTime('2d')
         .sign(secret)
 
     return jwt
