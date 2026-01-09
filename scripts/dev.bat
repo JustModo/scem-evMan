@@ -1,1 +1,1 @@
-docker compose --env-file .env.dev -f docker/app/docker-compose.dev.yaml --project-directory . up --watch
+docker compose --project-name pomelo --env-file .env.dev -f docker/app/docker-compose.dev.yaml -f docker/judge0/docker-compose.yaml --project-directory . up --build --watch
