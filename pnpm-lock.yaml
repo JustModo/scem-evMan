@@ -166,12 +166,12 @@ importers:
 
   server:
     dependencies:
+      '@pomelo/code-gen':
+        specifier: workspace:*
+        version: link:../packages/code-gen
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
-      code-gen:
-        specifier: workspace:*
-        version: link:../packages/code-gen
       cors:
         specifier: ^2.8.5
         version: 2.8.5
