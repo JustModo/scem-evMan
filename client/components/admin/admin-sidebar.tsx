@@ -44,7 +44,7 @@ export default function AdminSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col items-center w-14 min-w-14 py-6 space-y-6 bg-sidebar border-r border-border h-full">
+      <aside className="hidden md:flex flex-col items-center w-14 min-w-14 py-6 space-y-6 bg-sidebar border-r border-border sticky top-12 h-[calc(100vh-3rem)]">
         {routes.map((r) => {
           const isActive = r.exact
             ? pathname === r.link
@@ -55,8 +55,8 @@ export default function AdminSidebar() {
               key={r.name}
               href={r.link}
               className={`group p-3 rounded-lg transition-colors flex items-center justify-center ${isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted text-muted-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted text-muted-foreground"
                 }`}
               aria-label={r.label}
             >
@@ -83,8 +83,8 @@ export default function AdminSidebar() {
               key={r.name}
               href={r.link}
               className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-colors ${isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
               aria-label={r.label}
             >
