@@ -2,3 +2,7 @@ packages:
   - packages/*
   - server
   - client
+
+onlyBuiltDependencies:
+  - sharp
+  - unrs-resolver
