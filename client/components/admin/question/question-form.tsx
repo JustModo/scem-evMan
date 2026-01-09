@@ -96,7 +96,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
 
   return (
     <Fragment>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href={"/admin/questions"}>
             <Button variant="outline" size="icon" className="text-foreground">
@@ -112,15 +112,17 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
             </p>
           </div>
         </div>
-        <Button
-          type="submit"
-          form="question-form"
-          disabled={isPending}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Save
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            form="question-form"
+            disabled={isPending}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+        </div>
       </div>
 
       <Form {...form}>

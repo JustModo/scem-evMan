@@ -45,9 +45,9 @@ export default function QuestionCard({
   };
 
   const getDifficultyText = (diff: string) => {
-      // Ensure Title Case for display
-      if (!diff) return "Unknown";
-      return diff.charAt(0).toUpperCase() + diff.slice(1).toLowerCase();
+    // Ensure Title Case for display
+    if (!diff) return "Unknown";
+    return diff.charAt(0).toUpperCase() + diff.slice(1).toLowerCase();
   }
 
   const handleClick = () => {
@@ -64,7 +64,7 @@ export default function QuestionCard({
       onClick={handleClick}
     >
       <div className="space-y-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h4 className="font-medium text-foreground">{problem.title}</h4>
           <span
             className={cn(
@@ -81,20 +81,20 @@ export default function QuestionCard({
           </Badge>
         </div>
       </div>
-      
+
       {!hideActions && (
-      <div className="flex items-center gap-2">
-         <Link 
-            href={`/admin/questions/${(problem.type || "coding").toLowerCase()}/${problem._id || problem.id}/edit`}
-            onClick={(e) => e.stopPropagation()}
-         >
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                <Pencil className="h-4 w-4" />
-            </Button>
-         </Link>
-         <Button 
-            variant="ghost" 
-            size="icon" 
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" asChild>
+            <Link
+              href={`/admin/questions/${(problem.type || "coding").toLowerCase()}/${problem._id || problem.id}/edit`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
             onClick={async (e) => {
               e.stopPropagation();
@@ -102,14 +102,14 @@ export default function QuestionCard({
               if (confirm("Are you sure you want to delete this question?")) {
                 const res = await deleteQuestion(String(problem._id || problem.id));
                 if (!res.success) {
-                  alert(res.message);
+                  alert(res.error || "Failed to delete question");
                 }
               }
             }}
-         >
+          >
             <Trash2 className="h-4 w-4" />
-         </Button>
-      </div>
+          </Button>
+        </div>
       )}
     </div>
   );
