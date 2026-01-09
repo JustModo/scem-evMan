@@ -72,16 +72,14 @@ export default function TestForm({ testData, availableQuestions = [] }: { testDa
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 2xl:grid-cols-4 gap-6 lg:gap-8">
-        <div className="2xl:col-span-3 space-y-6">
-          <Form {...form}>
-            <form id="test-form" onSubmit={handleSubmit} className="space-y-6">
-              <TestBasicCard />
-              <QuestionAddCard availableQuestions={availableQuestions} />
-              <TestQuestions questions={questions} availableQuestions={availableQuestions} />
-            </form>
-          </Form>
-        </div>
+      <div className="w-full space-y-6">
+        <Form {...form}>
+          <form id="test-form" onSubmit={handleSubmit} className="space-y-6">
+            <TestBasicCard />
+            <QuestionAddCard availableQuestions={availableQuestions} />
+            <TestQuestions questions={questions} availableQuestions={availableQuestions} />
+          </form>
+        </Form>
       </div>
     </div>
   );
