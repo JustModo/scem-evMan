@@ -15,7 +15,7 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Pencil } from "lucide-react";
 
-const languageList = ["c", "cpp", "java", "python", "javascript"];
+const languageList = ["c", "java", "python"];
 
 export default function BoilerplateCard() {
   const { control } = useFormContext();
@@ -58,7 +58,7 @@ export default function BoilerplateCard() {
           ))}
         </div>
 
-        {supportedLanguages.map((lang) => (
+        {/* {supportedLanguages.map((lang) => (
           <FormField
             key={lang}
             control={control}
@@ -77,7 +77,7 @@ export default function BoilerplateCard() {
               </FormItem>
             )}
           />
-        ))}
+        ))} */}
       </CardContent>
     </Card>
   );

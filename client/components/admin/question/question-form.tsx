@@ -130,19 +130,12 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
           <input type="hidden" {...form.register("type")} value={type} />
 
           {type === "coding" ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* General Section */}
-              <div className="space-y-6">
-                <BasicInfoCard />
-                <ConstraintsCard />
-                <IOFormatCard />
-              </div>
-
-              {/* Technical Section */}
-              <div className="space-y-6">
-                <BoilerplateCard />
-                <TestCaseCard />
-              </div>
+            <div className="space-y-6">
+              <BasicInfoCard />
+              <ConstraintsCard />
+              <IOFormatCard />
+              <BoilerplateCard />
+              <TestCaseCard />
             </div>
           ) : (
             <>
