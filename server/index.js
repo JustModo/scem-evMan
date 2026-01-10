@@ -41,6 +41,9 @@ app.use("/api/data", dataRoutes);
 
 app.use("/api/test", testRoutes);
 
+const submitRoutes = require("./routes/submitRoutes");
+app.use("/api/submit", submitRoutes);
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

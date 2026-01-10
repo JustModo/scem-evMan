@@ -32,6 +32,7 @@ const submissionSchema = new mongoose.Schema({
     },
     answer: [String], // MCQ answers (e.g., ["A"] or ["A", "C", "D"])
     // Coding specific fields
+    code: String,
     language: String,
     status: {
       type: String,
