@@ -1,8 +1,9 @@
-import { problems } from "@/constants/test-data";
+import { db } from "@/lib/db";
 import { CodeScreen } from "@/components/attempt/code";
 import React from "react";
 import { CodingProblem, MCQProblem } from "@/types/problem";
 import MCQScreen from "@/components/attempt/mcq";
+import { notFound } from "next/navigation";
 
 interface Props {
   params: Promise<{
@@ -11,25 +12,42 @@ interface Props {
   }>;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function TestContentPage(props: Props) {
   const params = await props.params;
-  const qid = Number(params.qid);
-  const problem = problems.find((p) => p.id === qid);
+  const { testid, qid } = params;
+
+  // Fetch real question data
+  const problem = await db.findOne("questions", { _id: qid });
 
   if (!problem) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        Problem not found.
-      </div>
-    );
+    return notFound();
   }
+
+  // Fetch all problems for this test to enable navigation (Passing full details is safer)
+  const contest = await db.findOne("contests", { _id: testid });
+  const questionIds = contest?.questions || [];
+  const allProblems = await Promise.all(
+    questionIds.map((id: string) => db.findOne("questions", { _id: id }))
+  );
+
+  const normalizedProblems = allProblems
+    .filter(p => p !== null)
+    .map(p => ({
+      ...p,
+      id: p._id, // Map _id to id for component compatibility
+    }));
 
   return (
     <div className="w-full h-full">
-      {problem.type === "coding" ? (
-        <CodeScreen problem={problem as CodingProblem} />
+      {problem.questionType === "Coding" ? (
+        <CodeScreen problem={{ ...problem, id: problem._id } as any} />
       ) : (
-        <MCQScreen problem={problem as MCQProblem} problems={problems} />
+        <MCQScreen
+          problem={{ ...problem, id: problem._id } as any}
+          problems={normalizedProblems}
+        />
       )}
     </div>
   );

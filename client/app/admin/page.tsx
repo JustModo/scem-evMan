@@ -60,10 +60,8 @@ export default async function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="h-full w-full overflow-y-scroll">
-      <div className="max-w-none w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
-        <HeroSection stats={stats} recentTests={recentTests} />
-      </div>
+    <div className="max-w-none w-full p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+      <HeroSection stats={stats} recentTests={recentTests} />
     </div>
   );
 }

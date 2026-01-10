@@ -13,15 +13,16 @@ import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CodingProblem } from "@/types/problem";
 
-type Language = keyof CodingProblem["boilerplate"];
+type Language = keyof CodingProblem["boilerplateCode"];
 
 export default function CodeEditorPanel({
   problem,
 }: {
   problem: CodingProblem;
 }) {
-  const availableLanguages = Object.keys(problem.boilerplate) as Language[];
-  const [language, setLanguage] = useState<Language>(availableLanguages[0]);
+  const boilerplate = problem.boilerplateCode || {};
+  const availableLanguages = Object.keys(boilerplate) as Language[];
+  const [language, setLanguage] = useState<Language>(availableLanguages[0] || "javascript");
   const { resolvedTheme } = useTheme();
 
   return (
@@ -35,15 +36,18 @@ export default function CodeEditorPanel({
           onValueChange={(val: Language) => setLanguage(val)}
           defaultValue={availableLanguages[0]}
         >
-          <SelectTrigger className="h-8 w-32 text-sm">
+          <SelectTrigger className="h-8 w-40 text-sm">
             <SelectValue placeholder="Select Language" />
           </SelectTrigger>
           <SelectContent>
             {availableLanguages.map((lang) => (
               <SelectItem key={lang} value={lang}>
-                {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                {lang === "cpp" ? "C++" : lang.charAt(0).toUpperCase() + lang.slice(1)}
               </SelectItem>
             ))}
+            {availableLanguages.length === 0 && (
+              <SelectItem value="javascript">JavaScript (Default)</SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -53,15 +57,17 @@ export default function CodeEditorPanel({
         <Editor
           language={language}
           theme={resolvedTheme === "dark" ? "vs-dark" : "vs-light"}
-          value={problem.boilerplate[language]}
+          value={boilerplate[language] || "// Start coding here"}
           options={{
             minimap: { enabled: false },
             glyphMargin: false,
-            folding: false,
+            folding: true,
             scrollBeyondLastLine: false,
             padding: { top: 12, bottom: 12 },
-            renderLineHighlight: "none",
+            renderLineHighlight: "all",
             renderLineHighlightOnlyWhenFocus: false,
+            fontSize: 14,
+            tabSize: 2,
           }}
           loading={<Skeleton className="w-full h-full bg-muted" />}
         />

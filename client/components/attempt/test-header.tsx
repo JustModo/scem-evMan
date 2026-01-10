@@ -3,11 +3,11 @@
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useParams } from "next/navigation";
 
 type ProblemMeta = {
-  id: number;
-  type: "mcq" | "coding";
+  id: string;
+  type: string;
 };
 
 interface TestHeaderProps {
@@ -18,15 +18,16 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
 
-  const currentId = Number(pathname.split("/").pop());
+  const currentId = pathname.split("/").pop();
 
   const scroll = (distance: number) => {
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
 
-  const mcqProblems = problems.filter((p) => p.type === "mcq");
-  const codingProblems = problems.filter((p) => p.type === "coding");
+  const mcqProblems = problems.filter((p) => p.type !== "Coding");
+  const codingProblems = problems.filter((p) => p.type === "Coding");
 
   return (
     <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-primary">
@@ -48,7 +49,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
               </div>
               <div className="flex gap-1">
                 {mcqProblems.map((problem, i) => {
-                  const isActive = problem.id === currentId;
+                  const isActive = String(problem.id) === currentId;
                   return (
                     <Button
                       key={problem.id}
@@ -57,7 +58,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
                       className="h-8 w-8 p-0 rounded-sm data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                       data-state={isActive ? "active" : undefined}
                       onClick={() =>
-                        router.push(`/attempt/test/123/question/${problem.id}`)
+                        router.push(`/attempt/test/${params.testid}/question/${problem.id}`)
                       }
                     >
                       {i + 1}
@@ -74,7 +75,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
               </div>
               <div className="flex gap-1">
                 {codingProblems.map((problem, i) => {
-                  const isActive = problem.id === currentId;
+                  const isActive = String(problem.id) === currentId;
                   return (
                     <Button
                       key={problem.id}
@@ -83,7 +84,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
                       className="h-8 w-8 p-0 rounded-sm data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-sm"
                       data-state={isActive ? "active" : undefined}
                       onClick={() =>
-                        router.push(`/attempt/test/123/question/${problem.id}`)
+                        router.push(`/attempt/test/${params.testid}/question/${problem.id}`)
                       }
                     >
                       {i + 1}

@@ -42,32 +42,58 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <aside className="flex flex-col items-center w-14 min-w-14 py-6 space-y-6 bg-sidebar border-r border-border">
-      {routes.map((r) => {
-        const isActive = r.exact
-          ? pathname === r.link
-          : pathname.startsWith(r.link);
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col items-center w-14 min-w-14 py-6 space-y-6 bg-sidebar border-r border-border sticky top-12 h-[calc(100vh-3rem)]">
+        {routes.map((r) => {
+          const isActive = r.exact
+            ? pathname === r.link
+            : pathname.startsWith(r.link);
 
-        return (
-          <Link
-            key={r.name}
-            href={r.link}
-            className={`group p-3 rounded-lg transition-colors flex items-center justify-center ${
-              isActive
+          return (
+            <Link
+              key={r.name}
+              href={r.link}
+              className={`group p-3 rounded-lg transition-colors flex items-center justify-center ${isActive
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted text-muted-foreground"
-            }`}
-            aria-label={r.label}
-          >
-            <div className="relative text-xl">
-              {r.icon}
-              <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-xs text-popover-foreground opacity-0 shadow group-hover:opacity-100 transition-opacity">
-                {r.label}
-              </span>
-            </div>
-          </Link>
-        );
-      })}
-    </aside>
+                }`}
+              aria-label={r.label}
+            >
+              <div className="relative text-xl">
+                {r.icon}
+                <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-xs text-popover-foreground opacity-0 shadow group-hover:opacity-100 transition-opacity z-50">
+                  {r.label}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </aside>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around h-16 bg-sidebar border-t border-border px-4 py-2">
+        {routes.map((r) => {
+          const isActive = r.exact
+            ? pathname === r.link
+            : pathname.startsWith(r.link);
+
+          return (
+            <Link
+              key={r.name}
+              href={r.link}
+              className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-colors ${isActive
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+              aria-label={r.label}
+            >
+              <div className="text-xl">{r.icon}</div>
+              <span className="text-[10px] font-medium">{r.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

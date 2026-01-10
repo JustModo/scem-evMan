@@ -116,7 +116,8 @@
   --chart-1: #00ffb0;
   --chart-2: #1de9b6;
   --chart-3: #43e97b;
-  --chart-4: #ffd700; /* Gold for luxury */
+  --chart-4: #ffd700;
+  /* Gold for luxury */
   --chart-5: #8fa7a3;
 
   /* Sidebar */
@@ -127,11 +128,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
-    @apply overflow-hidden;
+    @apply scroll-smooth;
   }
 }
 

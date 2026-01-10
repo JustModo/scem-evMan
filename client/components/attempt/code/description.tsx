@@ -37,7 +37,7 @@ export default function DescriptionPanel({
             </div>
             <div>
               <Label className="text-muted-foreground">Points</Label>
-              <div className="text-sm">{problem.points}</div>
+              <div className="text-sm">{problem.marks || 0}</div>
             </div>
           </div>
 
@@ -45,22 +45,18 @@ export default function DescriptionPanel({
 
           <div>
             <Label className="text-muted-foreground">Input Format</Label>
-            <p>{problem.inputFormat}</p>
+            <p className="whitespace-pre-wrap">{problem.inputFormat}</p>
           </div>
 
           <div>
             <Label className="text-muted-foreground">Output Format</Label>
-            <p>{problem.outputFormat}</p>
+            <p className="whitespace-pre-wrap">{problem.outputFormat}</p>
           </div>
 
-          {problem.constraints?.length > 0 && (
+          {problem.constraints && (
             <div>
               <Label className="text-muted-foreground">Constraints</Label>
-              <ul className="list-disc list-inside">
-                {problem.constraints.map((c, i) => (
-                  <li key={i}>{c}</li>
-                ))}
-              </ul>
+              <p className="whitespace-pre-wrap">{problem.constraints}</p>
             </div>
           )}
         </div>
