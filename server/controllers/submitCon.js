@@ -117,6 +117,10 @@ const submitCode = async (req, res) => {
                 });
 
                 const result = await response.json();
+                
+                // Log full Judge0 response for debugging
+                console.log(`Judge0 response for test case ${index + 1}:`, JSON.stringify(result, null, 2));
+                
                 const isPassed = result.status && result.status.id === 3; // ID 3 is 'Accepted'
 
                 return {

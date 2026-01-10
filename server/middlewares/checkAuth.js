@@ -14,7 +14,14 @@ const requireAuth = () => async (req, res, next) => {
 
     try {
       const { payload } = await jwtVerify(token, secret);
-      req.user = payload;
+      
+      // Transform payload to match expected user structure
+      req.user = {
+        _id: payload.userId,
+        id: payload.userId,
+        role: payload.role,
+        email: payload.email
+      };
       req.auth = { userId: payload.userId };
       next();
     } catch (err) {
