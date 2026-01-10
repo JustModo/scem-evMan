@@ -1,6 +1,12 @@
 const Submission = require("../models/Submissions");
 const { languageMap } = require("../utils/languageMap");
 
+// Helper function to remove trailing whitespace/newlines from output
+const removeTrailingLineCommands = (output) => {
+    if (typeof output !== 'string') return output;
+    return output.replace(/\s+$/g, '');
+};
+
 // Save MCQ answer and calculate score
 const saveMCQ = async (req, res) => {
     try {
@@ -95,7 +101,7 @@ const submitCode = async (req, res) => {
         // Execute code against all test cases in parallel
         const executionPromises = testCases.map(async (tc, index) => {
             const input = typeof tc.input === 'object' ? JSON.stringify(tc.input) : tc.input;
-            const expectedOutput = tc.output.trim();
+            const expectedOutput = removeTrailingLineCommands(tc.output.trim());
 
             try {
                 const judge0Url = process.env.JUDGE0_URL || 'http://localhost:2358';
@@ -118,7 +124,7 @@ const submitCode = async (req, res) => {
                     passed: isPassed,
                     input: input,
                     expectedOutput: expectedOutput,
-                    actualOutput: result.stdout || result.stderr || result.compile_output || "",
+                    actualOutput: removeTrailingLineCommands(result.stdout || result.stderr || result.compile_output || ""),
                     error: result.stderr || result.compile_output || (result.status ? result.status.description : "Unknown Error"),
                     status: result.status ? result.status.description : "Unknown",
                 };
