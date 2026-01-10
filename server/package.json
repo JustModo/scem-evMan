@@ -6,8 +6,8 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3",
     "@pomelo/code-gen": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
