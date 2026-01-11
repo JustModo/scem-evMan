@@ -30,7 +30,7 @@ const questionSchema = new mongoose.Schema({
   },
   functionName: String,
   inputVariables: [{
-    name: String,
+    variable: String,
     type: {
       type: String,
       enum: ['int', 'float', 'char', 'string', 'int_array', 'float_array', 'string_array']
