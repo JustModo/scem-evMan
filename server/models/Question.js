@@ -24,11 +24,9 @@ const questionSchema = new mongoose.Schema({
   inputFormat: String,
   outputFormat: String,
   boilerplateCode: {
-    cpp: String,
     c: String,
     java: String,
     python: String,
-    javascript: String,
   },
   functionName: String,
   inputVariables: [{
