@@ -5,6 +5,7 @@ const User = require('../models/User');
 const isContestActive = async (req, res, next) => {
     try {
         const userId = req.user?.userId || req.auth?.userId; // Get user ID from decoded token
+        const contestId = req.body.contestId || req.params.contestId; // Get contest ID from request
 
         if (!contestId) {
             return res.status(400).json({
