@@ -84,8 +84,8 @@ const questions = [
     outputFormat: 'Two space-separated integers representing the indices',
     functionName: 'twoSum',
     inputVariables: [
-      { name: 'nums', type: 'int_array' },
-      { name: 'target', type: 'int' }
+      { variable: 'nums', type: 'int_array' },
+      { variable: 'target', type: 'int' }
     ],
     boilerplateCode: {
       python: `def twoSum(nums, target):\n    # Write your code here\n    pass`,
@@ -108,7 +108,7 @@ const questions = [
     outputFormat: 'true or false',
     functionName: 'isPalindrome',
     inputVariables: [
-      { name: 'x', type: 'int' }
+      { variable: 'x', type: 'int' }
     ],
     boilerplateCode: {
       python: `def isPalindrome(x):\n    # Write your code here\n    pass`,
