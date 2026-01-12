@@ -38,7 +38,7 @@ export async function saveQuestion(_prevState: any, data: QuestionSchema) {
 
       // MCQ specific
       options: validatedData.type === 'mcq' ? validatedData.options.map(o => o.text) : undefined,
-      correctAnswer: validatedData.type === 'mcq' ? validatedData.correctOptionIds[0] : undefined // Assuming single correct for now or comma joined
+      correctAnswer: validatedData.type === 'mcq' ? validatedData.correctAnswer : undefined,
     };
 
     // Determine URL and Method

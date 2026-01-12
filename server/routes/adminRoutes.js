@@ -13,6 +13,7 @@ const {
   deleteContest,
   getAdminStats,
 } = require("../controllers/adminCon");
+const { getData, getOne } = require("../controllers/dataCon");
 
 const router = express.Router();
 
@@ -32,5 +33,9 @@ router.get("/tests/:id/result", requireAuth(), getAdminContestResults);
 
 // Dashboard Stats
 router.get("/stats", requireAuth(), getAdminStats);
+
+// Generic Data Endpoints
+router.post("/data", requireAuth(), getData);
+router.post("/data/one", requireAuth(), getOne);
 
 module.exports = router;

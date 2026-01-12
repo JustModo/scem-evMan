@@ -29,7 +29,7 @@ const codingSchema = z.object({
   inputVariables: z
     .array(
       z.object({
-        name: z.string().min(1, "Variable name is required"),
+        variable: z.string().min(1, "Variable name is required"),
         type: z.enum([
           "int",
           "float",
@@ -68,8 +68,8 @@ const mcqSchema = z.object({
       })
     )
     .length(4, "Exactly 4 options are required"),
-  correctOptionIds: z
-    .array(z.string())
+  correctAnswer: z
+    .string()
     .min(1, "Please select at least one correct option."),
 });
 

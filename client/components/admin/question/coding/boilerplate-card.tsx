@@ -1,34 +1,49 @@
 "use client";
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { Pencil } from "lucide-react";
 
 const languageList = ["c", "java", "python"];
 
 export default function BoilerplateCard() {
-  const { control } = useFormContext();
+  const { setValue, watch, unregister } = useFormContext();
+  const boilerplate = watch("boilerplate");
+  
+  // Initialize local state based on existing form data (for edit mode)
+  const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
 
-  const [supportedLanguages, setSupportedLanguages] =
-    useState<string[]>(languageList);
+  useEffect(() => {
+    if (boilerplate) {
+      const activeLangs = Object.keys(boilerplate).filter(
+        (key) => languageList.includes(key) && boilerplate[key] !== undefined
+      );
+      if (activeLangs.length > 0) {
+        setSupportedLanguages(activeLangs);
+      } else {
+        // Default to all if none set (or maybe none? defaulting to empty for now)
+         setSupportedLanguages([]);
+      }
+    }
+  }, []); // Run once on mount (or when initial data loads if we added dependency)
 
   const toggleLanguage = (lang: string) => {
+    let newLangs;
     if (supportedLanguages.includes(lang)) {
-      setSupportedLanguages((prev) => prev.filter((l) => l !== lang));
+        // Deselecting
+      newLangs = supportedLanguages.filter((l) => l !== lang);
+      // Remove from form data so backend doesn't generate for it
+      // We can either set to undefined or unregister
+      unregister(`boilerplate.${lang}`);
     } else {
-      setSupportedLanguages((prev) => [...prev, lang]);
+        // Selecting
+      newLangs = [...supportedLanguages, lang];
+      // Set placeholder to pass Zod validation (must be non-empty)
+      // Backend will overwrite this with generated code
+      setValue(`boilerplate.${lang}`, "// auto-generated"); 
     }
+    setSupportedLanguages(newLangs);
   };
 
   return (
@@ -57,27 +72,6 @@ export default function BoilerplateCard() {
             </Button>
           ))}
         </div>
-
-        {/* {supportedLanguages.map((lang) => (
-          <FormField
-            key={lang}
-            control={control}
-            name={`boilerplate.${lang}`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel><span className="uppercase">{lang}</span> Boilerplate</FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    placeholder={`${lang} boilerplate code...`}
-                    className="min-h-[120px] font-mono"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        ))} */}
       </CardContent>
     </Card>
   );
