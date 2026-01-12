@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, Fragment, useActionState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { QuestionSchema, questionSchema } from "@/types/problem";
 import { saveQuestion } from "@/app/actions/save-question";
 
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function QuestionForm({ type, isCreating, initialData }: Props) {
+  const router = useRouter();
   const getDefaultValues = (): QuestionSchema => {
     if (type === "coding") {
       return {
@@ -37,7 +39,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         inputFormat: "",
         outputFormat: "",
         constraints: [""],
-        boilerplate: { c: "", cpp: "", java: "", python: "", javascript: "" },
+        boilerplate: {},
         functionName: "",
         inputVariables: [],
       };
@@ -88,6 +90,12 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
 
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (state.success) {
+      router.push("/admin/questions");
+    }
+  }, [state.success, router]);
+
   const handleSubmit = form.handleSubmit((data) => {
     startTransition(() => {
       formAction(data);
@@ -126,7 +134,11 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       </div>
 
       <Form {...form}>
-        <form id="question-form" onSubmit={handleSubmit} className="space-y-6">
+        <form id="question-form" onSubmit={form.handleSubmit((data) => {
+          startTransition(() => {
+            formAction(data);
+          });
+        }, (errors) => console.error("Form Errors:", errors))} className="space-y-6">
           <input type="hidden" {...form.register("type")} value={type} />
 
           {type === "coding" ? (

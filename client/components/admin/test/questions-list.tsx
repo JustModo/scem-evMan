@@ -56,8 +56,8 @@ export default function TestQuestions({ questions, availableQuestions = [] }: Te
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredProblems.map((problem) => (
-              <QuestionCard key={problem._id || problem.id} problem={problem} hideActions={true} />
+            {filteredProblems.map((problem, index) => (
+              <QuestionCard key={`${problem._id || problem.id}-${index}`} problem={problem} hideActions={true} />
             ))}
           </div>
         )}

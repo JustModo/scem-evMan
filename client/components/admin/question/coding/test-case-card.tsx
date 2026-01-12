@@ -226,7 +226,7 @@ export default function TestCaseCard() {
                                                             <FormItem>
                                                                 <FormLabel className="text-xs">{variable.name} <span className="text-muted-foreground font-normal">({variable.type})</span></FormLabel>
                                                                 <FormControl>
-                                                                    <Input {...field} placeholder={`Value for ${variable.name}`} className="h-8 text-sm" />
+                                                                    <Input {...field} value={field.value ?? ""} placeholder={`Value for ${variable.name}`} className="h-8 text-sm" />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
