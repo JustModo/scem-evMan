@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, Fragment, useActionState, useTransition, useCallback } from "react";
+import { useEffect, Fragment, useActionState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { QuestionSchema, questionSchema } from "@/types/problem";
 import { saveQuestion } from "@/app/actions/save-question";
@@ -13,6 +13,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import BasicInfoCard from "./shared/info-card";
 import MCQCard from "./mcq/mcq-card";
+import { serializeInput, deserializeInput } from "@/lib/test-case-utils";
 
 
 import ConstraintsCard from "./coding/constraint-card";
@@ -28,7 +29,7 @@ interface Props {
 
 export default function QuestionForm({ type, isCreating, initialData }: Props) {
   const router = useRouter();
-  const getDefaultValues = useCallback((): QuestionSchema => {
+  const getDefaultValues = (): QuestionSchema => {
     if (type === "coding") {
       return {
         type: "coding",
@@ -42,7 +43,6 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         boilerplate: {},
         functionName: "",
         inputVariables: [],
-        testCases: [],
       };
     } else {
       return {
@@ -61,7 +61,9 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         correctAnswer: "",
       };
     }
-  }, [type]);
+  };
+
+
 
   const form = useForm<QuestionSchema>({
     resolver: zodResolver(questionSchema),
@@ -73,14 +75,31 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
 
   useEffect(() => {
     if (initialData) {
+      const transformedData = { ...initialData };
+
+      // Deserialize Test Case inputs (DB String -> UI Object)
+      if (
+        transformedData.type === "coding" &&
+        transformedData.testCases &&
+        transformedData.inputVariables
+      ) {
+        transformedData.testCases = transformedData.testCases.map((tc: any) => ({
+          ...tc,
+          input:
+            typeof tc.input === "string"
+              ? deserializeInput(tc.input, transformedData.inputVariables as any)
+              : tc.input,
+        }));
+      }
+
       form.reset({
         ...getDefaultValues(),
-        ...initialData,
+        ...transformedData,
       } as QuestionSchema);
     } else {
       form.reset(getDefaultValues());
     }
-  }, [initialData, type, form, getDefaultValues]);
+  }, [initialData, type]);
 
   const [state, formAction] = useActionState(saveQuestion, {
     success: false,
@@ -94,6 +113,34 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       router.push("/admin/questions");
     }
   }, [state.success, router]);
+
+  const handleSubmit = form.handleSubmit((data) => {
+    const submissionData = { ...data };
+
+    // Serialize Test Case inputs (UI Object -> DB String)
+    if (
+      submissionData.type === "coding" &&
+      submissionData.testCases &&
+      submissionData.inputVariables
+    ) {
+      try {
+        submissionData.testCases = submissionData.testCases.map((tc: any) => ({
+          ...tc,
+          input: serializeInput(tc.input, submissionData.inputVariables as any),
+        }));
+        
+        startTransition(() => {
+          formAction(submissionData as any);
+        });
+      } catch (error) {
+         console.error("Serialization failed", error);
+      }
+    } else {
+      startTransition(() => {
+        formAction(submissionData);
+      });
+    }
+  });
 
   return (
     <Fragment>
@@ -127,11 +174,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       </div>
 
       <Form {...form}>
-        <form id="question-form" onSubmit={form.handleSubmit((data) => {
-          startTransition(() => {
-            formAction(data);
-          });
-        }, (errors) => console.error("Form Errors:", errors))} className="space-y-6">
+        <form id="question-form" onSubmit={handleSubmit} className="space-y-6">
           <input type="hidden" {...form.register("type")} value={type} />
 
           {type === "coding" ? (

@@ -9,6 +9,7 @@ export interface TestParticipant {
 
 export interface Test {
   id: string;
+  _id?: string;
   title: string;
   description: string;
   duration: string;
