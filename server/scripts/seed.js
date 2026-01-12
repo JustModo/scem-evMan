@@ -8,7 +8,9 @@ const bcrypt = require('bcryptjs');
 // Database connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/scem-evman', {
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/scem-evman';
+    console.log(`Connecting to MongoDB at: ${uri}`);
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -82,13 +84,18 @@ const questions = [
     constraints: '2 <= nums.length <= 10^4',
     inputFormat: 'First line contains n (size of array) and target. Second line contains n space-separated integers',
     outputFormat: 'Two space-separated integers representing the indices',
+    functionName: 'twoSum',
+    inputVariables: [
+      { name: 'nums', type: 'int_array' },
+      { name: 'target', type: 'int' }
+    ],
     boilerplateCode: {
       python: `def twoSum(nums, target):\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    n, target = map(int, input().split())\n    nums = list(map(int, input().split()))\n    result = twoSum(nums, target)\n    print(result[0], result[1])`,
       javascript: `function twoSum(nums, target) {\n    // Write your code here\n}\n\nconst readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nlet input = [];\nrl.on('line', (line) => {\n    input.push(line);\n}).on('close', () => {\n    const [n, target] = input[0].split(' ').map(Number);\n    const nums = input[1].split(' ').map(Number);\n    const result = twoSum(nums, target);\n    console.log(result[0] + ' ' + result[1]);\n});`,
     },
     testcases: [
-      { input: '4 9\n2 7 11 15', output: '0 1' },
-      { input: '3 6\n3 2 4', output: '1 2' },
+      { input: { nums: '2 7 11 15', target: '9' }, output: '0 1' },
+      { input: { nums: '3 2 4', target: '6' }, output: '1 2' },
     ],
   },
   {
@@ -100,13 +107,17 @@ const questions = [
     constraints: '-2^31 <= x <= 2^31 - 1',
     inputFormat: 'A single integer x',
     outputFormat: 'true or false',
+    functionName: 'isPalindrome',
+    inputVariables: [
+      { name: 'x', type: 'int' }
+    ],
     boilerplateCode: {
       python: `def isPalindrome(x):\n    # Write your code here\n    pass\n\nif __name__ == "__main__":\n    x = int(input())\n    print("true" if isPalindrome(x) else "false")`,
     },
     testcases: [
-      { input: '121', output: 'true' },
-      { input: '-121', output: 'false' },
-      { input: '10', output: 'false' },
+      { input: { x: '121' }, output: 'true' },
+      { input: { x: '-121' }, output: 'false' },
+      { input: { x: '10' }, output: 'false' },
     ],
   },
 ];
