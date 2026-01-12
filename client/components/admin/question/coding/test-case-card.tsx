@@ -191,7 +191,7 @@ export default function TestCaseCard() {
                     ) : (
                         <>
                             <div className="flex justify-end gap-2 items-center">
-                                {inputVariables.some((v: any) => !v.variable?.trim()) && (
+                                {inputVariables.some((v: { variable: string }) => !v.variable?.trim()) && (
                                     <span className="text-xs text-destructive">
                                         Name all variables to add test cases
                                     </span>
@@ -201,7 +201,7 @@ export default function TestCaseCard() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => appendTestCase({ input: {}, output: "" })}
-                                    disabled={inputVariables.some((v: any) => !v.variable?.trim())}
+                                    disabled={inputVariables.some((v: { variable: string }) => !v.variable?.trim())}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
                                     Add Test Case

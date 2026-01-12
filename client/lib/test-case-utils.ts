@@ -5,7 +5,7 @@ export interface InputVariable {
 }
 
 export function serializeInput(
-    inputValues: Record<string, any>,
+    inputValues: Record<string, unknown>,
     variables: InputVariable[]
 ): string {
     if (!variables || variables.length === 0) return "";
@@ -18,7 +18,7 @@ export function serializeInput(
         // Handle Arrays (int_array, float_array, string_array)
         if (v.type.includes("_array")) {
             // Expecting array or comma-separated string (if coming from raw input)
-            let arr: any[] = [];
+            let arr: unknown[] = [];
             if (Array.isArray(val)) {
                 arr = val;
             } else if (typeof val === 'string') {
@@ -48,8 +48,8 @@ export function serializeInput(
 export function deserializeInput(
     serialized: string,
     variables: InputVariable[]
-): Record<string, any> {
-    const result: Record<string, any> = {};
+): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
     if (!serialized || !variables || variables.length === 0) return result;
 
     // Split by whitespace

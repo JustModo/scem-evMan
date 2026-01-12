@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, Fragment, useActionState, useTransition } from "react";
+import { useEffect, Fragment, useActionState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { QuestionSchema, questionSchema } from "@/types/problem";
 import { saveQuestion } from "@/app/actions/save-question";
@@ -13,7 +13,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import BasicInfoCard from "./shared/info-card";
 import MCQCard from "./mcq/mcq-card";
-import { serializeInput, deserializeInput } from "@/lib/test-case-utils";
+import { InputVariable, serializeInput, deserializeInput } from "@/lib/test-case-utils";
 
 
 import ConstraintsCard from "./coding/constraint-card";
@@ -29,7 +29,7 @@ interface Props {
 
 export default function QuestionForm({ type, isCreating, initialData }: Props) {
   const router = useRouter();
-  const getDefaultValues = (): QuestionSchema => {
+  const getDefaultValues = useCallback((): QuestionSchema => {
     if (type === "coding") {
       return {
         type: "coding",
@@ -61,7 +61,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         correctAnswer: "",
       };
     }
-  };
+  }, [type]);
 
 
 
@@ -83,12 +83,13 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         transformedData.testCases &&
         transformedData.inputVariables
       ) {
-        transformedData.testCases = transformedData.testCases.map((tc: any) => ({
+        transformedData.testCases = transformedData.testCases.map((tc: Record<string, unknown>) => ({
           ...tc,
           input:
             typeof tc.input === "string"
-              ? deserializeInput(tc.input, transformedData.inputVariables as any)
+              ? deserializeInput(tc.input, transformedData.inputVariables as InputVariable[])
               : tc.input,
+          output: tc.output as string,
         }));
       }
 
@@ -99,7 +100,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
     } else {
       form.reset(getDefaultValues());
     }
-  }, [initialData, type]);
+  }, [initialData, type, form, getDefaultValues]);
 
   const [state, formAction] = useActionState(saveQuestion, {
     success: false,
@@ -124,13 +125,14 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       submissionData.inputVariables
     ) {
       try {
-        submissionData.testCases = submissionData.testCases.map((tc: any) => ({
+        submissionData.testCases = submissionData.testCases.map((tc: Record<string, unknown>) => ({
           ...tc,
-          input: serializeInput(tc.input, submissionData.inputVariables as any),
+          input: serializeInput(tc.input as Record<string, unknown>, submissionData.inputVariables as InputVariable[]),
+          output: tc.output as string,
         }));
         
         startTransition(() => {
-          formAction(submissionData as any);
+          formAction(submissionData as QuestionSchema);
         });
       } catch (error) {
          console.error("Serialization failed", error);
