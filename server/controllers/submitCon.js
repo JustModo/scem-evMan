@@ -132,8 +132,15 @@ const submitCode = async (req, res) => {
                     }
                 }
                 input = values.join(' ');
+            } else if (typeof tc.input === 'string') {
+                // String input - handle both comma-separated and space-separated formats
+                const trimmed = tc.input.trim();
+                
+                // Replace commas with spaces to normalize the format
+                input = trimmed.replace(/,/g, ' ').replace(/\s+/g, ' ');
             } else {
-                input = tc.input;
+                // For other types, just convert to string
+                input = String(tc.input);
             }
             
             const expectedOutput = removeTrailingLineCommands(tc.output.trim());
