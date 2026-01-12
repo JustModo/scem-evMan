@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { CodeScreen } from "@/components/attempt/code";
 import React from "react";
-import { CodingProblem, MCQProblem } from "@/types/problem";
+import { CodingProblem, MCQProblem, Problem } from "@/types/problem";
 import MCQScreen from "@/components/attempt/mcq";
 import { notFound } from "next/navigation";
 
@@ -37,15 +37,17 @@ export default async function TestContentPage(props: Props) {
     .map(p => ({
       ...p,
       id: p._id, // Map _id to id for component compatibility
-    }));
+    })) as Problem[];
+
+  const currentProblem = { ...problem, id: problem._id } as Problem;
 
   return (
     <div className="w-full h-full">
-      {problem.questionType === "Coding" ? (
-        <CodeScreen problem={{ ...problem, id: problem._id } as any} />
+      {currentProblem.questionType === "Coding" ? (
+        <CodeScreen problem={currentProblem as CodingProblem} />
       ) : (
         <MCQScreen
-          problem={{ ...problem, id: problem._id } as any}
+          problem={currentProblem as MCQProblem}
           problems={normalizedProblems}
         />
       )}

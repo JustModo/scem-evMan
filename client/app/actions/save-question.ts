@@ -9,7 +9,7 @@ import { auth } from "@/auth";
 const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
 const STATS_FILE = path.join(process.cwd(), "data", "statistics.json");
 
-export async function saveQuestion(_prevState: any, data: QuestionSchema) {
+export async function saveQuestion(_prevState: Record<string, unknown>, data: QuestionSchema) {
   try {
     const validatedData = questionSchema.parse(data);
     const session = await auth();

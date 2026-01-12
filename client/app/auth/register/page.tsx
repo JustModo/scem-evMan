@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { register } from "@/app/actions/auth";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -265,3 +265,16 @@ export default function RegisterPage() {
     </main>
   );
 }
+
+export default function RegisterPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <RegisterForm />
+    </React.Suspense>
+  );
+}
+

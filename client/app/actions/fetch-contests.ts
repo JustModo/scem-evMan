@@ -61,7 +61,7 @@ export async function getAllContests() {
 export async function submitContestAnswer(
   contestId: string,
   questionId: string,
-  answer: any
+  answer: Record<string, unknown>
 ) {
   try {
     const response = await fetch(`${API_BASE_URL}/contest/${contestId}/submit`, {

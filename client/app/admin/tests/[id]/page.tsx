@@ -6,6 +6,8 @@ import { ParticipationStatisticsCard } from "@/components/admin/test/test-detail
 import { QuickActionsCard } from "@/components/admin/test/test-detail/actions-card";
 import TestEditQuestions from "@/components/admin/test/questions-list";
 import { db } from "@/lib/db";
+import { Test } from "@/types/test/test.types";
+import { Problem } from "@/types/problem/problem.types";
 
 interface IdParams {
   id: string;
@@ -20,7 +22,7 @@ export default async function AdminTestDetailPage({
   let test = null;
 
   try {
-    const data = await db.findOne("contests", { _id: id });
+    const data = await db.findOne<any>("contests", { _id: id });
     if (data) {
       const start = new Date(data.startTime);
       const end = new Date(data.endTime);
@@ -45,7 +47,7 @@ export default async function AdminTestDetailPage({
         participantsCompleted: 0,
         totalQuestions: data.questions?.length || 0,
         createdAt: data.createdAt,
-      };
+      } as Test;
     }
   } catch (error) {
     console.error("Error fetching test detail:", error);

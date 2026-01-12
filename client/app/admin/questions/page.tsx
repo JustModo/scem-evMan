@@ -5,7 +5,7 @@ import { QuestionsList } from "@/components/admin/question/questions-list";
 export const dynamic = "force-dynamic";
 
 export default async function AdminQuestionsPage() {
-  let questions: any[] = [];
+  let questions: Array<Record<string, unknown>> = [];
   try {
       questions = await db.find("questions");
       console.log(questions);

@@ -249,11 +249,20 @@ export default function AdminTestResultPage() {
 
 /* ---------- Advanced Helper Components ---------- */
 
-function AdvancedStatCard({ label, value, icon, color, textColor, trend }: any) {
+interface AdvancedStatCardProps {
+  label: string;
+  value: string | number;
+  icon: React.ReactElement;
+  color: string;
+  textColor: string;
+  trend: string;
+}
+
+function AdvancedStatCard({ label, value, icon, color, textColor, trend }: AdvancedStatCardProps) {
   return (
     <Card className="relative overflow-hidden group border-none shadow-xl shadow-mountain-meadow-900/5 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl">
       <div className={`absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity ${textColor}`}>
-        {React.cloneElement(icon, { size: 64 })}
+        {React.cloneElement(icon as React.ReactElement<{ size: number }>, { size: 64 })}
       </div>
       <CardHeader className="pb-2 space-y-0">
         <div className={`w-10 h-10 rounded-xl ${color} ${textColor} flex items-center justify-center mb-4 shadow-inner`}>

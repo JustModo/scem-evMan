@@ -38,7 +38,7 @@ export async function runCode(code: string, language: string, input?: string) {
 export async function submitCode(
   code: string,
   language: string,
-  testcases: any[]
+  testcases: Array<Record<string, unknown>>
 ) {
   try {
     const response = await fetch(`${API_BASE_URL}/cmp/submit`, {

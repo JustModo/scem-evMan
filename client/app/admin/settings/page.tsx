@@ -1,12 +1,10 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, RotateCcw, ShieldAlert } from "lucide-react";
+import { RotateCcw, ShieldAlert } from "lucide-react";
 import fs from "fs/promises";
 import path from "path";
-import { deleteQuestion } from "@/app/actions/delete-question";
 import { resetLocalData } from "@/app/actions/reset-data";
-import { Badge } from "@/components/ui/badge";
 
 const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
 

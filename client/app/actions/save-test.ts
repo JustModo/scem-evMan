@@ -4,7 +4,7 @@ import { testSchema, TestSchema } from "@/types/test";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
-export async function saveTest(_prevState: any, data: TestSchema) {
+export async function saveTest(_prevState: Record<string, unknown>, data: TestSchema) {
   try {
     const validatedData = testSchema.parse(data);
     const session = await auth();
