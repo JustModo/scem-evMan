@@ -37,7 +37,7 @@ const questionSchema = new mongoose.Schema({
     }
   }],
   testcases: [{
-    input: mongoose.Schema.Types.Mixed,
+    input: String,
     output: String
   }],
 }, { timestamps: true });
