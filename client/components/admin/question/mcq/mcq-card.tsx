@@ -26,7 +26,7 @@ export default function MCQCard() {
   const { control, watch, setValue } = useFormContext();
 
   const questionType = watch("questionType");
-  const correctOptionIds = watch("correctOptionIds") || [];
+  const correctAnswer = watch("correctAnswer") || "";
   const options = watch("options") || [];
 
   useEffect(() => {
@@ -44,13 +44,20 @@ export default function MCQCard() {
   }, [options, setValue]);
 
   const handleSingleSelect = (selectedId: string) => {
-    setValue("correctOptionIds", [selectedId]);
+    setValue("correctAnswer", selectedId);
   };
 
   const handleMultiToggle = (id: string, checked: boolean) => {
-    const set = new Set(correctOptionIds);
-    checked ? set.add(id) : set.delete(id);
-    setValue("correctOptionIds", Array.from(set));
+    const current = correctAnswer ? correctAnswer.split(',') : [];
+    const set = new Set(current);
+    if (checked) {
+       set.add(id);
+    } else {
+       set.delete(id);
+    }
+    // Sort logic to keep it deterministic "0,2"
+    const newVal = Array.from(set).sort().join(',');
+    setValue("correctAnswer", newVal);
   };
 
   return (
@@ -70,7 +77,11 @@ export default function MCQCard() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Question Type</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={(val) => {
+                 field.onChange(val);
+                 // Clear selections on type change to avoid invalid states
+                 setValue("correctAnswer", "");
+              }} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
@@ -110,7 +121,7 @@ export default function MCQCard() {
         {/* Correct Option Selection with validation */}
         <FormField
           control={control}
-          name="correctOptionIds"
+          name="correctAnswer"
           render={() => (
             <FormItem>
               <FormLabel className="text-base mt-6">
@@ -120,7 +131,7 @@ export default function MCQCard() {
                 <div className="space-y-4">
                   {questionType === "single" && (
                     <RadioGroup
-                      value={correctOptionIds[0] || ""}
+                      value={correctAnswer}
                       onValueChange={handleSingleSelect}
                       className="space-y-1"
                     >
@@ -135,11 +146,12 @@ export default function MCQCard() {
 
                   {questionType === "multiple" &&
                     Array.from({ length: 4 }, (_, index) => {
-                      const optionId = options[index]?.id || `${index}`;
+                      const optionId = `${index}`;
+                      const isChecked = correctAnswer.split(',').includes(optionId);
                       return (
                         <div key={index} className="flex items-center gap-3">
                           <Checkbox
-                            checked={correctOptionIds.includes(optionId)}
+                            checked={isChecked}
                             onCheckedChange={(checked) =>
                               handleMultiToggle(optionId, !!checked)
                             }

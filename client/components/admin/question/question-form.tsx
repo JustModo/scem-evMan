@@ -52,12 +52,12 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         difficulty: "easy",
         questionType: "single",
         options: [
+          { id: "0", text: "" },
           { id: "1", text: "" },
           { id: "2", text: "" },
           { id: "3", text: "" },
-          { id: "4", text: "" },
         ],
-        correctOptionIds: [],
+        correctAnswer: "",
       };
     }
   };
