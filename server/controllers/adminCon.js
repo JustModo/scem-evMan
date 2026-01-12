@@ -26,7 +26,7 @@ const createProblem = async (req, res) => {
         if ((questionType === 'Coding' || type === 'coding') && boilerplateCode) {
             const method = functionName;
             const inputs = inputVariables.map(v => ({
-                variable: v.name,
+                variable: v.variable,
                 type: v.type // Correct access: flat structure
             }));
 
@@ -102,7 +102,7 @@ const updateProblem = async (req, res) => {
         if ((questionType === 'Coding' || type === 'coding') && boilerplateCode) {
             const method = functionName;
             const inputs = inputVariables ? inputVariables.map(v => ({
-                variable: v.name,
+                variable: v.variable,
                 type: v.type // Correct access
             })) : [];
 

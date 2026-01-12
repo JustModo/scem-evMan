@@ -95,7 +95,7 @@ export default function TestCaseCard() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => appendVariable({ name: "", type: "int" })}
+                                onClick={() => appendVariable({ variable: "", type: "int" })}
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Variable
@@ -106,7 +106,7 @@ export default function TestCaseCard() {
                             <div key={field.id} className="flex items-start gap-4">
                                 <FormField
                                     control={control}
-                                    name={`inputVariables.${index}.name`}
+                                    name={`inputVariables.${index}.variable`}
                                     render={({ field }) => (
                                         <FormItem className="flex-1">
                                             <FormControl>
@@ -221,12 +221,12 @@ export default function TestCaseCard() {
                                                     <FormField
                                                         key={`${field.id}-input-${vIndex}`}
                                                         control={control}
-                                                        name={`testCases.${index}.input.${variable.name}`}
+                                                        name={`testCases.${index}.input.${variable.variable}`}
                                                         render={({ field }) => (
                                                             <FormItem>
-                                                                <FormLabel className="text-xs">{variable.name} <span className="text-muted-foreground font-normal">({variable.type})</span></FormLabel>
+                                                                <FormLabel className="text-xs">{variable.variable} <span className="text-muted-foreground font-normal">({variable.type})</span></FormLabel>
                                                                 <FormControl>
-                                                                    <Input {...field} value={field.value ?? ""} placeholder={`Value for ${variable.name}`} className="h-8 text-sm" />
+                                                                    <Input {...field} value={field.value ?? ""} placeholder={`Value for ${variable.variable}`} className="h-8 text-sm" />
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>
