@@ -18,10 +18,8 @@ const saveMCQ = async (req, res) => {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        // Question is already fetched and validated by the router
         const questionDoc = req.question;
 
-        // Calculate score: exact match gets full marks, otherwise 0
         let score = 0;
         const submittedAns = Array.isArray(answer) ? answer[0] : answer;
         if (submittedAns === questionDoc.correctAnswer) {
@@ -134,10 +132,8 @@ const submitCode = async (req, res) => {
                 input = values.join(' ');
             } else if (typeof tc.input === 'string') {
                 // String input - handle both comma-separated and space-separated formats
-                const trimmed = tc.input.trim();
-                
-                // Replace commas with spaces to normalize the format
-                input = trimmed.replace(/,/g, ' ').replace(/\s+/g, ' ');
+                // Replace commas with spaces to normalize, then collapse multiple spaces into one
+                input = tc.input.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
             } else {
                 // For other types, just convert to string
                 input = String(tc.input);
