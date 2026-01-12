@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 let isCon = false;
-const connectDB=async()=>{
+const connectDB = async () => {
   if (isCon) {
     console.log('Connection Exists');
     return;
@@ -8,7 +8,7 @@ const connectDB=async()=>{
   try {
     console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    isCon=true;
+    isCon = true;
     console.log('Conencted to MongoDB');
   } catch (error) {
     console.error('MongoDB connection error:', error);
@@ -16,4 +16,4 @@ const connectDB=async()=>{
   }
 };
 
-module.exports={connectDB};
+module.exports = { connectDB };
