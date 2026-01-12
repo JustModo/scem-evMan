@@ -10,7 +10,7 @@ const languageList = ["c", "java", "python"];
 export default function BoilerplateCard() {
   const { setValue, watch, unregister } = useFormContext();
   const boilerplate = watch("boilerplate");
-  
+
   // Initialize local state based on existing form data (for edit mode)
   const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
 
@@ -23,25 +23,25 @@ export default function BoilerplateCard() {
         setSupportedLanguages(activeLangs);
       } else {
         // Default to all if none set (or maybe none? defaulting to empty for now)
-         setSupportedLanguages([]);
+        setSupportedLanguages([]);
       }
     }
-  }, []); // Run once on mount (or when initial data loads if we added dependency)
+  }, [boilerplate]); // Added boilerplate dependency
 
   const toggleLanguage = (lang: string) => {
     let newLangs;
     if (supportedLanguages.includes(lang)) {
-        // Deselecting
+      // Deselecting
       newLangs = supportedLanguages.filter((l) => l !== lang);
       // Remove from form data so backend doesn't generate for it
       // We can either set to undefined or unregister
       unregister(`boilerplate.${lang}`);
     } else {
-        // Selecting
+      // Selecting
       newLangs = [...supportedLanguages, lang];
       // Set placeholder to pass Zod validation (must be non-empty)
       // Backend will overwrite this with generated code
-      setValue(`boilerplate.${lang}`, "// auto-generated"); 
+      setValue(`boilerplate.${lang}`, "// auto-generated");
     }
     setSupportedLanguages(newLangs);
   };

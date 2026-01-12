@@ -6,6 +6,7 @@ import { ParticipationStatisticsCard } from "@/components/admin/test/test-detail
 import { QuickActionsCard } from "@/components/admin/test/test-detail/actions-card";
 import TestEditQuestions from "@/components/admin/test/questions-list";
 import { db } from "@/lib/db";
+import { Test } from "@/types/test/test.types";
 
 interface IdParams {
   id: string;
@@ -20,10 +21,12 @@ export default async function AdminTestDetailPage({
   let test = null;
 
   try {
-    const data = await db.findOne("contests", { _id: id });
+    const data = await db.findOne<Record<string, unknown>>("contests", { _id: id });
     if (data) {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
+      const startTime = data.startTime as string;
+      const endTime = data.endTime as string;
+      const start = new Date(startTime);
+      const end = new Date(endTime);
       const diffMs = end.getTime() - start.getTime();
       const totalSeconds = Math.floor(diffMs / 1000);
       const h = Math.floor(totalSeconds / 3600);
@@ -31,21 +34,21 @@ export default async function AdminTestDetailPage({
       const s = totalSeconds % 60;
 
       test = {
-        id: data._id,
-        title: data.title,
-        description: data.description,
+        id: data._id as string,
+        title: data.title as string,
+        description: data.description as string,
         duration: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`,
-        startsAt: data.startTime,
-        problems: (data.questions || []).map((q: any) => ({
+        startsAt: startTime,
+        problems: ((data.questions as Record<string, unknown>[]) || []).map((q) => ({
           ...q,
-          id: q?._id ?? q?.id,
+          id: (q?._id as string) ?? (q?.id as string),
         })),
-        status: data.status,
+        status: data.status as "waiting" | "ongoing" | "completed",
         participantsInProgress: 0,
         participantsCompleted: 0,
-        totalQuestions: data.questions?.length || 0,
-        createdAt: data.createdAt,
-      };
+        totalQuestions: (data.questions as unknown[])?.length || 0,
+        createdAt: data.createdAt as string,
+      } as Test;
     }
   } catch (error) {
     console.error("Error fetching test detail:", error);

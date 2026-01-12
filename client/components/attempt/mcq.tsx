@@ -11,8 +11,8 @@ import { Problem, MCQProblem } from "@/types/problem";
 import { useRouter, useParams } from "next/navigation";
 
 interface MCQScreenProps {
-  problem: any; // Using any for now to handle real data which might deviate from strict mock-based MCQProblem
-  problems: any[];
+  problem: MCQProblem;
+  problems: Problem[];
 }
 
 export default function MCQScreen({ problem, problems }: MCQScreenProps) {
@@ -41,13 +41,13 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
 
   const handlePrev = () => {
     if (prevProblem) {
-      router.push(`/attempt/test/${params.testid}/question/${prevProblem.id || (prevProblem as any)._id}`);
+      router.push(`/attempt/test/${params.testid}/question/${prevProblem.id}`);
     }
   };
 
   const handleNext = () => {
     if (nextProblem) {
-      router.push(`/attempt/test/${params.testid}/question/${nextProblem.id || (nextProblem as any)._id}`);
+      router.push(`/attempt/test/${params.testid}/question/${nextProblem.id}`);
     }
   };
 
@@ -92,9 +92,9 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
                   onValueChange={handleSingleSelect}
                   className="contents"
                 >
-                  {problem.options.map((opt: any, index: number) => {
+                  {problem.options.map((opt, index) => {
                     const optId = `opt-${index}`;
-                    const optValue = String(opt);
+                    const optValue = opt;
                     return (
                       <div key={optId} className="h-full">
                         <label
@@ -108,13 +108,13 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
                         `}
                         >
                           <div className="flex items-center gap-3 h-full">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium shrink-0 group-hover:bg-primary/10 transition-colors">
                               {String.fromCharCode(65 + index)}
                             </div>
                             <RadioGroupItem
                               value={optValue}
                               id={optId}
-                              className="flex-shrink-0"
+                              className="shrink-0"
                             />
                             <span className="text-base font-medium flex-1 min-w-0 text-foreground">
                               {optValue}
@@ -127,9 +127,9 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
                 </RadioGroup>
               ) : (
                 <>
-                  {problem.options.map((opt: any, index: number) => {
+                  {problem.options.map((opt, index) => {
                     const optId = `opt-${index}`;
-                    const optValue = String(opt);
+                    const optValue = opt;
                     return (
                       <div key={optId} className="h-full">
                         <label
@@ -143,14 +143,14 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
                         `}
                         >
                           <div className="flex items-center gap-3 h-full">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium shrink-0 group-hover:bg-primary/10 transition-colors">
                               {String.fromCharCode(65 + index)}
                             </div>
                             <Checkbox
                               id={optId}
                               checked={selected.includes(optValue)}
                               onCheckedChange={() => handleMultipleSelect(optValue)}
-                              className="flex-shrink-0"
+                              className="shrink-0"
                             />
                             <span className="text-base font-medium flex-1 min-w-0 text-foreground">
                               {optValue}

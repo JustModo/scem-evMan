@@ -6,7 +6,17 @@ import { SignJWT } from "jose"
 
 // Helper to mint a token for the Express Request
 // this minting happens on Next.js server side.
-async function mintBackendToken(user: any) {
+interface User {
+    id?: string;
+    _id?: string;
+    email?: string | null;
+    role?: string;
+    name?: string | null;
+}
+
+// Helper to mint a token for the Express Request
+// this minting happens on Next.js server side.
+async function mintBackendToken(user: User) {
     const secret = new TextEncoder().encode(process.env.AUTH_SECRET)
     const alg = 'HS256'
 
@@ -28,9 +38,12 @@ export const authConfig = {
         signIn: '/auth/login',
     },
     callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
+        authorized({ auth, request }: { auth: any; request: any }) {
+            const nextUrl = request?.nextUrl;
+            if (!nextUrl) return true;
+
             const isLoggedIn = !!auth?.user
-            const userRole = auth?.user?.role;
+            const userRole = (auth?.user as any)?.role;
 
             const isAdminPage = nextUrl.pathname.startsWith('/admin');
             const isUserPage = ['/attempt', '/join', '/test'].some(path => nextUrl.pathname.startsWith(path));
@@ -47,19 +60,20 @@ export const authConfig = {
 
             return true;
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user }: { token: any; user?: any }) {
             if (user) {
-                token.role = (user as any).role
-                token.id = (user as any).id || (user as any)._id
+                const u = user as User;
+                token.role = u.role
+                token.id = u.id || u._id
 
                 // Mint a fresh backend token
-                const backendToken = await mintBackendToken(user);
+                const backendToken = await mintBackendToken(u);
                 token.backendToken = backendToken;
             }
             return token
         },
-        async session({ session, token }) {
-            if (token) {
+        async session({ session, token }: { session: any; token: any }) {
+            if (token && session.user) {
                 session.user.role = token.role as string
                 session.user.id = token.id as string
                 session.backendToken = token.backendToken as string

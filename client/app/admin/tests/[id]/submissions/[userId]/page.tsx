@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 
 import { getTestById, getQuestionById } from "@/constants/test-data";
-import { getSubmissionDetails } from "@/app/actions/fetch-submissions";
+import { MCQProblem } from "@/types/problem/problem.types";
 
 // --- Types for Submissions ---
 interface SubmissionDetail {
@@ -78,32 +78,32 @@ export default function SubmissionDetailPage() {
             const participant = test.participants?.find(p => p.userId === userId);
 
             // Mocking submission details based on questions in the test
-            const details: SubmissionDetail[] = (test.problems || []).map(qId => {
-                const q = getQuestionById(qId);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const qAny = q as any;
-                if (!q) return null as any;
+            const detailsUnfiltered = (test.problems || []).map(qId => {
+                const q = getQuestionById(Number(qId));
+                if (!q) return null;
 
-                if (q.type === "mcq") {
-                    const options = (qAny.options || []).map((opt: string | { id: string, text: string }, i: number) => {
+                if (q.questionType === "Single Correct" || q.questionType === "Multiple Correct") {
+                    const mcq = q as MCQProblem;
+                    const options = (mcq.options || []).map((opt, i) => {
                         if (typeof opt === 'string') return { id: String.fromCharCode(97 + i), text: opt };
                         return opt;
                     });
 
-                    return {
-                        questionId: q.id,
+                    const detail: SubmissionDetail = {
+                        questionId: typeof q.id === 'string' ? parseInt(q.id) : q.id,
                         type: "mcq",
                         questionTitle: q.title,
                         points: q.marks,
                         earnedPoints: Math.random() > 0.3 ? q.marks : 0,
                         status: Math.random() > 0.3 ? "PASSED" : "FAILED",
                         selectedOptions: [options[0]?.id],
-                        correctOptions: [qAny.correctAnswer || options[0]?.id], // Fallback
-                        options: options
+                        correctOptions: [mcq.correctAnswer || options[0]?.id],
+                        options: options as { id: string; text: string }[]
                     };
+                    return detail;
                 } else {
-                    return {
-                        questionId: q.id,
+                    const detail: SubmissionDetail = {
+                        questionId: typeof q.id === 'string' ? parseInt(q.id) : q.id,
                         type: "coding",
                         questionTitle: q.title,
                         points: q.marks,
@@ -118,8 +118,10 @@ export default function SubmissionDetailPage() {
                             { id: 4, isHidden: true, passed: false },
                         ]
                     };
+                    return detail;
                 }
-            }).filter(Boolean);
+            });
+            const details = detailsUnfiltered.filter((d): d is SubmissionDetail => d !== null);
 
             setData({
                 userId: userId as string,

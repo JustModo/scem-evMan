@@ -7,6 +7,17 @@ import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+interface MongoTestContent {
+  _id: string;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  questions?: string[];
+  author?: string;
+  rules?: string[];
+}
+
 export default async function TestPage({
   params,
 }: {
@@ -14,7 +25,7 @@ export default async function TestPage({
 }) {
   const { id } = await params;
 
-  const contest = await db.findOne("contests", { _id: id });
+  const contest = await db.findOne<MongoTestContent>("contests", { _id: id });
 
   if (!contest) return notFound();
 

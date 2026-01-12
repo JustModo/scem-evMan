@@ -27,14 +27,15 @@ export default function MCQCard() {
 
   const questionType = watch("questionType");
   const correctAnswer = watch("correctAnswer") || "";
-  const options = watch("options") || [];
+  const options = watch("options");
 
   useEffect(() => {
-    if (options.length !== 4) {
+    const safeOptions = options || [];
+    if (safeOptions.length !== 4) {
       setValue(
         "options",
         Array.from({ length: 4 }, (_, i) => {
-          const existing = options[i];
+          const existing = safeOptions[i];
           return existing
             ? { id: existing.id ?? `${i}`, text: existing.text ?? "" }
             : { id: `${i}`, text: "" };
@@ -51,9 +52,9 @@ export default function MCQCard() {
     const current = correctAnswer ? correctAnswer.split(',') : [];
     const set = new Set(current);
     if (checked) {
-       set.add(id);
+      set.add(id);
     } else {
-       set.delete(id);
+      set.delete(id);
     }
     // Sort logic to keep it deterministic "0,2"
     const newVal = Array.from(set).sort().join(',');
@@ -78,9 +79,9 @@ export default function MCQCard() {
             <FormItem>
               <FormLabel>Question Type</FormLabel>
               <Select onValueChange={(val) => {
-                 field.onChange(val);
-                 // Clear selections on type change to avoid invalid states
-                 setValue("correctAnswer", "");
+                field.onChange(val);
+                // Clear selections on type change to avoid invalid states
+                setValue("correctAnswer", "");
               }} value={field.value}>
                 <FormControl>
                   <SelectTrigger>

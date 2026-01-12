@@ -7,7 +7,7 @@ export async function createTest(testData: {
   description?: string;
   startTime?: string;
   endTime?: string;
-  questions?: any[];
+  questions?: Array<Record<string, unknown>>;
   vis?: boolean;
   type?: string;
 }) {
@@ -123,7 +123,7 @@ export async function deleteTest(testId: string) {
   }
 }
 
-export async function updateTest(testId: string, testData: any) {
+export async function updateTest(testId: string, testData: Record<string, unknown>) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/admin/test/${testId}`, {
       method: "PUT",

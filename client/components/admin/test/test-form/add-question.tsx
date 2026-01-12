@@ -23,7 +23,7 @@ import { useFormContext } from "react-hook-form";
 import { BaseProblem } from "@/types/problem/problem.types";
 
 interface QuestionAddCardProps {
-    availableQuestions: BaseProblem[];
+  availableQuestions: BaseProblem[];
 }
 
 export default function QuestionAddCard({ availableQuestions = [] }: QuestionAddCardProps) {
@@ -49,7 +49,7 @@ export default function QuestionAddCard({ availableQuestions = [] }: QuestionAdd
 
       return matchesSearch && matchesType && matchesDifficulty;
     });
-  }, [searchTerm, typeFilter, difficultyFilter]);
+  }, [searchTerm, typeFilter, difficultyFilter, availableQuestions]);
 
   const { setValue, watch } = useFormContext();
   const problemIds = (watch("problems") as string[]) || [];

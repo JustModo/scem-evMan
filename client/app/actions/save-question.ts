@@ -1,15 +1,10 @@
 "use server";
 
-import fs from "fs/promises";
-import path from "path";
 import { revalidatePath } from "next/cache";
 import { questionSchema, type QuestionSchema } from "@/types/problem";
 import { auth } from "@/auth";
 
-const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
-const STATS_FILE = path.join(process.cwd(), "data", "statistics.json");
-
-export async function saveQuestion(_prevState: any, data: QuestionSchema) {
+export async function saveQuestion(_prevState: Record<string, unknown>, data: QuestionSchema) {
   try {
     const validatedData = questionSchema.parse(data);
     const session = await auth();
@@ -37,8 +32,8 @@ export async function saveQuestion(_prevState: any, data: QuestionSchema) {
       testcases: validatedData.type === 'coding' ? validatedData.testCases : undefined,
 
       // MCQ specific
-      options: validatedData.type === 'mcq' ? validatedData.options.map(o => o.text) : undefined,
-      correctAnswer: validatedData.type === 'mcq' ? validatedData.correctAnswer : undefined,
+      options: validatedData.type === 'mcq' ? (validatedData as Extract<QuestionSchema, { type: 'mcq' }>).options.map((o) => o.text) : undefined,
+      correctAnswer: validatedData.type === 'mcq' ? (validatedData as Extract<QuestionSchema, { type: 'mcq' }>).correctAnswer : undefined,
     };
 
     // Determine URL and Method

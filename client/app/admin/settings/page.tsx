@@ -1,12 +1,10 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, RotateCcw, ShieldAlert } from "lucide-react";
+import { RotateCcw, ShieldAlert } from "lucide-react";
 import fs from "fs/promises";
 import path from "path";
-import { deleteQuestion } from "@/app/actions/delete-question";
 import { resetLocalData } from "@/app/actions/reset-data";
-import { Badge } from "@/components/ui/badge";
 
 const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
 
@@ -14,7 +12,7 @@ async function getLocalQuestions() {
     try {
         const data = await fs.readFile(QUESTIONS_FILE, "utf-8");
         return JSON.parse(data);
-    } catch (e) {
+    } catch {
         return [];
     }
 }
@@ -22,7 +20,7 @@ async function getLocalQuestions() {
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-    const localQuestions = await getLocalQuestions();
+    await getLocalQuestions();
 
     return (
         <div className="h-full w-full overflow-y-scroll bg-background">

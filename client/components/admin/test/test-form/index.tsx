@@ -14,7 +14,9 @@ import { useActionState, useTransition, useEffect } from "react";
 import TestQuestions from "../questions-list";
 import { saveTest } from "@/app/actions/save-test";
 
-export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: any[] }) {
+import { Problem } from "@/types/problem";
+
+export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: Problem[] }) {
   const router = useRouter();
   const form = useForm<TestSchema>({
     resolver: zodResolver(testSchema),

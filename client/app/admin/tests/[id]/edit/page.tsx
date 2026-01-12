@@ -1,9 +1,21 @@
 import { notFound } from "next/navigation";
 import TestForm from "@/components/admin/test/test-form";
 import { db } from "@/lib/db";
+import { Problem } from "@/types/problem";
 
 interface IdParams {
   id: string;
+}
+
+interface MongoTest {
+  _id: string;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  questions?: unknown[];
+  status?: string;
+  createdAt?: string;
 }
 
 export default async function AdminTestEditPage({
@@ -13,57 +25,60 @@ export default async function AdminTestEditPage({
 }) {
   const { id } = await params;
 
-  let availableQuestions = [];
+  let availableQuestions: Problem[] = [];
   try {
-      availableQuestions = await db.find("questions");
+    availableQuestions = await db.find<Problem>("questions") as Problem[];
   } catch (e) {
-      console.error("Failed to fetch questions", e);
+    console.error("Failed to fetch questions", e);
   }
 
   // Handle "new" - Render empty form for creation
   if (id === "new") {
-      return (
-        <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">
-          <div className="h-full w-full">
-            <TestForm testData={null} availableQuestions={availableQuestions} />
-          </div>
+    return (
+      <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">
+        <div className="h-full w-full">
+          <TestForm testData={null} availableQuestions={availableQuestions} />
         </div>
-      );
+      </div>
+    );
+  }
+
+  let testDataRaw: MongoTest | null = null;
+  try {
+    testDataRaw = await db.findOne<MongoTest>("contests", { _id: id });
+  } catch (e) {
+    console.error(e);
   }
 
   let testData = null;
-  try {
-      testData = await db.findOne("contests", { _id: id });
-  } catch (e) {
-      console.error(e);
-  }
-
   // Ensure compatibility with TestForm
-  if (testData) {
-      // Map if necessary, e.g. startsAt handling
-      const start = new Date(testData.startTime).getTime();
-      const end = new Date(testData.endTime).getTime();
-      const diffMs = end - start;
-      const hours = Math.floor(diffMs / 3600000);
-      const minutes = Math.floor((diffMs % 3600000) / 60000);
-      const seconds = Math.floor(((diffMs % 3600000) % 60000) / 1000);
-      const durationStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  if (testDataRaw) {
+    // Map if necessary, e.g. startsAt handling
+    const start = new Date(testDataRaw.startTime).getTime();
+    const end = new Date(testDataRaw.endTime).getTime();
+    const diffMs = end - start;
+    const hours = Math.floor(diffMs / 3600000);
+    const minutes = Math.floor((diffMs % 3600000) / 60000);
+    const seconds = Math.floor(((diffMs % 3600000) % 60000) / 1000);
+    const durationStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-      testData = {
-          ...testData,
-          id: testData._id,
-          startsAt: testData.startTime ? new Date(testData.startTime).toISOString() : '',
-          duration: durationStr,
-          problems: testData.questions || [],
-          status: testData.status || "waiting",
-      };
+    testData = {
+      ...testDataRaw,
+      id: testDataRaw._id,
+      startsAt: testDataRaw.startTime ? new Date(testDataRaw.startTime).toISOString() : '',
+      duration: durationStr,
+      problems: testDataRaw.questions || [],
+      status: (testDataRaw.status || "waiting") as "waiting" | "ongoing" | "completed",
+      totalQuestions: testDataRaw.questions?.length || 0,
+      participantsInProgress: 0,
+      participantsCompleted: 0,
+      createdAt: testDataRaw.createdAt || new Date().toISOString(),
+    };
   }
 
   if (!testData) {
     return notFound();
   }
-
-
 
   return (
     <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">
