@@ -2,6 +2,7 @@ const Question = require('../models/Question');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submissions');
 const { connectDB } = require('./dbCon');
+const { getJudge } = require("@pomelo/code-gen");
 
 // --- Questions ---
 
@@ -12,9 +13,54 @@ const createProblem = async (req, res) => {
         const {
             title, description, difficulty, marks,
             questionType, options, correctAnswer,
-            constraints, inputFormat, outputFormat, boilerplateCode, testcases,
+            constraints, inputFormat, outputFormat, testcases,
             type, // Extract Type
+            functionName, inputVariables, // Extract new fields
+            boilerplate // Frontend sends 'boilerplate'
         } = req.body;
+
+        // Map frontend 'boilerplate' to model 'boilerplateCode'
+        let boilerplateCode = req.body.boilerplateCode || boilerplate;
+
+        // Generate Boilerplate if Coding type
+        if ((questionType === 'Coding' || type === 'coding') && boilerplateCode) {
+            const method = functionName;
+            const inputs = inputVariables.map(v => ({
+                variable: v.name,
+                type: v.type // Correct access: flat structure
+            }));
+
+            // Iterate selected languages
+            const supportedLangs = ['c', 'java', 'python'];
+
+            // Remove unsupported languages from the object to prevent saving them
+            Object.keys(boilerplateCode).forEach(key => {
+                if (!supportedLangs.includes(key)) {
+                    delete boilerplateCode[key];
+                }
+            });
+
+            supportedLangs.forEach(lang => {
+                // Only generate if the user selected this language (sent as key in boilerplateCode)
+                if (Object.prototype.hasOwnProperty.call(boilerplateCode, lang)) {
+                    try {
+                        const judge = getJudge(lang);
+                        const code = judge.generateBoilerplate({
+                            method,
+                            input: inputs
+                        });
+                        boilerplateCode[lang] = code;
+                    } catch (err) {
+                        console.error(`ERROR generating boilerplate for ${lang}:`, err);
+                        console.warn(`Skipping boilerplate for ${lang}: ${err.message}`);
+                        // Clear the placeholder if generation fails
+                        if (boilerplateCode[lang] === "// auto-generated") {
+                            boilerplateCode[lang] = "";
+                        }
+                    }
+                }
+            });
+        }
 
         const newQuestion = new Question({
             title, description, difficulty, marks,
@@ -22,7 +68,8 @@ const createProblem = async (req, res) => {
             constraints, inputFormat, outputFormat,
             boilerplateCode,
             testcases,
-            type // Save Type
+            type, // Save Type
+            functionName, inputVariables
         });
 
         await newQuestion.save();
@@ -40,9 +87,49 @@ const updateProblem = async (req, res) => {
         const {
             title, description, difficulty, marks,
             questionType, options, correctAnswer,
-            constraints, inputFormat, outputFormat, boilerplateCode, testcases,
-            type
+            constraints, inputFormat, outputFormat, testcases,
+            type,
+            functionName, inputVariables,
+            boilerplate
         } = req.body;
+
+        let boilerplateCode = undefined;
+        if (req.body.boilerplateCode || boilerplate) {
+            boilerplateCode = { ...(req.body.boilerplateCode || boilerplate) };
+        }
+
+        // Generate Boilerplate if Coding type
+        if ((questionType === 'Coding' || type === 'coding') && boilerplateCode) {
+            const method = functionName;
+            const inputs = inputVariables ? inputVariables.map(v => ({
+                variable: v.name,
+                type: v.type // Correct access
+            })) : [];
+
+            const supportedLangs = ['c', 'java', 'python'];
+
+            // Remove unsupported languages
+            Object.keys(boilerplateCode).forEach(key => {
+                if (!supportedLangs.includes(key)) {
+                    delete boilerplateCode[key];
+                }
+            });
+
+            supportedLangs.forEach(lang => {
+                if (Object.prototype.hasOwnProperty.call(boilerplateCode, lang)) {
+                    try {
+                        const judge = getJudge(lang);
+                        const code = judge.generateBoilerplate({
+                            method,
+                            input: inputs
+                        });
+                        boilerplateCode[lang] = code;
+                    } catch (err) {
+                        console.warn(`Skipping boilerplate for ${lang}: ${err.message}`);
+                    }
+                }
+            });
+        }
 
         const updates = {
             title, description, difficulty, marks,
@@ -50,7 +137,9 @@ const updateProblem = async (req, res) => {
             constraints, inputFormat, outputFormat,
             boilerplateCode,
             testcases,
-            type
+            type,
+            functionName,
+            inputVariables
         };
 
         const question = await Question.findByIdAndUpdate(id, updates, { new: true });
@@ -103,6 +192,20 @@ const getAdminContests = async (req, res) => {
         const now = new Date();
 
         const summary = contests.map(c => {
+            const start = new Date(c.startTime);
+            const end = new Date(c.endTime);
+            const durationMs = end - start;
+
+            const seconds = Math.floor((durationMs / 1000) % 60);
+            const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
+            const hours = Math.floor((durationMs / (1000 * 60 * 60)));
+
+            let durationStr = "";
+            if (hours > 0) durationStr += `${hours}h `;
+            if (minutes > 0) durationStr += `${minutes}m `;
+            if (seconds > 0) durationStr += `${seconds}s`;
+            if (!durationStr) durationStr = "0s";
+
             return {
                 id: c._id,
                 title: c.title,
@@ -113,7 +216,7 @@ const getAdminContests = async (req, res) => {
                 problemCount: c.questions ? c.questions.length : 0,
                 // Format dates for frontend if needed, or send ISO strings
                 startsAt: c.startTime,
-                duration: `${Math.round((c.endTime - c.startTime) / (1000 * 60))} mins` // Estimate duration display
+                duration: durationStr.trim()
             };
         });
         res.status(200).json({ success: true, contests: summary });

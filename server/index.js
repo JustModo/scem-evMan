@@ -9,7 +9,7 @@ const { connectDB } = require("./controllers/dbCon");
 // const compRoutes = require("./routes/compilerRoutes");
 const testRoutes = require("./routes/contestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const dataRoutes = require("./routes/dataRoutes");
+
 
 const port = process.env.PORT || 8080;
 
@@ -36,8 +36,6 @@ const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
 app.use("/api/admin", adminRoutes);
-
-app.use("/api/data", dataRoutes);
 
 app.use("/api/test", testRoutes);
 
