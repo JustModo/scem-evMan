@@ -95,8 +95,8 @@ const questions = [
       java: `class Code {\n    public static void twoSum(int[] nums, int target) {\n        // Write your code here\n        System.out.println("Output goes here");\n    }\n}`,
     },
     testcases: [
-      { input: '2,7,11,15 9', output: '0 1' },
-      { input: '3,2,4 6', output: '1 2' },
+      { input: { nums: [2, 7, 11, 15], target: 9 }, output: '0 1' },
+      { input: { nums: [3, 2, 4], target: 6 }, output: '1 2' },
     ],
   },
   {
@@ -118,9 +118,9 @@ const questions = [
       java: `class Code {\n    public static void isPalindrome(int x) {\n        // Write your code here\n        System.out.println("Output goes here");\n    }\n}`,
     },
     testcases: [
-      { input: '121', output: 'true' },
-      { input: '-121', output: 'false' },
-      { input: '10', output: 'false' },
+      { input: { x: 121 }, output: 'true' },
+      { input: { x: -121 }, output: 'false' },
+      { input: { x: 10 }, output: 'false' },
     ],
   },
 ];
