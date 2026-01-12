@@ -1,15 +1,15 @@
 import React from "react";
 import { db } from "@/lib/db";
-import { TestsList } from "@/components/admin/test/tests-list";
+import { TestsList, MongoTestContent } from "@/components/admin/test/tests-list";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminTestsPage() {
-  let tests = [];
+  let tests: MongoTestContent[] = [];
   try {
-      tests = await db.find("contests");
-  } catch(e) {
-      console.error(e);
+    tests = await db.find<MongoTestContent>("contests") as MongoTestContent[];
+  } catch {
+    // ignore
   }
 
   return <TestsList initialTests={tests} />;

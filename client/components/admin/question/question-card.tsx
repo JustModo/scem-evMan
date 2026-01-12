@@ -2,7 +2,7 @@
 // forcing revalidation
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Code, HelpCircle, Star, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { Code, HelpCircle, Pencil, Trash2 } from "lucide-react";
 import { BaseProblem } from "@/types/problem/problem.types";
 import React from "react";
 import Link from "next/link";
@@ -19,7 +19,6 @@ interface Props {
 
 export default function QuestionCard({
   problem,
-  selected,
   onClickQuestion,
   className,
   hideActions = false,
@@ -51,7 +50,6 @@ export default function QuestionCard({
   }
 
   const handleClick = () => {
-    // @ts-ignore
     if (onClickQuestion) onClickQuestion(problem._id || problem.id);
   };
 

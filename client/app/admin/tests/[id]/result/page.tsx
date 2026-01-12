@@ -52,7 +52,7 @@ export default function AdminTestResultPage() {
   const [data, setData] = useState<TestResult | null>(null);
 
   /* ---------- CORE LOGIC (STATIC CONSTANT DATA) ---------- */
-  const fetchData = () => {
+  const fetchData = React.useCallback(() => {
     setLoading(true);
 
     const testInfo = getTestById(id as string);
@@ -83,11 +83,11 @@ export default function AdminTestResultPage() {
     });
 
     setTimeout(() => setLoading(false), 800);
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -167,7 +167,7 @@ export default function AdminTestResultPage() {
 
           <div className="group relative">
             {/* Table Glow Effect */}
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-mountain-meadow-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-10 transition duration-1000 group-hover:duration-200 blur" />
+            <div className="absolute -inset-0.5 bg-linear-to-r from-mountain-meadow-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-10 transition duration-1000 group-hover:duration-200 blur" />
 
             <div className="relative rounded-2xl border bg-card/60 backdrop-blur-sm overflow-hidden shadow-2xl shadow-mountain-meadow-900/5">
               <Table>
@@ -180,14 +180,14 @@ export default function AdminTestResultPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.participants.map((p, idx) => (
+                  {data.participants.map((p) => (
                     <TableRow
                       key={p.userId}
                       className="group/row transition-colors hover:bg-mountain-meadow-50/30 border-b border-border/40 last:border-none"
                     >
                       <TableCell className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-mountain-meadow-100 to-mountain-meadow-200 flex items-center justify-center font-bold text-mountain-meadow-700 shadow-sm border border-white/50">
+                          <div className="h-10 w-10 rounded-full bg-linear-to-br from-mountain-meadow-100 to-mountain-meadow-200 flex items-center justify-center font-bold text-mountain-meadow-700 shadow-sm border border-white/50">
                             {p.name.charAt(0)}
                           </div>
                           <div>
@@ -276,7 +276,7 @@ function AdvancedStatCard({ label, value, icon, color, textColor, trend }: Advan
       </CardContent>
 
       {/* Decorative Bottom Line */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-mountain-meadow-400 to-transparent opacity-30" />
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-mountain-meadow-400 to-transparent opacity-30" />
     </Card>
   );
 }

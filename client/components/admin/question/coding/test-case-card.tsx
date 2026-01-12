@@ -217,7 +217,7 @@ export default function TestCaseCard() {
                                             {/* Inputs Generation */}
                                             <div className="space-y-3 p-3 bg-background/50 rounded-md border">
                                                 <span className="text-xs font-semibold uppercase text-muted-foreground">Input</span>
-                                                {inputVariables.map((variable: any, vIndex: number) => (
+                                                {inputVariables.map((variable: { variable: string; type: string }, vIndex: number) => (
                                                     <FormField
                                                         key={`${field.id}-input-${vIndex}`}
                                                         control={control}

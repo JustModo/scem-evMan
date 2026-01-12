@@ -12,7 +12,7 @@ async function getLocalQuestions() {
     try {
         const data = await fs.readFile(QUESTIONS_FILE, "utf-8");
         return JSON.parse(data);
-    } catch (e) {
+    } catch {
         return [];
     }
 }
@@ -20,7 +20,7 @@ async function getLocalQuestions() {
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-    const localQuestions = await getLocalQuestions();
+    await getLocalQuestions();
 
     return (
         <div className="h-full w-full overflow-y-scroll bg-background">

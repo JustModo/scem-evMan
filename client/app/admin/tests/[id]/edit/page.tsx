@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import TestForm from "@/components/admin/test/test-form";
 import { db } from "@/lib/db";
+import { Problem } from "@/types/problem";
 
 interface IdParams {
   id: string;
@@ -12,7 +13,7 @@ interface MongoTest {
   description: string;
   startTime: string;
   endTime: string;
-  questions?: any[];
+  questions?: unknown[];
   status?: string;
   createdAt?: string;
 }
@@ -24,9 +25,9 @@ export default async function AdminTestEditPage({
 }) {
   const { id } = await params;
 
-  let availableQuestions: any[] = [];
+  let availableQuestions: Problem[] = [];
   try {
-    availableQuestions = await db.find<any>("questions");
+    availableQuestions = await db.find<Problem>("questions") as Problem[];
   } catch (e) {
     console.error("Failed to fetch questions", e);
   }
@@ -67,7 +68,7 @@ export default async function AdminTestEditPage({
       startsAt: testDataRaw.startTime ? new Date(testDataRaw.startTime).toISOString() : '',
       duration: durationStr,
       problems: testDataRaw.questions || [],
-      status: (testDataRaw.status || "waiting") as any,
+      status: (testDataRaw.status || "waiting") as "waiting" | "ongoing" | "completed",
       totalQuestions: testDataRaw.questions?.length || 0,
       participantsInProgress: 0,
       participantsCompleted: 0,
@@ -78,8 +79,6 @@ export default async function AdminTestEditPage({
   if (!testData) {
     return notFound();
   }
-
-
 
   return (
     <div className="flex-1 h-full bg-background text-foreground overflow-x-hidden">

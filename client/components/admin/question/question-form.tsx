@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, Fragment, useActionState, useTransition } from "react";
+import { useEffect, Fragment, useActionState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { QuestionSchema, questionSchema } from "@/types/problem";
 import { saveQuestion } from "@/app/actions/save-question";
@@ -28,7 +28,7 @@ interface Props {
 
 export default function QuestionForm({ type, isCreating, initialData }: Props) {
   const router = useRouter();
-  const getDefaultValues = (): QuestionSchema => {
+  const getDefaultValues = useCallback((): QuestionSchema => {
     if (type === "coding") {
       return {
         type: "coding",
@@ -42,6 +42,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         boilerplate: {},
         functionName: "",
         inputVariables: [],
+        testCases: [],
       };
     } else {
       return {
@@ -60,9 +61,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         correctAnswer: "",
       };
     }
-  };
-
-
+  }, [type]);
 
   const form = useForm<QuestionSchema>({
     resolver: zodResolver(questionSchema),
@@ -81,7 +80,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
     } else {
       form.reset(getDefaultValues());
     }
-  }, [initialData, type]);
+  }, [initialData, type, form, getDefaultValues]);
 
   const [state, formAction] = useActionState(saveQuestion, {
     success: false,
@@ -95,12 +94,6 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       router.push("/admin/questions");
     }
   }, [state.success, router]);
-
-  const handleSubmit = form.handleSubmit((data) => {
-    startTransition(() => {
-      formAction(data);
-    });
-  });
 
   return (
     <Fragment>

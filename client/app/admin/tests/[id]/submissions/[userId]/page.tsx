@@ -20,8 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 
 import { getTestById, getQuestionById } from "@/constants/test-data";
-import { getSubmissionDetails } from "@/app/actions/fetch-submissions";
-import { MCQProblem, CodingProblem } from "@/types/problem/problem.types";
+import { MCQProblem } from "@/types/problem/problem.types";
 
 // --- Types for Submissions ---
 interface SubmissionDetail {

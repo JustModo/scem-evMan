@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -119,10 +119,10 @@ export default function HeroSection({ stats, recentTests }: HeroSectionProps) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recentTests.map((test: any) => (
+              {recentTests.map((test) => (
                 <Link
-                  key={test._id || test.id}
-                  href={`/admin/tests/${test._id || test.id}`}
+                  key={test.id}
+                  href={`/admin/tests/${test.id}`}
                   className="flex flex-col p-4 rounded-xl border border-border bg-card hover:bg-muted/30 transition-colors group cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -160,7 +160,7 @@ export default function HeroSection({ stats, recentTests }: HeroSectionProps) {
         </Card>
 
         {/* Question Bank Breakdown */}
-        <Card className="shadow-sm border-border bg-gradient-to-br from-card to-muted/20">
+        <Card className="shadow-sm border-border bg-linear-to-br from-card to-muted/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Code className="h-5 w-5 text-primary" />

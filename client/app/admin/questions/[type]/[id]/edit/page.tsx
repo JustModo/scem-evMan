@@ -2,7 +2,7 @@
 import { notFound } from "next/navigation";
 import QuestionForm from "@/components/admin/question/question-form";
 import { db } from "@/lib/db";
-import { Problem, CodingProblem, MCQProblem } from "@/types/problem/problem.types";
+import { QuestionSchema } from "@/types/problem";
 
 const VALID_TYPES = ["coding", "mcq"] as const;
 
@@ -22,8 +22,8 @@ interface MongoQuestion {
   boilerplateCode?: Record<string, string>;
   constraints?: string | string[];
   functionName?: string;
-  inputVariables?: { variable: string; type: any }[];
-  testcases?: { input: any; output: string }[];
+  inputVariables?: { variable: string; type: string }[];
+  testcases?: { input: Record<string, unknown>; output: string }[];
   // MCQ fields
   options?: (string | { id: string; text: string })[];
   correctAnswer?: string;
@@ -48,7 +48,7 @@ export default async function EditQuestionPage({
 
   // Ensure data has string ID if component expects it, logic might need adjustment depending on QuestionForm props
   // MongoDB _id is generic, QuestionForm might expect specific shape.
-  const mappedData: any = {
+  const mappedData: Record<string, unknown> = {
     ...data,
     id: data._id || data.id,
     // Map mismatched fields
@@ -86,7 +86,7 @@ export default async function EditQuestionPage({
     <QuestionForm
       type={type as "coding" | "mcq"}
       isCreating={false}
-      initialData={mappedData}
+      initialData={mappedData as Partial<QuestionSchema>}
     />
   );
 }

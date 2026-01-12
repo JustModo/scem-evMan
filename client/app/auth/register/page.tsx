@@ -92,8 +92,8 @@ function RegisterForm() {
         toast.error(result || "Registration failed");
       }
 
-    } catch (err: any) {
-      toast.error(err.message || "Registration failed");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ function RegisterForm() {
 
     try {
       await signIn("google", { callbackUrl: "/" });
-    } catch (err: any) {
+    } catch {
       setSsoError("Failed to initiate Google sign-up. Please try again.");
       setIsGoogleLoading(false);
     }
@@ -227,9 +227,9 @@ function RegisterForm() {
                 </Button>
 
                 <div className="flex items-center my-2">
-                  <hr className="flex-grow border-muted" />
+                  <hr className="grow border-muted" />
                   <span className="px-4 text-sm text-muted-foreground">OR</span>
-                  <hr className="flex-grow border-muted" />
+                  <hr className="grow border-muted" />
                 </div>
 
                 <Button

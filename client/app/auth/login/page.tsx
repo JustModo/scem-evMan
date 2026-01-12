@@ -77,7 +77,7 @@ function LoginForm() {
       } else if (result) {
         toast.error(result);
       }
-    } catch (err) {
+    } catch {
       toast.error("Login failed. Please try again.");
     } finally {
       setIsEmailPasswordLoading(false);
@@ -92,7 +92,7 @@ function LoginForm() {
 
     try {
       await signIn("google", { callbackUrl: "/" });
-    } catch (err: unknown) {
+    } catch {
       setSsoError("Failed to initiate Google sign-in. Please try again.");
       setIsGoogleLoading(false);
     }
@@ -198,9 +198,9 @@ function LoginForm() {
               </div>
 
               <div className="flex items-center my-6">
-                <hr className="flex-grow border-muted" />
+                <hr className="grow border-muted" />
                 <span className="px-4 text-sm text-muted-foreground">OR</span>
-                <hr className="flex-grow border-muted " />
+                <hr className="grow border-muted " />
               </div>
 
               <Button

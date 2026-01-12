@@ -6,8 +6,10 @@ import { EmptyState } from "@/components/admin/empty-placeholder";
 import { QuestionHeader } from "@/components/admin/question/header";
 import QuestionCard from "@/components/admin/question/question-card";
 
+import { Problem } from "@/types/problem";
+
 interface Props {
-  initialQuestions: any[];
+  initialQuestions: Problem[];
 }
 
 export function QuestionsList({ initialQuestions }: Props) {
@@ -35,9 +37,9 @@ export function QuestionsList({ initialQuestions }: Props) {
         {filteredProblems.length > 0 ? (
           <div className="space-y-3">
             {filteredProblems.map((problem) => (
-                // Map fields if needed. QuestionCard might expect "Problem" type.
-                // Assuming QuestionCard accepts generic props or we need to map _id to id.
-              <QuestionCard key={problem._id || problem.id} problem={{...problem, id: problem._id || problem.id}} />
+              // Map fields if needed. QuestionCard might expect "Problem" type.
+              // Assuming QuestionCard accepts generic props or we need to map _id to id.
+              <QuestionCard key={problem._id || problem.id} problem={{ ...problem, id: problem._id || problem.id }} />
             ))}
           </div>
         ) : (

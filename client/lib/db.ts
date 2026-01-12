@@ -5,14 +5,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 type Collection = "questions" | "contests" | "submissions";
 
 interface QueryOptions {
-    projection?: any;
+    projection?: Record<string, number | boolean>;
     limit?: number;
-    sort?: any;
-    populate?: any;
+    sort?: Record<string, 1 | -1>;
+    populate?: string | string[] | Record<string, unknown>[];
 }
 
 export const db = {
-    find: async <T = any>(collection: Collection, filter: any = {}, options: QueryOptions = {}) => {
+    find: async <T = unknown>(collection: Collection, filter: Record<string, unknown> = {}, options: QueryOptions = {}) => {
         try {
             const session = await auth();
             const token = session?.backendToken;
@@ -50,7 +50,7 @@ export const db = {
         }
     },
 
-    findOne: async <T = any>(collection: Collection, filter: any = {}, options: QueryOptions = {}) => {
+    findOne: async <T = unknown>(collection: Collection, filter: Record<string, unknown> = {}, options: QueryOptions = {}) => {
         try {
             const session = await auth();
             const token = session?.backendToken;

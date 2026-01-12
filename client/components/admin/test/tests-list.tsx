@@ -6,8 +6,23 @@ import { TestHeader } from "@/components/admin/test/header";
 import { TestCard } from "@/components/admin/test/test-card";
 import { EmptyState } from "@/components/admin/empty-placeholder";
 
+export interface MongoTestContent {
+  id?: string;
+  _id?: string;
+  title: string;
+  description: string;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
+  problemCount?: number;
+  questions?: unknown[];
+  startsAt?: string;
+  participants?: number;
+  createdAt?: string;
+}
+
 interface Props {
-  initialTests: any[];
+  initialTests: MongoTestContent[];
 }
 
 export function TestsList({ initialTests }: Props) {
@@ -21,7 +36,7 @@ export function TestsList({ initialTests }: Props) {
     const start = t.startTime ? new Date(t.startTime).getTime() : 0;
     const end = t.endTime ? new Date(t.endTime).getTime() : 0;
     const durationMs = end - start;
-    
+
     const seconds = Math.floor((durationMs / 1000) % 60);
     const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
     const hours = Math.floor((durationMs / (1000 * 60 * 60)));
@@ -33,19 +48,19 @@ export function TestsList({ initialTests }: Props) {
     if (!durationStr) durationStr = "0s";
 
     return {
-      id: t.id || t._id,
+      id: (t.id || t._id || '') as string,
       title: t.title,
       description: t.description,
-      status: t.status || 'waiting',
+      status: (t.status || 'waiting') as "waiting" | "ongoing" | "completed",
       // Map other fields as necessary for TestCard
       questions: t.problemCount || t.questions?.length || 0,
       totalQuestions: t.problemCount || t.questions?.length || 0,
-      problems: t.questions || [],
+      problems: (t.questions || []) as string[],
       duration: durationStr.trim(),
-      startsAt: t.startsAt || t.startTime,
+      startsAt: t.startsAt || t.startTime || '',
       participantsInProgress: t.participants || 0,
       participantsCompleted: 0,
-      createdAt: t.createdAt,
+      createdAt: t.createdAt || '',
     };
   });
 
