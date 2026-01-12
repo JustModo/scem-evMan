@@ -96,6 +96,7 @@ export default function TestCaseCard() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => appendVariable({ variable: "", type: "int" })}
+                                disabled={testCaseFields.length > 0}
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Variable
@@ -110,7 +111,7 @@ export default function TestCaseCard() {
                                     render={({ field }) => (
                                         <FormItem className="flex-1">
                                             <FormControl>
-                                                <Input {...field} placeholder="Variable Name" />
+                                                <Input {...field} placeholder="Variable Name" disabled={testCaseFields.length > 0} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -125,6 +126,7 @@ export default function TestCaseCard() {
                                             <Select
                                                 onValueChange={field.onChange}
                                                 defaultValue={field.value}
+                                                disabled={testCaseFields.length > 0}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -150,6 +152,7 @@ export default function TestCaseCard() {
                                     size="icon"
                                     className="text-destructive"
                                     onClick={() => removeVariable(index)}
+                                    disabled={testCaseFields.length > 0}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -161,6 +164,11 @@ export default function TestCaseCard() {
                             </p>
                         )}
                     </div>
+                    {testCaseFields.length > 0 && (
+                        <p className="text-sm text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
+                             ⚠️ Clear test cases to modify input variables.
+                        </p>
+                    )}
                 </CardContent>
             </Card>
 
@@ -182,12 +190,18 @@ export default function TestCaseCard() {
                         </div>
                     ) : (
                         <>
-                            <div className="flex justify-end">
+                            <div className="flex justify-end gap-2 items-center">
+                                {inputVariables.some((v: any) => !v.variable?.trim()) && (
+                                    <span className="text-xs text-destructive">
+                                        Name all variables to add test cases
+                                    </span>
+                                )}
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() => appendTestCase({ input: {}, output: "" })}
+                                    disabled={inputVariables.some((v: any) => !v.variable?.trim())}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
                                     Add Test Case
