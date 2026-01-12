@@ -8,7 +8,9 @@ const bcrypt = require('bcryptjs');
 // Database connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/scem-evman', {
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/scem-evman';
+    console.log(`Connecting to MongoDB at: ${uri}`);
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

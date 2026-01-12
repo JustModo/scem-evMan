@@ -17,7 +17,7 @@ export const db = {
             const session = await auth();
             const token = session?.backendToken;
 
-            const res = await fetch(`${BASE_URL}/api/data`, {
+            const res = await fetch(`${BASE_URL}/api/admin/data`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export const db = {
             const contentType = res.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
                 const text = await res.text();
-                console.error(`db.find received non-JSON response from ${BASE_URL}/api/data:`, text.slice(0, 500)); // Log first 500 chars
+                console.error(`db.find received non-JSON response from ${BASE_URL}/api/admin/data:`, text.slice(0, 500)); // Log first 500 chars
                 throw new Error(`Received non-JSON response: ${text.slice(0, 100)}...`);
             }
 
@@ -55,7 +55,7 @@ export const db = {
             const session = await auth();
             const token = session?.backendToken;
 
-            const res = await fetch(`${BASE_URL}/api/data/one`, {
+            const res = await fetch(`${BASE_URL}/api/admin/data/one`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
