@@ -101,7 +101,7 @@ const submitCode = async (req, res) => {
             const problemConfig = {
                 method: question.functionName || 'solve',
                 input: (question.inputVariables || []).map(v => ({
-                    variable: v.name,
+                    variable: v.variable,
                     type: v.type
                 }))
             };
@@ -122,7 +122,7 @@ const submitCode = async (req, res) => {
                 // Extract values in order based on inputVariables
                 const values = [];
                 for (const inputVar of (question.inputVariables || [])) {
-                    const value = tc.input[inputVar.name];
+                    const value = tc.input[inputVar.variable];
                     if (Array.isArray(value)) {
                         // For arrays, prepend the array size first, then the elements
                         values.push(value.length);
