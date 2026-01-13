@@ -9,6 +9,11 @@ const contestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Added joinId 
+  joinId: {
+    type: String,
+    unique: true,
+  },
   startTime: {
     type: Date,
     required: true,
@@ -16,6 +21,10 @@ const contestSchema = new mongoose.Schema({
   endTime: {
     type: Date,
     required: true,
+  },
+  // Added duration for Module 1 logic (calculated in minutes)
+  duration: {
+    type: Number,
   },
   questions: [String],
   author: {

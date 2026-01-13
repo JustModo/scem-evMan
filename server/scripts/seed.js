@@ -159,6 +159,7 @@ const seedDatabase = async () => {
         title: 'Beginner Programming Contest',
         description: 'A contest for beginners to test their basic programming skills.',
         type: 'coding',
+        joinId : '123456',
         startTime: new Date(now.getTime() - 60 * 60 * 1000), // Started 1 hour ago
         endTime: new Date(now.getTime() + 2 * 60 * 60 * 1000), // Ends in 2 hours
         questions: codingQuestions.map(q => q._id.toString()),
