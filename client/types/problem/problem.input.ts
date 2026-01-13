@@ -45,7 +45,7 @@ const codingSchema = z.object({
   testCases: z
     .array(
       z.object({
-        input: z.record(z.string()),
+        input: z.any(),
         output: z.string().min(1, "Expected output is required"),
       })
     )

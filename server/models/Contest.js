@@ -17,7 +17,10 @@ const contestSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  questions: [String],
+  questions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Question'
+  }],
   author: {
     type: String,
     required: true,

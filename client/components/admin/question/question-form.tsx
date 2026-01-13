@@ -13,6 +13,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import BasicInfoCard from "./shared/info-card";
 import MCQCard from "./mcq/mcq-card";
+import { InputVariable, serializeInput, deserializeInput } from "@/lib/test-case-utils";
 
 
 import ConstraintsCard from "./coding/constraint-card";
@@ -42,7 +43,6 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
         boilerplate: {},
         functionName: "",
         inputVariables: [],
-        testCases: [],
       };
     } else {
       return {
@@ -63,6 +63,8 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
     }
   }, [type]);
 
+
+
   const form = useForm<QuestionSchema>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
@@ -73,9 +75,27 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
 
   useEffect(() => {
     if (initialData) {
+      const transformedData = { ...initialData };
+
+      // Deserialize Test Case inputs (DB String -> UI Object)
+      if (
+        transformedData.type === "coding" &&
+        transformedData.testCases &&
+        transformedData.inputVariables
+      ) {
+        transformedData.testCases = transformedData.testCases.map((tc: Record<string, unknown>) => ({
+          ...tc,
+          input:
+            typeof tc.input === "string"
+              ? deserializeInput(tc.input, transformedData.inputVariables as InputVariable[])
+              : tc.input,
+          output: tc.output as string,
+        }));
+      }
+
       form.reset({
         ...getDefaultValues(),
-        ...initialData,
+        ...transformedData,
       } as QuestionSchema);
     } else {
       form.reset(getDefaultValues());
@@ -94,6 +114,35 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       router.push("/admin/questions");
     }
   }, [state.success, router]);
+
+  const handleSubmit = form.handleSubmit((data) => {
+    const submissionData = { ...data };
+
+    // Serialize Test Case inputs (UI Object -> DB String)
+    if (
+      submissionData.type === "coding" &&
+      submissionData.testCases &&
+      submissionData.inputVariables
+    ) {
+      try {
+        submissionData.testCases = submissionData.testCases.map((tc: Record<string, unknown>) => ({
+          ...tc,
+          input: serializeInput(tc.input as Record<string, unknown>, submissionData.inputVariables as InputVariable[]),
+          output: tc.output as string,
+        }));
+        
+        startTransition(() => {
+          formAction(submissionData as QuestionSchema);
+        });
+      } catch (error) {
+         console.error("Serialization failed", error);
+      }
+    } else {
+      startTransition(() => {
+        formAction(submissionData);
+      });
+    }
+  });
 
   return (
     <Fragment>
@@ -127,11 +176,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
       </div>
 
       <Form {...form}>
-        <form id="question-form" onSubmit={form.handleSubmit((data) => {
-          startTransition(() => {
-            formAction(data);
-          });
-        }, (errors) => console.error("Form Errors:", errors))} className="space-y-6">
+        <form id="question-form" onSubmit={handleSubmit} className="space-y-6">
           <input type="hidden" {...form.register("type")} value={type} />
 
           {type === "coding" ? (

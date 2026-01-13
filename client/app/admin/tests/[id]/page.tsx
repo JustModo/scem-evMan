@@ -21,7 +21,7 @@ export default async function AdminTestDetailPage({
   let test = null;
 
   try {
-    const data = await db.findOne<Record<string, unknown>>("contests", { _id: id });
+    const data = await db.findOne<Record<string, unknown>>("contests", { _id: id }, { populate: ["questions"] });
     if (data) {
       const startTime = data.startTime as string;
       const endTime = data.endTime as string;
