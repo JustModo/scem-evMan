@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { authenticate } from "@/app/actions/auth";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [ssoError, setSsoError] = useState("");
@@ -61,14 +61,14 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setIsEmailPasswordLoading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append("email", email);
       formData.append("password", password);
-      
+
       const result = await authenticate(undefined, formData);
 
       if (result === "success") {
@@ -77,7 +77,7 @@ export default function LoginPage() {
       } else if (result) {
         toast.error(result);
       }
-    } catch (err) {
+    } catch {
       toast.error("Login failed. Please try again.");
     } finally {
       setIsEmailPasswordLoading(false);
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
     try {
       await signIn("google", { callbackUrl: "/" });
-    } catch (err: unknown) {
+    } catch {
       setSsoError("Failed to initiate Google sign-in. Please try again.");
       setIsGoogleLoading(false);
     }
@@ -198,9 +198,9 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center my-6">
-                <hr className="flex-grow border-muted" />
+                <hr className="grow border-muted" />
                 <span className="px-4 text-sm text-muted-foreground">OR</span>
-                <hr className="flex-grow border-muted " />
+                <hr className="grow border-muted " />
               </div>
 
               <Button
@@ -232,4 +232,16 @@ export default function LoginPage() {
       </div>
     </main>
   );
-} 
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <LoginForm />
+    </React.Suspense>
+  );
+}

@@ -4,10 +4,9 @@ import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DELETED_MOCK_FILE = path.join(process.cwd(), "data", "deleted_mock_questions.json");
 const STATS_FILE = path.join(process.cwd(), "data", "statistics.json");
 const QUESTIONS_FILE = path.join(process.cwd(), "data", "questions.json");
-const DELETED_MOCK_FILE = path.join(process.cwd(), "data", "deleted_mock_questions.json");
 
 const INITIAL_STATS = {
     activeContests: 2,

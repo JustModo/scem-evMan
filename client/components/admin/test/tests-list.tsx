@@ -6,8 +6,23 @@ import { TestHeader } from "@/components/admin/test/header";
 import { TestCard } from "@/components/admin/test/test-card";
 import { EmptyState } from "@/components/admin/empty-placeholder";
 
+export interface MongoTestContent {
+  id?: string;
+  _id?: string;
+  title: string;
+  description: string;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
+  problemCount?: number;
+  questions?: unknown[];
+  startsAt?: string;
+  participants?: number;
+  createdAt?: string;
+}
+
 interface Props {
-  initialTests: any[];
+  initialTests: MongoTestContent[];
 }
 
 export function TestsList({ initialTests }: Props) {
@@ -17,21 +32,37 @@ export function TestsList({ initialTests }: Props) {
   // TestCard expects 'Test' type. We might need mapping.
   // Map mongo objects if needed or assume they match what TestCard expects
   // TestCard expects 'Test' type. We might need mapping.
-  const tests = initialTests.map(t => ({
-    id: t.id || t._id,
-    title: t.title,
-    description: t.description,
-    status: t.status || 'waiting',
-    // Map other fields as necessary for TestCard
-    questions: t.problemCount || t.questions?.length || 0,
-    totalQuestions: t.problemCount || t.questions?.length || 0,
-    problems: t.questions || [],
-    duration: t.duration || "0",
-    startsAt: t.startsAt || t.startTime,
-    participantsInProgress: t.participants || 0,
-    participantsCompleted: 0,
-    createdAt: t.createdAt,
-  }));
+  const tests = initialTests.map(t => {
+    const start = t.startTime ? new Date(t.startTime).getTime() : 0;
+    const end = t.endTime ? new Date(t.endTime).getTime() : 0;
+    const durationMs = end - start;
+
+    const seconds = Math.floor((durationMs / 1000) % 60);
+    const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
+    const hours = Math.floor((durationMs / (1000 * 60 * 60)));
+
+    let durationStr = "";
+    if (hours > 0) durationStr += `${hours}h `;
+    if (minutes > 0) durationStr += `${minutes}m `;
+    if (seconds > 0) durationStr += `${seconds}s`;
+    if (!durationStr) durationStr = "0s";
+
+    return {
+      id: (t.id || t._id || '') as string,
+      title: t.title,
+      description: t.description,
+      status: (t.status || 'waiting') as "waiting" | "ongoing" | "completed",
+      // Map other fields as necessary for TestCard
+      questions: t.problemCount || t.questions?.length || 0,
+      totalQuestions: t.problemCount || t.questions?.length || 0,
+      problems: (t.questions || []) as string[],
+      duration: durationStr.trim(),
+      startsAt: t.startsAt || t.startTime || '',
+      participantsInProgress: t.participants || 0,
+      participantsCompleted: 0,
+      createdAt: t.createdAt || '',
+    };
+  });
 
   const filteredTests = tests.filter(
     (test) =>

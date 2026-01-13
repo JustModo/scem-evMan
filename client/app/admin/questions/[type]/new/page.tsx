@@ -10,7 +10,7 @@ export default async function NewQuestionPage({
   params: Promise<{ type: string }>;
 }) {
   const { type } = await params;
-  if (!VALID_TYPES.includes(type as any)) return notFound();
+  if (!VALID_TYPES.includes(type as typeof VALID_TYPES[number])) return notFound();
 
   return <QuestionForm type={type as "coding" | "mcq"} isCreating={true} />;
 }

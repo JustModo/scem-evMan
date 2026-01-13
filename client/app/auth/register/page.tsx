@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { register } from "@/app/actions/auth";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -92,8 +92,8 @@ export default function RegisterPage() {
         toast.error(result || "Registration failed");
       }
 
-    } catch (err: any) {
-      toast.error(err.message || "Registration failed");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -107,7 +107,7 @@ export default function RegisterPage() {
 
     try {
       await signIn("google", { callbackUrl: "/" });
-    } catch (err: any) {
+    } catch {
       setSsoError("Failed to initiate Google sign-up. Please try again.");
       setIsGoogleLoading(false);
     }
@@ -227,9 +227,9 @@ export default function RegisterPage() {
                 </Button>
 
                 <div className="flex items-center my-2">
-                  <hr className="flex-grow border-muted" />
+                  <hr className="grow border-muted" />
                   <span className="px-4 text-sm text-muted-foreground">OR</span>
-                  <hr className="flex-grow border-muted" />
+                  <hr className="grow border-muted" />
                 </div>
 
                 <Button
@@ -265,3 +265,16 @@ export default function RegisterPage() {
     </main>
   );
 }
+
+export default function RegisterPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <RegisterForm />
+    </React.Suspense>
+  );
+}
+

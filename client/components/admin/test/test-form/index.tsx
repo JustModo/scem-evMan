@@ -7,13 +7,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
-import { useActionState, useTransition } from "react";
+import { useActionState, useTransition, useEffect } from "react";
 import TestQuestions from "../questions-list";
 import { saveTest } from "@/app/actions/save-test";
 
-export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: any[] }) {
+import { Problem } from "@/types/problem";
+
+export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: Problem[] }) {
+  const router = useRouter();
   const form = useForm<TestSchema>({
     resolver: zodResolver(testSchema),
     defaultValues: {
@@ -32,6 +36,12 @@ export default function TestForm({ testData, availableQuestions = [] }: { testDa
   });
 
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (state.success) {
+      router.push("/admin/tests");
+    }
+  }, [state.success, router]);
 
   const handleSubmit = form.handleSubmit((data) => {
     startTransition(() => {
