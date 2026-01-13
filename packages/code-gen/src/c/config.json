@@ -1,35 +1,31 @@
 {
-    "language": "c",
-    "boilerplate": "#include <stdio.h>\n\nvoid {method}({args}) {\n    // TODO: Implement solution\n    printf(\"Output goes here\\n\");\n}",
-    "template": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n{code}\n\nint main() {\n{input_reading_code}\n    return 0;\n}",
-    "types": {
-        "int": {
-            "reader": "scanf(\"%d\", &{var});",
-            "hint": "int"
-        },
-        "float": {
-            "reader": "scanf(\"%f\", &{var});",
-            "hint": "float"
-        },
-        "char": {
-            "reader": "scanf(\" %c\", &{var});",
-            "hint": "char"
-        },
-        "string": {
-            "reader": "{var} = (char*)malloc(256); scanf(\"%s\", {var});",
-            "hint": "char*"
-        },
-        "int_array": {
-            "reader": "while(scanf(\"%d\", &{var}[{var}_size]) == 1) { {var}_size++; }",
-            "hint": "int*"
-        },
-        "float_array": {
-            "reader": "while(scanf(\"%f\", &{var}[{var}_size]) == 1) { {var}_size++; }",
-            "hint": "float*"
-        },
-        "string_array": {
-            "reader": "{var}[{var}_size] = (char*)malloc(256); while(scanf(\"%s\", {var}[{var}_size]) == 1) { {var}_size++; {var}[{var}_size] = (char*)malloc(256); }",
-            "hint": "char**"
-        }
+  "language": "c",
+  "boilerplate": "#include <stdio.h>\n\nvoid {method}({args}) {\n    // TODO: Implement solution\n    printf(\"Output goes here\\n\");\n}",
+  "template": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n{code}\n\nint main() {\n{input_reading_code}\n    return 0;\n}",
+  "types": {
+    "int": {
+      "reader": "scanf(\"%d\", &{var});",
+      "hint": "int"
+    },
+    "float": {
+      "reader": "scanf(\"%f\", &{var});",
+      "hint": "float"
+    },
+    "char": {
+      "reader": "scanf(\" %c\", &{var});",
+      "hint": "char"
+    },
+    "string": {
+      "reader": "{var} = (char*)malloc(256); scanf(\"%s\", {var});",
+      "hint": "char*"
+    },
+    "int_array": {
+      "reader": "scanf(\"%d\", &{var}_size); for(int i=0; i<{var}_size; i++) { scanf(\"%d\", &{var}[i]); }",
+      "hint": "int*"
+    },
+    "float_array": {
+      "reader": "scanf(\"%d\", &{var}_size); for(int i=0; i<{var}_size; i++) { scanf(\"%f\", &{var}[i]); }",
+      "hint": "float*"
     }
+  }
 }
