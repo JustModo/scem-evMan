@@ -20,7 +20,11 @@ connectDB();
 const initCron = require("./services/cron");
 initCron();
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -33,11 +37,13 @@ app.get("/", (req, res) => {
 // app.use("/cmp", compRoutes); 
 
 const authRoutes = require("./routes/authRoutes");
+const testAccessRoutes = require('./routes/testAccessRoutes');
 app.use("/api/auth", authRoutes);
 
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/test", testRoutes);
+app.use("/api/test-access", testAccessRoutes);
 
 const submitRoutes = require("./routes/submitRoutes");
 app.use("/api/submit", submitRoutes);

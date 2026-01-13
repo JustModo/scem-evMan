@@ -9,6 +9,10 @@ const contestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  joinId: {
+    type: String,
+    unique: true,
+  },
   startTime: {
     type: Date,
     required: true,
@@ -16,6 +20,9 @@ const contestSchema = new mongoose.Schema({
   endTime: {
     type: Date,
     required: true,
+  },
+  duration: {
+    type: Number,
   },
   questions: [{
     type: mongoose.Schema.Types.ObjectId,
