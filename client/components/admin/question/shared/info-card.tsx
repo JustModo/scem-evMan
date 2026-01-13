@@ -41,7 +41,7 @@ export default function BasicInfoCard() {
                 <FormLabel>Difficulty</FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value || "easy"}
                 >
                   <FormControl>
                     <SelectTrigger>

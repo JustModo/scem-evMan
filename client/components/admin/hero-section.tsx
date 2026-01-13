@@ -121,8 +121,8 @@ export default function HeroSection({ stats, recentTests }: HeroSectionProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {recentTests.map((test) => (
                 <Link
-                  key={test.id}
-                  href={`/admin/tests/${test.id}`}
+                  key={test._id || test.id}
+                  href={`/admin/tests/${test._id || test.id}`}
                   className="flex flex-col p-4 rounded-xl border border-border bg-card hover:bg-muted/30 transition-colors group cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-2">
