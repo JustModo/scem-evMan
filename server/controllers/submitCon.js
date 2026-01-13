@@ -124,6 +124,8 @@ const submitCode = async (req, res) => {
                 for (const inputVar of (question.inputVariables || [])) {
                     const value = tc.input[inputVar.name];
                     if (Array.isArray(value)) {
+                        // For arrays, prepend the array size first, then the elements
+                        values.push(value.length);
                         values.push(...value);
                     } else {
                         values.push(value);

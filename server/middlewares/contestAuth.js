@@ -51,7 +51,7 @@ const isContestActive = async (req, res, next) => {
         const contestId = req.params.id || req.body.contestId;
         
         
-        const userId = req.user?.userId; 
+        const userId = req.user?._id || req.user?.id; 
 
         if (!contestId) {
             return res.status(400).json({ success: false, message: 'Contest ID is required' });
