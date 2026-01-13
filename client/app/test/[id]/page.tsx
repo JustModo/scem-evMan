@@ -1,116 +1,208 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { Clock, AlertCircle, Calendar, Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Play } from "lucide-react";
-import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-export const dynamic = "force-dynamic";
-
-interface MongoTestContent {
-  _id: string;
+interface ContestDetails {
   title: string;
   description: string;
+  rules: string[];
+  duration: number;
   startTime: string;
-  endTime: string;
-  questions?: string[];
-  author?: string;
-  rules?: string[];
+  serverTime: string;
+  canStart: boolean;
 }
 
-export default async function TestPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function ContestLanding() {
+  const { id } = useParams();
+  const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const contest = await db.findOne<MongoTestContent>("contests", { _id: id });
+  const [details, setDetails] = useState<ContestDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [timeLeft, setTimeLeft] = useState<string>("");
 
-  if (!contest) return notFound();
+  const updateCountdown = useCallback((startTime: string) => {
+    const start = new Date(startTime).getTime();
+    const now = new Date().getTime();
+    const diff = start - now;
 
-  const firstQuestionId = contest.questions?.[0] || "";
+    if (diff <= 0) {
+      setTimeLeft("00:00:00");
+      return true;
+    }
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    setTimeLeft(
+      `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    );
+    return false;
+  }, []);
+
+  const fetchInstructions = useCallback(async () => {
+    if (status !== "authenticated" || !session?.backendToken) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test-access/${id}/landing`, {
+        headers: {
+          "Authorization": `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json"
+        },
+      });
+
+      const result = await res.json();
+
+      if (result.success && result.data) {
+        setDetails(result.data);
+      } else {
+        toast.error(result.message || "Failed to fetch data");
+      }
+    } catch (err) {
+      toast.error("Failed to load instructions");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, session, status]);
+
+  useEffect(() => {
+    if (id && status === "authenticated") fetchInstructions();
+  }, [id, status, fetchInstructions]);
+
+  useEffect(() => {
+    if (!details || details.canStart) return;
+
+    const interval = setInterval(() => {
+      const isTimeUp = updateCountdown(details.startTime);
+      if (isTimeUp) {
+        setDetails(prev => prev ? { ...prev, canStart: true } : null);
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [details, updateCountdown]);
+
+  const handleStart = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test-access/start`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session?.backendToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ contestId: id })
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        toast.success("Good luck!");
+        router.push(`/test/${id}/session`);
+      } else {
+        toast.error(result.message || "Failed to start session");
+      }
+    } catch (error) {
+      toast.error("Network error: Could not start assessment");
+    }
+  };
+
+  if (status === "loading" || loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <p className="text-muted-foreground animate-pulse">Initializing Session & Fetching Rules...</p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen pt-12 bg-primary text-foreground">
-      <div className="flex flex-col md:flex-row min-h-[calc(100vh-3rem)]">
-        {/* Main Detail Section - Empty or could show logo/image */}
-        <div className="flex-1 p-6 bg-primary/5 hidden md:block">
-        </div>
+    <main className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 min-h-screen pt-24">
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex-1 space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{details?.title}</h1>
+            <p className="text-xl text-muted-foreground">{details?.description}</p>
+          </div>
 
-        {/* Sidebar */}
-        <div className="w-full md:w-1/3 bg-card border-l shadow-xl flex flex-col">
-          <ScrollArea className="flex-1 min-h-0 p-6">
-            <div className="space-y-8">
-              {/* Title and Description */}
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight text-primary">
-                  {contest.title}
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {contest.description}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center p-4 bg-secondary/50 rounded-lg border">
+              <Calendar className="mr-3 text-primary h-5 w-5" />
+              <div>
+                <p className="text-xs uppercase font-bold text-muted-foreground">Start Date</p>
+                <p className="font-semibold">{details ? new Date(details.startTime).toLocaleDateString() : "-"}</p>
+              </div>
+            </div>
+            <div className="flex items-center p-4 bg-secondary/50 rounded-lg border">
+              <Hourglass className="mr-3 text-primary h-5 w-5" />
+              <div>
+                <p className="text-xs uppercase font-bold text-muted-foreground">Duration</p>
+                <p className="font-semibold">{details?.duration} Minutes</p>
+              </div>
+            </div>
+            <div className="flex items-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <Clock className="mr-3 text-primary h-5 w-5" />
+              <div>
+                <p className="text-xs uppercase font-bold text-muted-foreground">Start Time</p>
+                <p className="font-semibold text-primary">
+                  {details ? new Date(details.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
                 </p>
               </div>
-
-              {/* Test Details Grid */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold border-b pb-2">
-                  Session Information
-                </h3>
-                <div className="grid grid-cols-1 gap-4 text-sm">
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                    <span className="font-medium text-muted-foreground">Start Time</span>
-                    <span className="font-semibold">{new Date(contest.startTime).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                    <span className="font-medium text-muted-foreground">End Time</span>
-                    <span className="font-semibold">{new Date(contest.endTime).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                    <span className="font-medium text-muted-foreground">Total Problems</span>
-                    <span className="font-semibold">{contest.questions?.length || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
-                    <span className="font-medium text-muted-foreground">Host</span>
-                    <span className="font-semibold">{contest.author}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rules */}
-              {contest.rules && contest.rules.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="text-lg font-semibold">Assessment Rules</h4>
-                  <ul className="space-y-3">
-                    {contest.rules.map((rule: string, i: number) => (
-                      <li key={i} className="flex gap-3 text-sm text-muted-foreground">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                        {rule}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
-          </ScrollArea>
+          </div>
 
-          {/* Take Test Button */}
-          <div className="p-6 border-t bg-card">
-            {firstQuestionId ? (
-              <Link href={`/attempt/test/${id}/question/${firstQuestionId}`}>
-                <Button className="w-full py-6 text-lg font-bold gap-3 shadow-lg shadow-primary/20">
-                  <Play className="w-5 h-5 fill-current" />
-                  Begin Assessment
+          <div className="bg-card p-8 rounded-2xl border shadow-sm space-y-6">
+            <div className="flex items-center space-x-2 text-xl font-bold border-b pb-4">
+              <AlertCircle className="text-yellow-500" />
+              <h2>Test Guidelines</h2>
+            </div>
+            <ScrollArea className="max-h-[400px]">
+              <ul className="space-y-4">
+                {details?.rules?.map((rule, i) => (
+                  <li key={i} className="flex items-start">
+                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold mr-3 mt-0.5 shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="text-muted-foreground leading-relaxed">{rule}</span>
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
+          </div>
+        </div>
+
+        <div className="w-full md:w-80 space-y-6">
+          <div className="bg-card p-6 rounded-2xl border shadow-lg sticky top-24">
+            <h3 className="text-lg font-bold mb-4">Session Status</h3>
+            {!details?.canStart ? (
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-muted rounded-xl">
+                  <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Starting In</p>
+                  <p className="text-3xl font-mono font-bold text-primary tabular-nums">{timeLeft}</p>
+                </div>
+                <Button disabled className="w-full py-6 text-lg font-bold opacity-80 cursor-not-allowed">
+                  Entry Locked
                 </Button>
-              </Link>
+                <p className="text-[10px] text-muted-foreground">The assessment will unlock automatically when the timer reaches zero.</p>
+              </div>
             ) : (
-              <Button disabled className="w-full py-6 text-lg font-bold opacity-50">
-                No Questions Available
-              </Button>
+              <div className="space-y-4">
+                <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                  <p className="text-xs font-bold text-green-600 dark:text-green-400 uppercase text-center">Test is Live</p>
+                </div>
+                <Button onClick={handleStart} className="w-full py-6 text-lg font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+                  Start Assessment
+                </Button>
+                <p className="text-[10px] text-center text-muted-foreground italic">By starting, you agree to follow the test rules.</p>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
