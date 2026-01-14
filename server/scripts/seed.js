@@ -1,4 +1,3 @@
-require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Question = require('../models/Question');
@@ -9,7 +8,7 @@ const bcrypt = require('bcryptjs');
 // Database connection
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGODB_URI;
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/scem-evman';
     console.log(`Connecting to MongoDB at: ${uri}`);
     await mongoose.connect(uri, {
       useNewUrlParser: true,
@@ -82,6 +81,7 @@ const questions = [
     description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
     difficulty: 'Easy',
     marks: 30,
+    questionType: 'Coding',
     constraints: '2 <= nums.length <= 10^4',
     inputFormat: 'First line contains n (size of array) and target. Second line contains n space-separated integers',
     outputFormat: 'Two space-separated integers representing the indices',
@@ -91,23 +91,14 @@ const questions = [
       { variable: 'target', type: 'int' }
     ],
     boilerplateCode: {
+      javascript: `function twoSum(nums, target) {\n    // Your code here\n}`,
       python: `def twoSum(nums, target):\n    # Write your code here\n    pass`,
       c: `void twoSum(int* nums, int nums_size, int target) {\n    // Write your code here\n    printf("Output goes here\\n");\n}`,
       java: `class Code {\n    public static void twoSum(int[] nums, int target) {\n        // Write your code here\n        System.out.println("Output goes here");\n    }\n}`,
     },
     testcases: [
-      {
-        input: '4 2 7 11 15 9',
-        output: '0 1'
-      },
-      {
-        input: '3 3 2 4 6',
-        output: '1 2'
-      },
-      {
-        input: '2 3 3 6',
-        output: '0 1'
-      }
+      { input: { nums: [2, 7, 11, 15], target: 9 }, output: '0 1' },
+      { input: { nums: [3, 2, 4], target: 6 }, output: '1 2' },
     ],
   },
   {
@@ -116,6 +107,7 @@ const questions = [
     description: 'Given an integer x, return true if x is a palindrome, and false otherwise.',
     difficulty: 'Easy',
     marks: 25,
+    questionType: 'Coding',
     constraints: '-2^31 <= x <= 2^31 - 1',
     inputFormat: 'A single integer x',
     outputFormat: 'true or false',
@@ -124,23 +116,15 @@ const questions = [
       { variable: 'x', type: 'int' }
     ],
     boilerplateCode: {
+      javascript: `function isPalindrome(x) {\n    // Your code here\n}`,
       python: `def isPalindrome(x):\n    # Write your code here\n    pass`,
       c: `void isPalindrome(int x) {\n    // Write your code here\n    printf("Output goes here\\n");\n}`,
       java: `class Code {\n    public static void isPalindrome(int x) {\n        // Write your code here\n        System.out.println("Output goes here");\n    }\n}`,
     },
     testcases: [
-      {
-        input: '121',
-        output: 'true'
-      },
-      {
-        input: '-121',
-        output: 'false'
-      },
-      {
-        input: '10',
-        output: 'false'
-      }
+      { input: { x: 121 }, output: 'true' },
+      { input: { x: -121 }, output: 'false' },
+      { input: { x: 10 }, output: 'false' },
     ],
   },
 ];
@@ -181,7 +165,6 @@ const seedDatabase = async () => {
         title: 'Beginner Programming Contest',
         description: 'A contest for beginners to test their basic programming skills.',
         type: 'coding',
-        joinId : '123456',
         startTime: new Date(now.getTime() - 60 * 60 * 1000), // Started 1 hour ago
         endTime: new Date(now.getTime() + 2 * 60 * 60 * 1000), // Ends in 2 hours
         questions: codingQuestions.map(q => q._id.toString()),
