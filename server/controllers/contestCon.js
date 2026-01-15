@@ -4,6 +4,34 @@ const Question = require('../models/Question');
 const { languageMap } = require('../utils/languageMap');
 const { getJudge } = require('@pomelo/code-gen');
 
+// @desc    Validate 6-digit Join ID (OTP)
+// @route   POST /api/contest/validate
+// @access  Public
+const validateJoinId = async (req, res) => {
+    try {
+        const { joinId } = req.body;
+
+        // Search the database for the 6-digit joinCode
+        const contest = await Contest.findOne({ joinId: joinId });
+
+        if (!contest) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid Join ID. No test found with this code."
+            });
+        }
+
+        // Return needed info for redirect
+        return res.status(200).json({
+            success: true,
+            contestId: contest._id,
+            title: contest.title
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    Start a contest
 // @route   POST /api/contests/:id/start
 // @access  Private (requires authentication)
@@ -95,15 +123,19 @@ const getContestLanding = async (req, res) => {
         const contest = await Contest.findById(req.params.id);
         if (!contest) return res.status(404).json({ success: false, error: 'Contest not found' });
 
+        const now = new Date();
+        const start = new Date(contest.startTime);
+        const canStart = now >= start && now <= new Date(contest.endTime);
+
         return res.json({
             success: true,
             data: {
                 title: contest.title,
                 description: contest.description,
-                duration: {
-                    start: contest.startTime,
-                    end: contest.endTime
-                },
+                duration: contest.duration || (new Date(contest.endTime) - new Date(contest.startTime)) / 60000, // min
+                startTime: contest.startTime,
+                serverTime: now,
+                canStart: canStart,
                 totalProblems: contest.questions.length,
                 author: contest.author || "SCEM Coding Club",
                 rules: contest.rules || []
@@ -180,30 +212,30 @@ const endContest = async (req, res) => {
 const startTest = async (req, res) => {
     try {
         const { contestId } = req.body;
-        
+
         // Get user from auth middleware (requireAuth sets req.user)
         const userId = req.user?.sub || req.user?.id;
-        
+
         if (!userId) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'User not authenticated' 
+            return res.status(401).json({
+                success: false,
+                error: 'User not authenticated'
             });
         }
 
         if (!contestId) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Contest ID is required' 
+            return res.status(400).json({
+                success: false,
+                error: 'Contest ID is required'
             });
         }
 
         // Verify contest exists
         const contest = await Contest.findById(contestId);
         if (!contest) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Contest not found' 
+            return res.status(404).json({
+                success: false,
+                error: 'Contest not found'
             });
         }
 
@@ -213,26 +245,26 @@ const startTest = async (req, res) => {
         const endTime = new Date(contest.endTime);
 
         if (now < startTime) {
-            return res.status(403).json({ 
-                success: false, 
+            return res.status(403).json({
+                success: false,
                 error: 'Contest has not started yet',
                 startTime: contest.startTime
             });
         }
 
         if (now > endTime) {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Contest has already ended' 
+            return res.status(403).json({
+                success: false,
+                error: 'Contest has already ended'
             });
         }
 
         // Register user to contest if not already registered
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'User not found' 
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
             });
         }
 
@@ -258,9 +290,9 @@ const startTest = async (req, res) => {
         });
     } catch (error) {
         console.error('Error starting test:', error);
-        return res.status(500).json({ 
-            success: false, 
-            error: error.message 
+        return res.status(500).json({
+            success: false,
+            error: error.message
         });
     }
 };
@@ -280,34 +312,34 @@ const runCode = async (req, res) => {
         const userId = req.user?.sub || req.user?.id;
 
         if (!userId) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'User not authenticated' 
+            return res.status(401).json({
+                success: false,
+                error: 'User not authenticated'
             });
         }
 
         if (!questionId || !code || !language) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Missing required fields: questionId, code, language' 
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: questionId, code, language'
             });
         }
 
         // Fetch the question to get test cases
         const question = await Question.findById(questionId);
         if (!question) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Question not found' 
+            return res.status(404).json({
+                success: false,
+                error: 'Question not found'
             });
         }
 
         // Map language to Judge0 ID
         const judge0Id = languageMap[language.toLowerCase()];
         if (!judge0Id) {
-            return res.status(400).json({ 
-                success: false, 
-                error: `Unsupported language: ${language}` 
+            return res.status(400).json({
+                success: false,
+                error: `Unsupported language: ${language}`
             });
         }
 
@@ -334,9 +366,9 @@ const runCode = async (req, res) => {
         const visibleTestCases = allTestCases.slice(0, Math.min(2, allTestCases.length));
 
         if (visibleTestCases.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'No test cases available for this question' 
+            return res.status(400).json({
+                success: false,
+                error: 'No test cases available for this question'
             });
         }
 
@@ -362,7 +394,7 @@ const runCode = async (req, res) => {
             } else {
                 input = String(tc.input);
             }
-            
+
             const expectedOutput = removeTrailingWhitespace(tc.output.trim());
 
             try {
@@ -379,7 +411,7 @@ const runCode = async (req, res) => {
 
                 const result = await response.json();
                 console.log(`Judge0 response for test case ${index + 1}:`, JSON.stringify(result, null, 2));
-                
+
                 const isPassed = result.status && result.status.id === 3;
 
                 return {
@@ -425,9 +457,9 @@ const runCode = async (req, res) => {
 
     } catch (error) {
         console.error('Error running code:', error);
-        return res.status(500).json({ 
-            success: false, 
-            error: error.message 
+        return res.status(500).json({
+            success: false,
+            error: error.message
         });
     }
 };
@@ -518,7 +550,7 @@ const getTestQuestions = async (req, res) => {
 const listAllContests = async (req, res) => {
     try {
         const contests = await Contest.find({}, { _id: 1, title: 1, description: 1, startTime: 1, endTime: 1, type: 1 });
-        
+
         return res.json({
             success: true,
             data: {
@@ -536,6 +568,7 @@ const listAllContests = async (req, res) => {
 };
 
 module.exports = {
+    validateJoinId,
     startContest,
     manageViolations,
     checkTestId,

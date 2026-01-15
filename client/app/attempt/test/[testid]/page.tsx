@@ -53,7 +53,7 @@ export default function AttemptLanding() {
         if (status !== "authenticated" || !session?.backendToken || !testid) return;
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test-access/${testid}/landing`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}`, {
                 headers: {
                     "Authorization": `Bearer ${session.backendToken}`,
                     "Content-Type": "application/json"
@@ -97,7 +97,7 @@ export default function AttemptLanding() {
 
     const handleStart = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test-access/start`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/start`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${session?.backendToken}`,

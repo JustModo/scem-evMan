@@ -1,52 +1,42 @@
 const express = require("express");
 const { requireAuth } = require("../middlewares/checkAuth");
 
-const { 
-    validateJoinId, 
-    getLandingDetails 
-} = require('../controllers/testAccessController');
-
 const {
-  checkTestId,
-  getContestLanding,
-  startTest,
-  getContestData,
-  getTestQuestions,
-  listAllContests,
-  submitSolution,
-  endContest,
-  runCode,
+  validateJoinId, // New consolidated
+  getContestLanding, // Updated
+  startTest, // Kept
+  getContestData, // Kept
+  submitSolution, // Kept
+  runCode, // Kept
+  listAllContests // Optional, kept for now
 } = require("../controllers/contestCon");
 
 const router = express.Router();
 
-// --- TEST ACCESS ROUTES ---
+// --- PUBLIC ACCESS ---
 
-// Validation (6-digit ID)
-router.post('/validate', validateJoinId);
+// Join via ID (returns contestId)
+router.post('/join', validateJoinId);
 
-// Landing Page Metadata
-router.get('/:id/landing', requireAuth(), getLandingDetails);
+// List all (dev/debug)
+router.get('/list', listAllContests);
 
-// START the test (Creates the session)
+// Landing Page (Public test info)
+router.get('/:id', getContestLanding);
+
+
+// --- AUTHENTICATED ACTIONS ---
+
+// Start Attempt (Create session)
 router.post('/start', requireAuth(), startTest);
 
-// Fetch Questions for the Session
-router.get('/data', requireAuth(), getContestData);
+// Get Test Data (Questions, etc. during attempt)
+router.get('/:id/data', requireAuth(), getContestData);
 
-// --- OTHER CONTEST ROUTES ---
+// Run Code (Test/Compile)
+router.post('/:id/run', requireAuth(), runCode);
 
-// User Contest Flow
-router.post("/check_valid", checkTestId);
-router.get("/test/data", requireAuth(), getContestData); // Protected
-router.get("/test/:id", getContestLanding);
-router.get("/questions/:id", getTestQuestions); // Get questions for a specific test
-router.get("/list/all", listAllContests); // List all contests (for testing)
-router.get("/:id/data", requireAuth(), getContestData); // Protected (param style)
-router.get("/:id", getContestLanding);
-router.post("/start_test", requireAuth(), startTest);
-router.post("/submit", requireAuth(), submitSolution);
-router.post("/end", requireAuth(), endContest);
-router.post("/:id/run", requireAuth(), runCode); // Run button: visible testcases only
+// Submit Solution
+router.post('/:id/submit', requireAuth(), submitSolution);
 
 module.exports = router;

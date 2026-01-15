@@ -62,7 +62,7 @@ export default function AttemptSessionPage() {
         if (status !== "authenticated" || !session?.backendToken || !testid) return;
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test-access/data?contestId=${testid}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}/data`, {
                 headers: {
                     "Authorization": `Bearer ${session.backendToken}`,
                     "Content-Type": "application/json"
@@ -143,7 +143,7 @@ export default function AttemptSessionPage() {
             }
 
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/submit`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}/submit`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${session.backendToken}`,
@@ -213,7 +213,7 @@ export default function AttemptSessionPage() {
             <header className="h-14 border-b bg-card px-6 flex items-center justify-between shrink-0 shadow-sm z-10 pt-2">
                 <div className="flex items-center gap-4">
                     <h1 className="font-bold text-lg tracking-tight bg-primary/10 px-3 py-1 rounded-md text-primary">SCEM Test Engine</h1>
-                    <div className="h-4 w-[1px] bg-border hidden md:block" />
+                    <div className="h-4 w-px bg-border hidden md:block" />
                     <h2 className="text-sm font-medium text-muted-foreground hidden md:block max-w-[300px] truncate">{currentQuestion.title}</h2>
                 </div>
 
@@ -243,8 +243,8 @@ export default function AttemptSessionPage() {
                                     key={q.id}
                                     onClick={() => setCurrentIdx(i)}
                                     className={`h-10 w-10 text-xs font-bold rounded-lg transition-all border ${currentIdx === i
-                                            ? 'bg-primary text-primary-foreground border-primary shadow-md scale-105'
-                                            : answers[q.id] ? 'bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                                        ? 'bg-primary text-primary-foreground border-primary shadow-md scale-105'
+                                        : answers[q.id] ? 'bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
                                         }`}
                                 >
                                     {i + 1}
@@ -273,8 +273,8 @@ export default function AttemptSessionPage() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
                                         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${currentQuestion.difficulty === 'Hard' ? 'bg-red-500/10 text-red-600' :
-                                                currentQuestion.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-600' :
-                                                    'bg-green-500/10 text-green-600'
+                                            currentQuestion.difficulty === 'Medium' ? 'bg-yellow-500/10 text-yellow-600' :
+                                                'bg-green-500/10 text-green-600'
                                             }`}>
                                             {currentQuestion.difficulty}
                                         </span>

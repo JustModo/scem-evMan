@@ -48,8 +48,15 @@ export function TestInformationCard({ test }: TestInformationCardProps) {
         </div>
 
         <div className="flex items-center justify-between">
+          <span className="text-muted-foreground font-medium">Join Code</span>
+          <span className="text-primary font-bold font-mono text-lg tracking-widest bg-primary/10 px-3 py-1 rounded-md border border-primary/20">
+            {test.joinId}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
           <span className="text-muted-foreground font-medium">Test ID</span>
-          <span className="text-foreground font-semibold font-mono text-sm sm:text-base">
+          <span className="text-foreground font-semibold font-mono text-xs sm:text-sm opacity-70">
             #{test.id}
           </span>
         </div>

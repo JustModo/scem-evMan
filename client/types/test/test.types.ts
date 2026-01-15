@@ -20,5 +20,6 @@ export interface Test {
   participantsCompleted: number;
   problems: string[] | any[];
   participants?: TestParticipant[];
+  joinId: string;
   createdAt: string;
 }
