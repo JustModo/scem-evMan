@@ -11,6 +11,8 @@ const {
   getContestLanding,
   startTest,
   getContestData,
+  getTestQuestions,
+  listAllContests,
   submitSolution,
   endContest,
   runCode,
@@ -36,6 +38,10 @@ router.get('/data', requireAuth(), getContestData);
 
 // User Contest Flow
 router.post("/check_valid", checkTestId);
+router.get("/test/data", requireAuth(), getContestData); // Protected
+router.get("/test/:id", getContestLanding);
+router.get("/questions/:id", getTestQuestions); // Get questions for a specific test
+router.get("/list/all", listAllContests); // List all contests (for testing)
 router.get("/:id/data", requireAuth(), getContestData); // Protected (param style)
 router.get("/:id", getContestLanding);
 router.post("/start_test", requireAuth(), startTest);
