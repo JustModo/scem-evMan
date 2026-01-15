@@ -65,7 +65,7 @@ export default function ContestLanding() {
       if (result.success && result.data) {
         const now = new Date().getTime();
         const end = new Date(result.data.endTime).getTime();
-        const isEnded = now > end;
+        const isEnded = result.data.isEnded || now > end;
         setDetails({ ...result.data, isEnded });
       } else {
         toast.error(result.message || "Failed to fetch data");
@@ -121,7 +121,7 @@ export default function ContestLanding() {
           router.push(`/attempt/test/${testid}/session`); // fallback
         }
       } else {
-        toast.error(result.message || "Failed to start session");
+        toast.error(result.error || result.message || "Failed to start session");
       }
     } catch (error) {
       toast.error("Network error: Could not start assessment");

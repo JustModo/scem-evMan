@@ -1,16 +1,26 @@
-import React from "react";
-import { db } from "@/lib/db";
-import { TestsList, MongoTestContent } from "@/components/admin/test/tests-list";
+import { auth } from "@/auth";
+import { TestsList } from "@/components/admin/test/tests-list";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminTestsPage() {
-  let tests: MongoTestContent[] = [];
+async function getTests() {
   try {
-    tests = await db.find<MongoTestContent>("contests") as MongoTestContent[];
-  } catch {
-    // ignore
+    const session = await auth();
+    const token = session?.backendToken;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/tests`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    const data = await res.json();
+    if (data.success) return data.contests;
+    return [];
+  } catch (error) {
+    console.error("Error fetching admin tests:", error);
+    return [];
   }
+}
 
+export default async function AdminTestsPage() {
+  const tests = await getTests();
   return <TestsList initialTests={tests} />;
 }

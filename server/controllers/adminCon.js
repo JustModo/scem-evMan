@@ -191,7 +191,7 @@ const getAdminContests = async (req, res) => {
         const contests = await Contest.find().select('title description createdAt questions author startTime endTime status joinId');
         const now = new Date();
 
-        const summary = contests.map(c => {
+        const summary = await Promise.all(contests.map(async c => {
             const start = new Date(c.startTime);
             const end = new Date(c.endTime);
             const durationMs = end - start;
@@ -206,20 +206,28 @@ const getAdminContests = async (req, res) => {
             if (seconds > 0) durationStr += `${seconds}s`;
             if (!durationStr) durationStr = "0s";
 
+            // Count submissions for this contest
+            const contestSubmissions = await Submission.find({ contest: c._id }).select('status');
+            const total = contestSubmissions.length;
+            const completed = contestSubmissions.filter(s => s.status === 'Completed').length;
+            const ongoing = total - completed;
+
             return {
                 id: c._id,
                 title: c.title,
                 description: c.description,
                 createdAt: c.createdAt,
-                status: c.status, // Use DB status directly
-                participants: 0,
+                status: c.status,
+                participants: total, // Total for backward compat or generic usage
+                participantsCompleted: completed,
+                participantsInProgress: ongoing,
                 problemCount: c.questions ? c.questions.length : 0,
-                // Format dates for frontend if needed, or send ISO strings
                 startsAt: c.startTime,
                 duration: durationStr.trim(),
                 joinId: c.joinId
             };
-        });
+        })); // Note: mapped to Promise.all now
+
         res.status(200).json({ success: true, contests: summary });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
