@@ -1,7 +1,7 @@
 const Question = require('../models/Question');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submissions');
-const { connectDB } = require('./dbCon');
+const { connectDB } = require('../helpers/dbCon');
 const { getJudge } = require("@pomelo/code-gen");
 
 // --- Questions ---
@@ -188,7 +188,7 @@ const getAdminContests = async (req, res) => {
     try {
         await connectDB();
         // Return summary fields
-        const contests = await Contest.find().select('title description createdAt questions author startTime endTime status');
+        const contests = await Contest.find().select('title description createdAt questions author startTime endTime status joinId');
         const now = new Date();
 
         const summary = contests.map(c => {
@@ -216,7 +216,8 @@ const getAdminContests = async (req, res) => {
                 problemCount: c.questions ? c.questions.length : 0,
                 // Format dates for frontend if needed, or send ISO strings
                 startsAt: c.startTime,
-                duration: durationStr.trim()
+                duration: durationStr.trim(),
+                joinId: c.joinId
             };
         });
         res.status(200).json({ success: true, contests: summary });
@@ -254,11 +255,22 @@ const createContest = async (req, res) => {
         const startTime = new Date(duration.start);
         const endTime = new Date(duration.end);
 
+
+        // Generate Unique 6-digit Join ID
+        let joinId;
+        let isUnique = false;
+        while (!isUnique) {
+            joinId = Math.floor(100000 + Math.random() * 900000).toString();
+            const existing = await Contest.findOne({ joinId });
+            if (!existing) isUnique = true;
+        }
+
         const newContest = new Contest({
             title, description, startTime, endTime,
             questions: problemIds, // Now just [String], matches schema
             rules, // Now [String], matches schema
             type, visibility,
+            joinId, // Save generated ID
             status: req.body.status || 'waiting', // Save Status
             author: author || "Admin" // Required field
         });

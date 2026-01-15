@@ -12,6 +12,7 @@ const contestSchema = new mongoose.Schema({
   joinId: {
     type: String,
     unique: true,
+    required: true,
   },
   startTime: {
     type: Date,

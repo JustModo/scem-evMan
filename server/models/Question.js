@@ -38,7 +38,11 @@ const questionSchema = new mongoose.Schema({
   }],
   testcases: [{
     input: String,
-    output: String
+    output: String,
+    isVisible: {
+      type: Boolean,
+      default: false
+    }
   }],
 }, { timestamps: true });
 

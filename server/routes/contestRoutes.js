@@ -1,52 +1,55 @@
 const express = require("express");
 const { requireAuth } = require("../middlewares/checkAuth");
 
-const { 
-    validateJoinId, 
-    getLandingDetails 
-} = require('../controllers/testAccessController');
-
 const {
-  checkTestId,
+  validateJoinId,
   getContestLanding,
   startTest,
   getContestData,
-  getTestQuestions,
   listAllContests,
-  submitSolution,
-  endContest,
-  runCode,
+  endTest
 } = require("../controllers/contestCon");
+
+const {
+  runCode,
+  submitCode,
+  saveMCQ
+} = require("../controllers/submitCon");
+
+const { validateContest } = require("../middlewares/contestMiddleware");
 
 const router = express.Router();
 
-// --- TEST ACCESS ROUTES ---
+// --- PUBLIC ACCESS ---
 
-// Validation (6-digit ID)
-router.post('/validate', validateJoinId);
+// Join via ID (returns contestId)
+router.post('/join', validateJoinId);
 
-// Landing Page Metadata
-router.get('/:id/landing', requireAuth(), getLandingDetails);
+// List all (dev/debug)
+router.get('/list', listAllContests);
 
-// START the test (Creates the session)
-router.post('/start', requireAuth(), startTest);
+// Landing Page (Public test info) - Just needs to exist
+router.get('/:id', validateContest(), getContestLanding);
 
-// Fetch Questions for the Session
-router.get('/data', requireAuth(), getContestData);
 
-// --- OTHER CONTEST ROUTES ---
+// --- AUTHENTICATED ACTIONS ---
 
-// User Contest Flow
-router.post("/check_valid", checkTestId);
-router.get("/test/data", requireAuth(), getContestData); // Protected
-router.get("/test/:id", getContestLanding);
-router.get("/questions/:id", getTestQuestions); // Get questions for a specific test
-router.get("/list/all", listAllContests); // List all contests (for testing)
-router.get("/:id/data", requireAuth(), getContestData); // Protected (param style)
-router.get("/:id", getContestLanding);
-router.post("/start_test", requireAuth(), startTest);
-router.post("/submit", requireAuth(), submitSolution);
-router.post("/end", requireAuth(), endContest);
-router.post("/:id/run", requireAuth(), runCode); // Run button: visible testcases only
+// Start Attempt (Create session) - Must be started, not ended
+router.post('/start', requireAuth(), validateContest({ checkStarted: true, checkEnded: true }), startTest);
+
+// Get Test Data - Must be started
+router.get('/:id/data', requireAuth(), validateContest({ checkStarted: true, checkEnded: true }), getContestData);
+
+// Run Code - Must be active
+router.post('/:id/run', requireAuth(), validateContest({ checkStarted: true, checkEnded: true }), runCode);
+
+// Submit Code Solution - Must be active
+router.post('/:id/submit', requireAuth(), validateContest({ checkStarted: true, checkEnded: true }), submitCode);
+
+// End Test
+router.post('/:id/end', requireAuth(), validateContest({ checkStarted: true }), endTest);
+
+// Save MCQ Answer
+router.post('/:id/mcq', requireAuth(), validateContest({ checkStarted: true, checkEnded: true }), saveMCQ);
 
 module.exports = router;

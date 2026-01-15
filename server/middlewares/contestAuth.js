@@ -2,49 +2,6 @@ const Contest = require('../models/Contest');
 const User = require('../models/User');
 const { jwtVerify } = require('jose');
 
-//IDENTITY CHECK (protect) Verifies the Next-Auth badge (JWT)//
-const protect = async (req, res, next) => {
-  try {
-    let token;
-
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    if (!token && req.headers.cookie) {
-      const cookies = Object.fromEntries(
-        req.headers.cookie.split("; ").map(c => c.split("="))
-      );
-
-      token =
-        cookies["next-auth.session-token"] ||
-        cookies["__Secure-next-auth.session-token"];
-    }
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized, token missing"
-      });
-    }
-
-    const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
-
-    const { payload } = await jwtVerify(token, secret);
-
-    req.user = payload;
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: "Token invalid or expired"
-    });
-  }
-};
-
 //PERMISSION CHECK (isContestActive)
 const isContestActive = async (req, res, next) => {
   try {
@@ -98,4 +55,4 @@ const isContestActive = async (req, res, next) => {
   }
 };
 
-module.exports = { protect, isContestActive };
+module.exports = { isContestActive };

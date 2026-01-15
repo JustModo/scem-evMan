@@ -1,4 +1,5 @@
 const Submission = require("../models/Submissions");
+const Question = require("../models/Question");
 const { languageMap } = require("../utils/languageMap");
 const { getJudge } = require("@pomelo/code-gen");
 
@@ -8,237 +9,260 @@ const removeTrailingLineCommands = (output) => {
     return output.replace(/\s+$/g, '');
 };
 
-// Save MCQ answer and calculate score
-const saveMCQ = async (req, res) => {
+// Common logic for executing code against test cases
+const executeTestCases = async ({ question, code, language, testCases, judge0Id }) => {
+    const judge0Url = process.env.JUDGE0_URL || 'http://localhost:2358';
+
+    // Wrap code
+    let wrappedCode = code;
     try {
-        const { contestId, questionId, answer } = req.body;
-        const userId = req.user._id;
-
-        if (!contestId || !questionId || !answer) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-
-        const questionDoc = req.question;
-
-        let score = 0;
-        const submittedAns = Array.isArray(answer) ? answer[0] : answer;
-        if (submittedAns === questionDoc.correctAnswer) {
-            score = questionDoc.marks || 0;
-        }
-
-        // Find existing submission or create new one for this contest/user
-        let submission = await Submission.findOne({ contest: contestId, user: userId });
-
-        if (!submission) {
-            submission = new Submission({
-                contest: contestId,
-                user: userId,
-                submissions: [],
-            });
-        }
-
-        // Update or add the submission entry for this specific question
-        const existingIndex = submission.submissions.findIndex(
-            (s) => s.question.toString() === questionId
-        );
-
-        const submissionEntry = {
-            question: questionId,
-            answer: Array.isArray(answer) ? answer : [answer],
-            score: score,
-            submittedAt: new Date(),
+        const judge = getJudge(language.toLowerCase());
+        const problemConfig = {
+            method: question.functionName || 'solve',
+            input: (question.inputVariables || []).map(v => ({
+                variable: v.variable,
+                type: v.type
+            }))
         };
+        wrappedCode = judge.wrapCode(code, problemConfig);
+    } catch (err) {
+        console.warn(`Could not wrap code for ${language}, using original code:`, err.message);
+    }
 
-        if (existingIndex > -1) {
-            submission.submissions[existingIndex] = {
-                ...submission.submissions[existingIndex],
-                ...submissionEntry
-            };
+    const executionPromises = testCases.map(async (tc, index) => {
+        // Prepare input
+        let input = '';
+        if (typeof tc.input === 'object' && tc.input !== null) {
+            const values = [];
+            for (const inputVar of (question.inputVariables || [])) {
+                const value = tc.input[inputVar.variable];
+                if (Array.isArray(value)) {
+                    values.push(value.length);
+                    values.push(...value);
+                } else {
+                    values.push(value);
+                }
+            }
+            input = values.join(' ');
+        } else if (typeof tc.input === 'string') {
+            input = tc.input.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
         } else {
-            submission.submissions.push(submissionEntry);
+            input = String(tc.input);
         }
 
-        // Recalculate total score for the entire contest
-        submission.totalScore = submission.submissions.reduce((acc, curr) => acc + (curr.score || 0), 0);
+        const expectedOutput = removeTrailingLineCommands(tc.output.trim());
+        const base64SourceCode = Buffer.from(wrappedCode).toString('base64');
+        const base64Input = Buffer.from(input).toString('base64');
 
-        // Mark contest as completed if final submit flag is true
-        if (req.body.finalSubmit) {
-            submission.status = 'Completed';
+        try {
+            const response = await fetch(`${judge0Url}/submissions?base64_encoded=true&wait=true`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    source_code: base64SourceCode,
+                    language_id: judge0Id,
+                    stdin: base64Input,
+                    expected_output: Buffer.from(expectedOutput).toString('base64'),
+                }),
+            });
+            const result = await response.json();
+            const isPassed = result.status && result.status.id === 3;
+
+            const decodedStdout = result.stdout ? Buffer.from(result.stdout, 'base64').toString('utf-8') : '';
+            const decodedStderr = result.stderr ? Buffer.from(result.stderr, 'base64').toString('utf-8') : '';
+            const decodedCompileOutput = result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf-8') : '';
+
+            return {
+                testCase: tc._id || index + 1,
+                passed: isPassed,
+                input: tc.isVisible ? input : undefined, // Hide input if not visible
+                expectedOutput: tc.isVisible ? expectedOutput : undefined,
+                actualOutput: tc.isVisible ? removeTrailingLineCommands(decodedStdout || "") : undefined,
+                error: decodedStderr || decodedCompileOutput || (result.status ? result.status.description : "Unknown Error"),
+                status: result.status ? result.status.description : "Unknown",
+                isVisible: tc.isVisible
+            };
+        } catch (err) {
+            return {
+                testCase: tc._id || index + 1,
+                passed: false,
+                status: "System Error",
+                error: err.message,
+                isVisible: tc.isVisible
+            };
+        }
+    });
+
+    return await Promise.all(executionPromises);
+};
+
+// @desc    Run code against visible test cases only
+const runCode = async (req, res) => {
+    try {
+        const { questionId, code, language } = req.body;
+        if (!questionId || !code || !language) {
+            return res.status(400).json({ success: false, error: "Missing required fields" });
         }
 
-        await submission.save();
+        const question = await Question.findById(questionId);
+        if (!question) return res.status(404).json({ success: false, error: "Question not found" });
 
-        return res.status(200).json({ message: "Answer saved", score: score });
+        const judge0Id = languageMap[language.toLowerCase()];
+        if (!judge0Id) return res.status(400).json({ success: false, error: "Unsupported language" });
+
+        const visibleTestCases = (question.testcases || []).filter(tc => tc.isVisible);
+
+        // If no testcases are marked visible, take the first one as a fallback for user feedback
+        const testToRun = visibleTestCases.length > 0 ? visibleTestCases : (question.testcases?.[0] ? [question.testcases[0]] : []);
+
+        const results = await executeTestCases({
+            question,
+            code,
+            language,
+            testCases: testToRun,
+            judge0Id
+        });
+
+        return res.status(200).json({
+            success: true,
+            results,
+            passedCount: results.filter(r => r.passed).length,
+            totalCount: results.length
+        });
     } catch (error) {
-        console.error("Error saving MCQ:", error);
-        return res.status(500).json({ error: "Internal server error" });
+        console.error("Error in runCode:", error);
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
-// Submit code, run against Judge0, and save results
+// @desc    Submit code and save results
 const submitCode = async (req, res) => {
     try {
         const { contestId, questionId, code, language } = req.body;
-        const userId = req.user._id;
+        const userId = req.user.id || req.user._id || req.user.sub;
+        // contestId is validated by middleware if part of URL or body, but here middleware is usually mounted on /:id
+        // However, middleware checks req.params.id || req.body.contestId.
+        // So we can assume req.contest exists if the route uses the middleware.
 
-        if (!contestId || !questionId || !code || !language) {
+        if (!questionId || !code || !language) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        // Question is already fetched by the router
-        const question = req.question;
+        const question = await Question.findById(questionId);
+        if (!question) return res.status(404).json({ error: "Question not found" });
 
-        // Map language to Judge0 ID
         const judge0Id = languageMap[language.toLowerCase()];
-        if (!judge0Id) {
-            return res.status(400).json({ error: "Unsupported language" });
-        }
+        if (!judge0Id) return res.status(400).json({ error: "Unsupported language" });
 
-        // Get the judge for the language and wrap the code
-        let wrappedCode = code;
-        try {
-            const judge = getJudge(language.toLowerCase());
-            const problemConfig = {
-                method: question.functionName || 'solve',
-                input: (question.inputVariables || []).map(v => ({
-                    variable: v.variable,
-                    type: v.type
-                }))
-            };
-            wrappedCode = judge.wrapCode(code, problemConfig);
-        } catch (err) {
-            console.warn(`Could not wrap code for ${language}, using original code:`, err.message);
-        }
-
-        const testCases = question.testcases || [];
-        let passedCount = 0;
-
-        // Execute code against all test cases in parallel
-        const executionPromises = testCases.map(async (tc, index) => {
-            // Simple input mapping
-            const input = typeof tc.input === 'string' ? tc.input : JSON.stringify(tc.input);
-            // Simple output mapping
-            const expectedOutput = typeof tc.output === 'string' ? tc.output : JSON.stringify(tc.output);
-            
-            // Encode to base64
-            const base64Input = Buffer.from(input).toString('base64');
-            const base64ExpectedOutput = Buffer.from(expectedOutput).toString('base64');
-            const base64SourceCode = Buffer.from(wrappedCode).toString('base64');
-            
-            try {
-                const judge0Url = process.env.JUDGE0_URL || 'http://localhost:2358';
-                const response = await fetch(`${judge0Url}/submissions?base64_encoded=true&wait=true`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        source_code: base64SourceCode,
-                        language_id: judge0Id,
-                        stdin: base64Input,
-                        expected_output: base64ExpectedOutput,
-                    }),
-                });
-                const result = await response.json();
-                const isPassed = result.status && result.status.id === 3; // ID 3 is 'Accepted'
-
-                // Decode base64 outputs
-                const decodedStdout = result.stdout ? Buffer.from(result.stdout, 'base64').toString('utf-8') : '';
-                const decodedStderr = result.stderr ? Buffer.from(result.stderr, 'base64').toString('utf-8') : '';
-                const decodedCompileOutput = result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf-8') : '';
-
-                return {
-                    testCase: index + 1,
-                    passed: isPassed,
-                    input: input,
-                    expectedOutput: expectedOutput,
-                    actualOutput: removeTrailingLineCommands(decodedStdout || decodedStderr || decodedCompileOutput || ""),
-                    error: decodedStderr || decodedCompileOutput || (result.status ? result.status.description : "Unknown Error"),
-                    status: result.status ? result.status.description : "Unknown",
-                };
-
-            } catch (err) {
-                console.error(`Judge0 execution error for test case ${index + 1}:`, err.message);
-                
-                return {
-                    testCase: index + 1,
-                    passed: false,
-                    input: input,
-                    expectedOutput: expectedOutput,
-                    actualOutput: "",
-                    error: `Execution failed: ${err.message}`,
-                    status: "System Error",
-                };
-            }
+        // Submit runs against ALL test cases for scoring
+        const allTestCases = question.testcases || [];
+        const results = await executeTestCases({
+            question,
+            code,
+            language,
+            testCases: allTestCases,
+            judge0Id
         });
 
-        const testCaseResults = await Promise.all(executionPromises);
-        // Calculate score based on percentage of passed test cases
-        passedCount = testCaseResults.filter(r => r.passed).length;
-        const totalTestCases = testCases.length;
-        const score = totalTestCases > 0 ? (passedCount / totalTestCases) * (question.marks || 0) : 0;
+        const passedCount = results.filter(r => r.passed).length;
+        const totalCount = allTestCases.length;
+        const score = totalCount > 0 ? (passedCount / totalCount) * (question.marks || 0) : 0;
 
-        // Determine overall status (Accepted, Wrong Answer, etc.)
         let overallStatus = "Accepted";
-        if (passedCount < totalTestCases) {
-            if (testCaseResults.some(r => r.status && r.status.includes("Compilation"))) {
-                overallStatus = "Compilation Error";
-            } else if (testCaseResults.some(r => r.status && r.status.includes("Time Limit"))) {
-                overallStatus = "Time Limit Exceeded";
-            } else {
-                overallStatus = "Wrong Answer";
-            }
+        if (passedCount < totalCount) {
+            if (results.some(r => r.status?.includes("Compilation"))) overallStatus = "Compilation Error";
+            else if (results.some(r => r.status?.includes("Time Limit"))) overallStatus = "Time Limit Exceeded";
+            else overallStatus = "Wrong Answer";
         }
 
-        // Find or create submission document
+        // Save submission
         let submission = await Submission.findOne({ contest: contestId, user: userId });
         if (!submission) {
-            submission = new Submission({
-                contest: contestId,
-                user: userId,
-                submissions: [],
-            });
+            submission = new Submission({ contest: contestId, user: userId, submissions: [] });
         }
 
-        // Update submission entry with code, results, and status
-        const existingIndex = submission.submissions.findIndex(
-            (s) => s.question.toString() === questionId
-        );
-
-        const submissionEntry = {
+        const entry = {
             question: questionId,
-            code: code,
-            language: language,
+            code,
+            language,
             status: overallStatus,
-            testCaseResults: testCaseResults,
-            score: score,
-            submittedAt: new Date(),
+            score,
+            testCaseResults: results,
+            submittedAt: new Date()
         };
 
-        if (existingIndex > -1) {
-            submission.submissions[existingIndex] = { ...submission.submissions[existingIndex], ...submissionEntry };
-        } else {
-            submission.submissions.push(submissionEntry);
-        }
+        const existingIdx = submission.submissions.findIndex(s => s.question.toString() === questionId);
+        if (existingIdx > -1) submission.submissions[existingIdx] = entry;
+        else submission.submissions.push(entry);
 
-        // Update total score
         submission.totalScore = submission.submissions.reduce((acc, curr) => acc + (curr.score || 0), 0);
-
-        if (req.body.finalSubmit) {
-            submission.status = 'Completed';
-        }
-
         await submission.save();
 
         return res.status(200).json({
-            message: "Submission processed",
-            results: testCaseResults,
-            score: score,
-            overallStatus: overallStatus
+            success: true,
+            results, // Frontend will receive filtered input/output for hidden cases via executeTestCases logic
+            score,
+            overallStatus
         });
-
     } catch (error) {
-        console.error("Error submitting code:", error);
+        console.error("Error in submitCode:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
 
-module.exports = { saveMCQ, submitCode };
+// Save MCQ answer
+const saveMCQ = async (req, res) => {
+    try {
+        const { contestId, questionId, answer } = req.body;
+        const userId = req.user.id || req.user._id || req.user.sub;
+
+        const questionDoc = await Question.findById(questionId);
+        if (!questionDoc) return res.status(404).json({ error: "Question not found" });
+
+        let score = 0;
+        const submittedAnswers = Array.isArray(answer) ? answer : [answer];
+
+        // correctAnswer in DB is a string of indices, e.g., "0" or "0,2"
+        const correctIndices = questionDoc.correctAnswer.split(',').map(idx => parseInt(idx.trim()));
+        const correctTexts = correctIndices.map(idx => questionDoc.options[idx]);
+
+        const isMultiple = questionDoc.questionType === "Multiple Correct";
+
+        if (isMultiple) {
+            // All correct answers must be present and no incorrect ones
+            const isCorrect = submittedAnswers.length === correctTexts.length &&
+                submittedAnswers.every(ans => correctTexts.includes(ans));
+            if (isCorrect) score = questionDoc.marks || 0;
+        } else {
+            // Single correct
+            if (submittedAnswers.includes(correctTexts[0])) {
+                score = questionDoc.marks || 0;
+            }
+        }
+
+        let submission = await Submission.findOne({ contest: contestId, user: userId });
+        if (!submission) {
+            submission = new Submission({ contest: contestId, user: userId, submissions: [] });
+        }
+
+        const entry = {
+            question: questionId,
+            answer: Array.isArray(answer) ? answer : [answer],
+            score,
+            submittedAt: new Date()
+        };
+
+        const existingIdx = submission.submissions.findIndex(s => s.question.toString() === questionId);
+        if (existingIdx > -1) submission.submissions[existingIdx] = entry;
+        else submission.submissions.push(entry);
+
+        submission.totalScore = submission.submissions.reduce((acc, curr) => acc + (curr.score || 0), 0);
+        await submission.save();
+
+        return res.status(200).json({ success: true, score });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { saveMCQ, submitCode, runCode };

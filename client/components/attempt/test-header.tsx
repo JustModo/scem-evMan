@@ -4,6 +4,8 @@ import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 type ProblemMeta = {
   id: string;
@@ -19,6 +21,35 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
+  const [isFinishing, setIsFinishing] = React.useState(false);
+  const { data: session } = useSession();
+
+  const handleFinish = async () => {
+    if (!session?.backendToken || !params.testid) return;
+    if (!confirm("Are you sure you want to finish the test? You cannot change your answers after this.")) return;
+
+    setIsFinishing(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${params.testid}/end`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Test submitted successfully!");
+        router.push(`/test/${params.testid}`);
+      } else {
+        toast.error(data.error || "Failed to submit test");
+      }
+    } catch (err) {
+      toast.error("Network error finishing test");
+    } finally {
+      setIsFinishing(false);
+    }
+  };
 
   const currentId = pathname.split("/").pop();
 
@@ -26,8 +57,12 @@ export default function TestHeader({ problems }: TestHeaderProps) {
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
 
-  const mcqProblems = problems.filter((p) => p.type !== "Coding");
-  const codingProblems = problems.filter((p) => p.type === "Coding");
+  const isCoding = (p: any) => {
+    return p.type === 'coding' || p.type === 'Coding';
+  };
+
+  const codingProblems = problems.filter(isCoding);
+  const mcqProblems = problems.filter((p) => !isCoding(p));
 
   return (
     <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-primary">
@@ -108,10 +143,12 @@ export default function TestHeader({ problems }: TestHeaderProps) {
 
       <Button
         variant={"secondary"}
-        className="text-sm mx-4"
+        className="text-sm mx-4 bg-green-600 hover:bg-green-700 text-white border-none"
+        onClick={handleFinish}
+        disabled={isFinishing}
       >
-        Submit
-        <BadgeCheck className="h-4 w-4" />
+        {isFinishing ? "Finishing..." : "Submit"}
+        {!isFinishing && <BadgeCheck className="h-4 w-4 ml-2" />}
       </Button>
     </div>
   );

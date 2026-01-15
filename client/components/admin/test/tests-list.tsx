@@ -18,6 +18,7 @@ export interface MongoTestContent {
   questions?: unknown[];
   startsAt?: string;
   participants?: number;
+  joinId?: string;
   createdAt?: string;
 }
 
@@ -60,6 +61,7 @@ export function TestsList({ initialTests }: Props) {
       startsAt: t.startsAt || t.startTime || '',
       participantsInProgress: t.participants || 0,
       participantsCompleted: 0,
+      joinId: t.joinId || '',
       createdAt: t.createdAt || '',
     };
   });

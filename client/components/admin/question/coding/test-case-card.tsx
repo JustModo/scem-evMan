@@ -166,7 +166,7 @@ export default function TestCaseCard() {
                     </div>
                     {testCaseFields.length > 0 && (
                         <p className="text-sm text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                             ⚠️ Clear test cases to modify input variables.
+                            ⚠️ Clear test cases to modify input variables.
                         </p>
                     )}
                 </CardContent>
@@ -200,7 +200,7 @@ export default function TestCaseCard() {
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => appendTestCase({ input: {}, output: "" })}
+                                    onClick={() => appendTestCase({ input: {}, output: "", isVisible: false })}
                                     disabled={inputVariables.some((v: { variable: string }) => !v.variable?.trim())}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
@@ -215,7 +215,28 @@ export default function TestCaseCard() {
                                         className="p-4 border rounded-lg space-y-4 bg-muted/30"
                                     >
                                         <div className="flex items-center justify-between">
-                                            <h4 className="font-medium text-sm">Test Case {index + 1}</h4>
+                                            <div className="flex items-center gap-4">
+                                                <h4 className="font-medium text-sm">Test Case {index + 1}</h4>
+                                                <FormField
+                                                    control={control}
+                                                    name={`testCases.${index}.isVisible`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                                            <FormControl>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={field.value}
+                                                                    onChange={field.onChange}
+                                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                />
+                                                            </FormControl>
+                                                            <FormLabel className="text-xs font-normal cursor-pointer">
+                                                                Visible to User
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
                                             <Button
                                                 type="button"
                                                 variant="ghost"
@@ -282,6 +303,6 @@ export default function TestCaseCard() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }

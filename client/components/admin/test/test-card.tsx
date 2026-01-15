@@ -28,7 +28,7 @@ export function TestCard({ test }: { test: Test }) {
             </CardDescription>
           </div>
           <Badge
-            className={`px-3 py-1 text-xs font-medium rounded-full border flex-shrink-0`}
+            className={`px-3 py-1 text-xs font-medium rounded-full border shrink-0`}
           >
             {test.status === "completed"
               ? "Completed"
@@ -42,7 +42,7 @@ export function TestCard({ test }: { test: Test }) {
       <CardContent>
         {/* Created At */}
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4 p-3 bg-muted border rounded-lg">
-          <Clock className="h-4 w-4 text-foreground flex-shrink-0" />
+          <Clock className="h-4 w-4 text-foreground shrink-0" />
           <span className="font-medium">Starts:</span>
           <span className="truncate">
             {new Date(test.startsAt).toLocaleString(undefined, {
@@ -93,6 +93,10 @@ export function TestCard({ test }: { test: Test }) {
         <div className="space-y-3 mb-6 p-4 bg-muted rounded-lg border border-border">
           <MetaRow label="Duration" value={test.duration} />
           <MetaRow label="Questions" value={test.totalQuestions} />
+          <div className="flex justify-between items-center bg-primary/5 p-2 rounded-md border border-primary/10">
+            <span className="text-primary font-bold text-xs uppercase tracking-wider">Join Code</span>
+            <span className="text-primary font-bold font-mono tracking-widest">{test.joinId}</span>
+          </div>
         </div>
 
         {/* Actions */}
@@ -165,7 +169,7 @@ function StatusBox({
 }) {
   return (
     <div className="flex items-center gap-2 p-2 bg-muted rounded-lg border border-border">
-      <div className={`w-3 h-3 ${color} rounded-full flex-shrink-0`} />
+      <div className={`w-3 h-3 ${color} rounded-full shrink-0`} />
       <div className="flex flex-col min-w-0">
         <span className="text-sm font-semibold text-foreground">{value}</span>
         <span className="text-xs text-muted-foreground truncate">{label}</span>

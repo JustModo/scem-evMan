@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { auth } from "@/auth";
 import { CodeScreen } from "@/components/attempt/code";
 import React from "react";
 import { CodingProblem, MCQProblem, Problem } from "@/types/problem";
@@ -17,38 +17,37 @@ export const dynamic = "force-dynamic";
 export default async function TestContentPage(props: Props) {
   const params = await props.params;
   const { testid, qid } = params;
+  const session = await auth();
 
-  // Fetch real question data
-  const problem = await db.findOne<Record<string, unknown>>("questions", { _id: qid });
+  // Fetch contest data via student API
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}/data`, {
+    headers: {
+      "Authorization": `Bearer ${session?.backendToken}`,
+      "Content-Type": "application/json"
+    },
+    cache: "no-store"
+  });
 
-  if (!problem) {
+  const result = await res.json();
+  if (!result.success) {
     return notFound();
   }
 
-  // Fetch all problems for this test to enable navigation (Passing full details is safer)
-  const contest = await db.findOne<Record<string, unknown>>("contests", { _id: testid });
-  const questionIds = (contest?.questions as string[]) || [];
-  const allProblems = await Promise.all(
-    questionIds.map((id: string) => db.findOne<Record<string, unknown>>("questions", { _id: id }))
-  );
+  const allProblems = (result.data?.problems || []) as Problem[];
+  const currentProblem = allProblems.find(p => String(p.id) === qid);
 
-  const normalizedProblems = allProblems
-    .filter((p): p is Record<string, unknown> => p !== null)
-    .map(p => ({
-      ...p,
-      id: p._id as string, // Map _id to id for component compatibility
-    })) as Problem[];
-
-  const currentProblem = { ...problem, id: problem._id as string } as Problem;
+  if (!currentProblem) {
+    return notFound();
+  }
 
   return (
     <div className="w-full h-full">
-      {currentProblem.questionType === "Coding" ? (
+      {currentProblem.type.toLowerCase() === "coding" ? (
         <CodeScreen problem={currentProblem as CodingProblem} />
       ) : (
         <MCQScreen
           problem={currentProblem as MCQProblem}
-          problems={normalizedProblems}
+          problems={allProblems}
         />
       )}
     </div>

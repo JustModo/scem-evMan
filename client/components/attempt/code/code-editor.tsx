@@ -17,13 +17,27 @@ type Language = keyof CodingProblem["boilerplateCode"];
 
 export default function CodeEditorPanel({
   problem,
+  code,
+  setCode,
+  language,
+  setLanguage,
 }: {
   problem: CodingProblem;
+  code: string;
+  setCode: (code: string) => void;
+  language: string;
+  setLanguage: (lang: any) => void;
 }) {
   const boilerplate = problem.boilerplateCode || {};
   const availableLanguages = Object.keys(boilerplate) as Language[];
-  const [language, setLanguage] = useState<Language>(availableLanguages[0] || "javascript");
   const { resolvedTheme } = useTheme();
+
+  const handleLanguageChange = (val: Language) => {
+    setLanguage(val);
+    if (boilerplate[val]) {
+      setCode(boilerplate[val]!);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -33,8 +47,8 @@ export default function CodeEditorPanel({
           <CodeXml className="h-4 w-4" /> Code
         </Label>
         <Select
-          onValueChange={(val: Language) => setLanguage(val)}
-          defaultValue={availableLanguages[0]}
+          onValueChange={handleLanguageChange}
+          defaultValue={language}
         >
           <SelectTrigger className="h-8 w-40 text-sm">
             <SelectValue placeholder="Select Language" />
@@ -45,9 +59,6 @@ export default function CodeEditorPanel({
                 {lang === "cpp" ? "C++" : lang.charAt(0).toUpperCase() + lang.slice(1)}
               </SelectItem>
             ))}
-            {availableLanguages.length === 0 && (
-              <SelectItem value="javascript">JavaScript (Default)</SelectItem>
-            )}
           </SelectContent>
         </Select>
       </div>
@@ -57,7 +68,8 @@ export default function CodeEditorPanel({
         <Editor
           language={language}
           theme={resolvedTheme === "dark" ? "vs-dark" : "vs-light"}
-          value={boilerplate[language] || "// Start coding here"}
+          value={code}
+          onChange={(val) => setCode(val || "")}
           options={{
             minimap: { enabled: false },
             glyphMargin: false,

@@ -4,27 +4,31 @@ const Question = require('../models/Question');
 const { languageMap } = require('../utils/languageMap');
 const { getJudge } = require('@pomelo/code-gen');
 
-// @desc    Start a contest
-// @route   POST /api/contests/:id/start
-// @access  Private (requires authentication)
-const startContest = async (req, res) => {
+// @desc    Validate 6-digit Join ID (OTP)
+// @route   POST /api/contest/validate
+// @access  Public
+const validateJoinId = async (req, res) => {
     try {
-        const contest = await Contest.findById(req.params.id);
+        const { joinId } = req.body;
+
+        // Search the database for the 6-digit joinCode
+        const contest = await Contest.findOne({ joinId: joinId });
 
         if (!contest) {
-            return res.status(404).json({ message: 'Contest not found' });
+            return res.status(404).json({
+                success: false,
+                message: "Invalid Join ID. No test found with this code."
+            });
         }
 
-        // Check if the user is authorized to start the contest (e.g., admin or creator)
-        // For now, we'll assume any authenticated user can start for demonstration
-
-        contest.status = 'ongoing';
-        contest.startTime = new Date();
-        await contest.save();
-
-        res.json({ message: 'Contest started successfully', contest });
+        // Return needed info for redirect
+        return res.status(200).json({
+            success: true,
+            contestId: contest._id,
+            title: contest.title
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -92,18 +96,21 @@ const checkTestId = async (req, res) => {
 // @desc    Get contest landing details
 const getContestLanding = async (req, res) => {
     try {
-        const contest = await Contest.findById(req.params.id);
-        if (!contest) return res.status(404).json({ success: false, error: 'Contest not found' });
+        const contest = req.contest;
+        const now = new Date();
+        const start = new Date(contest.startTime);
+        const canStart = now >= start && now <= new Date(contest.endTime);
 
         return res.json({
             success: true,
             data: {
                 title: contest.title,
                 description: contest.description,
-                duration: {
-                    start: contest.startTime,
-                    end: contest.endTime
-                },
+                duration: contest.duration || (new Date(contest.endTime) - new Date(contest.startTime)) / 60000, // min
+                startTime: contest.startTime,
+                endTime: contest.endTime,
+                serverTime: now,
+                canStart: canStart,
                 totalProblems: contest.questions.length,
                 author: contest.author || "SCEM Coding Club",
                 rules: contest.rules || []
@@ -117,12 +124,9 @@ const getContestLanding = async (req, res) => {
 // @desc    Get contest data for attempt
 const getContestData = async (req, res) => {
     try {
-        const contestId = req.query.contestId;
-        const contest = await Contest.findById(contestId);
-        if (!contest) return res.status(404).json({ success: false, error: 'Contest not found' });
+        const contest = req.contest;
 
-        // Fetch actual questions from Question model since schema now stores Strings
-        // Assuming contest.questions is array of ID strings
+        // Fetch actual questions from Question model
         const questions = await require('../models/Question').find({
             _id: { $in: contest.questions }
         });
@@ -137,16 +141,17 @@ const getContestData = async (req, res) => {
                 timeRemaining,
                 problems: questions.map(q => ({
                     id: q._id,
+                    type: q.type, // Added type field
                     title: q.title,
                     difficulty: q.difficulty,
                     description: q.description,
                     inputFormat: q.inputFormat,
                     outputFormat: q.outputFormat,
                     constraints: q.constraints,
-                    boilerplate: q.boilerplateCode, // Map new schema field
+                    boilerplateCode: q.boilerplateCode,
                     questionType: q.questionType,
                     options: q.options,
-                    points: q.marks
+                    marks: q.marks
                 }))
             }
         });
@@ -155,94 +160,38 @@ const getContestData = async (req, res) => {
     }
 };
 
-// @desc    Submit solution
-const submitSolution = async (req, res) => {
-    try {
-        // TODO: Integrate with Submissions model
-        return res.json({
-            success: true,
-            submissionId: "submission-id-placeholder"
-        });
-    } catch (error) {
-        return res.status(500).json({ success: false, error: error.message });
-    }
-};
-
-// @desc    End contest
-const endContest = async (req, res) => {
-    return res.json({
-        success: true,
-        redirectUrl: `/leaderboard`
-    });
-};
-
 // @desc    Start test (User Attempt)
 const startTest = async (req, res) => {
     try {
-        const { contestId } = req.body;
-        
-        // Get user from auth middleware (requireAuth sets req.user)
-        const userId = req.user?.sub || req.user?.id;
-        
-        if (!userId) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'User not authenticated' 
-            });
-        }
+        console.log("StartTest: Initiated");
+        const contest = req.contest;
+        const userId = req.user.id || req.user._id || req.user.sub;
+        console.log("StartTest: User ID:", userId);
 
-        if (!contestId) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Contest ID is required' 
-            });
-        }
+        const contestId = contest._id;
+        console.log("StartTest: Contest ID:", contestId);
 
-        // Verify contest exists
-        const contest = await Contest.findById(contestId);
-        if (!contest) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Contest not found' 
-            });
-        }
-
-        // Check if contest has started
         const now = new Date();
-        const startTime = new Date(contest.startTime);
-        const endTime = new Date(contest.endTime);
 
-        if (now < startTime) {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Contest has not started yet',
-                startTime: contest.startTime
-            });
-        }
-
-        if (now > endTime) {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Contest has already ended' 
-            });
-        }
-
-        // Register user to contest if not already registered
         const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'User not found' 
-            });
-        }
-
-        if (!user.registeredContests.includes(contestId)) {
+        if (user && !user.registeredContests.includes(contestId)) {
+            console.log("StartTest: Registering user for contest");
             user.registeredContests.push(contestId);
             await user.save();
         }
 
-        // Calculate time remaining
-        const timeRemaining = Math.floor((endTime - now) / 1000); // in seconds
+        // Initialize Submission if not exists
+        const Submission = require('../models/Submissions');
+        let submission = await Submission.findOne({ contest: contestId, user: userId });
+
+        if (!submission) {
+            console.log("StartTest: Creating new submission");
+            submission = new Submission({ contest: contestId, user: userId, status: 'Ongoing' });
+            await submission.save();
+            console.log("StartTest: Submission created:", submission._id);
+        } else {
+            console.log("StartTest: Existing submission found:", submission._id);
+        }
 
         return res.json({
             success: true,
@@ -250,301 +199,100 @@ const startTest = async (req, res) => {
             data: {
                 contestId: contest._id,
                 title: contest.title,
-                startTime: contest.startTime,
-                endTime: contest.endTime,
-                timeRemaining,
-                totalQuestions: contest.questions.length
+                timeRemaining: Math.floor((new Date(contest.endTime) - now) / 1000)
             }
         });
     } catch (error) {
-        console.error('Error starting test:', error);
-        return res.status(500).json({ 
-            success: false, 
-            error: error.message 
-        });
-    }
-};
-
-// Helper function to remove trailing whitespace
-const removeTrailingWhitespace = (output) => {
-    if (typeof output !== 'string') return output;
-    return output.replace(/\s+$/g, '');
-};
-
-// @desc    Run code against visible test cases only (for testing, not submission)
-// @route   POST /api/contests/:id/run
-// @access  Private
-const runCode = async (req, res) => {
-    try {
-        const { questionId, code, language } = req.body;
-        const userId = req.user?.sub || req.user?.id;
-
-        if (!userId) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'User not authenticated' 
-            });
-        }
-
-        if (!questionId || !code || !language) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Missing required fields: questionId, code, language' 
-            });
-        }
-
-        // Fetch the question to get test cases
-        const question = await Question.findById(questionId);
-        if (!question) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Question not found' 
-            });
-        }
-
-        // Map language to Judge0 ID
-        const judge0Id = languageMap[language.toLowerCase()];
-        if (!judge0Id) {
-            return res.status(400).json({ 
-                success: false, 
-                error: `Unsupported language: ${language}` 
-            });
-        }
-
-        // Wrap user code using code-gen wrapper functions
-        let wrappedCode = code;
-        try {
-            const judge = getJudge(language.toLowerCase());
-            const problemConfig = {
-                method: question.functionName || 'solve',
-                input: (question.inputVariables || []).map(v => ({
-                    variable: v.variable,
-                    type: v.type
-                }))
-            };
-            wrappedCode = judge.wrapCode(code, problemConfig);
-            console.log(`Wrapped code for ${language}:`, wrappedCode);
-        } catch (err) {
-            console.warn(`Could not wrap code for ${language}, using original code:`, err.message);
-        }
-
-        // Get only visible test cases (typically first 2-3 test cases)
-        // You can modify this logic based on your requirements
-        const allTestCases = question.testcases || [];
-        const visibleTestCases = allTestCases.slice(0, Math.min(2, allTestCases.length));
-
-        if (visibleTestCases.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'No test cases available for this question' 
-            });
-        }
-
-        // Execute code against visible test cases
-        const judge0Url = process.env.JUDGE0_URL || 'http://localhost:2358';
-        const executionPromises = visibleTestCases.map(async (tc, index) => {
-            // Format input
-            let input = '';
-            if (typeof tc.input === 'object' && tc.input !== null) {
-                const values = [];
-                for (const inputVar of (question.inputVariables || [])) {
-                    const value = tc.input[inputVar.variable];
-                    if (Array.isArray(value)) {
-                        values.push(value.length);
-                        values.push(...value);
-                    } else {
-                        values.push(value);
-                    }
-                }
-                input = values.join(' ');
-            } else if (typeof tc.input === 'string') {
-                input = tc.input.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
-            } else {
-                input = String(tc.input);
-            }
-            
-            const expectedOutput = removeTrailingWhitespace(tc.output.trim());
-
-            try {
-                const response = await fetch(`${judge0Url}/submissions?base64_encoded=false&wait=true`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        source_code: wrappedCode,
-                        language_id: judge0Id,
-                        stdin: input,
-                        expected_output: expectedOutput,
-                    }),
-                });
-
-                const result = await response.json();
-                console.log(`Judge0 response for test case ${index + 1}:`, JSON.stringify(result, null, 2));
-                
-                const isPassed = result.status && result.status.id === 3;
-
-                return {
-                    testCase: index + 1,
-                    passed: isPassed,
-                    input: input,
-                    expectedOutput: expectedOutput,
-                    actualOutput: removeTrailingWhitespace(result.stdout || ''),
-                    error: result.stderr || result.compile_output || null,
-                    status: result.status ? result.status.description : "Unknown",
-                    executionTime: result.time || null,
-                    memory: result.memory || null
-                };
-
-            } catch (err) {
-                console.error("Judge0 execution error:", err);
-                return {
-                    testCase: index + 1,
-                    passed: false,
-                    input: input,
-                    expectedOutput: expectedOutput,
-                    actualOutput: "",
-                    error: "Execution failed: " + err.message,
-                    status: "System Error",
-                };
-            }
-        });
-
-        const testResults = await Promise.all(executionPromises);
-        const passedCount = testResults.filter(r => r.passed).length;
-
-        return res.json({
-            success: true,
-            message: 'Code executed successfully',
-            data: {
-                totalTests: visibleTestCases.length,
-                passedTests: passedCount,
-                failedTests: visibleTestCases.length - passedCount,
-                results: testResults,
-                isFullyPassed: passedCount === visibleTestCases.length
-            }
-        });
-
-    } catch (error) {
-        console.error('Error running code:', error);
-        return res.status(500).json({ 
-            success: false, 
-            error: error.message 
-        });
+        console.error("StartTest Error:", error);
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 // @desc    Get questions for a specific test
-// @route   GET /api/test/:id/questions
-// @access  Public
 const getTestQuestions = async (req, res) => {
     try {
         const { id: testId } = req.params;
-
-        // Validate test ID format
-        if (!testId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Test ID is required'
-            });
-        }
-
-        // Find the contest/test
         const contest = await Contest.findById(testId);
-        if (!contest) {
-            return res.status(404).json({
-                success: false,
-                error: `Test with ID ${testId} not found`
-            });
-        }
+        if (!contest) return res.status(404).json({ success: false, error: 'Test not found' });
 
-        // Check if test is active (optional: can add status check)
-        const currentTime = new Date();
-        const isActive = currentTime >= contest.startTime && currentTime <= contest.endTime;
-
-        // Fetch questions
-        const Question = require('../models/Question');
-        const questions = await Question.find({
-            _id: { $in: contest.questions }
-        });
-
-        // Map questions with metadata and sample test cases
+        const questions = await Question.find({ _id: { $in: contest.questions } });
         const questionsData = questions.map(q => ({
             id: q._id,
-            type: q.type,
+            type: q.type || (q.questionType === 'Coding' ? 'coding' : 'mcq'), // Normalize type
             title: q.title,
             description: q.description,
             difficulty: q.difficulty,
             marks: q.marks,
             questionType: q.questionType,
-            // Coding specific
             constraints: q.constraints,
             inputFormat: q.inputFormat,
             outputFormat: q.outputFormat,
             boilerplateCode: q.boilerplateCode,
             functionName: q.functionName,
             inputVariables: q.inputVariables,
-            // Sample test cases (limit to first 2 for preview)
-            sampleTestCases: q.testcases ? q.testcases.slice(0, 2) : [],
-            totalTestCases: q.testcases ? q.testcases.length : 0,
-            // MCQ specific
-            options: q.options,
-            // Don't return the correct answer to the client
+            options: q.options
         }));
 
-        return res.json({
-            success: true,
-            data: {
-                testId: contest._id,
-                title: contest.title,
-                description: contest.description,
-                isActive,
-                totalQuestions: questionsData.length,
-                startTime: contest.startTime,
-                endTime: contest.endTime,
-                questions: questionsData
-            }
-        });
+        return res.json({ success: true, data: { questions: questionsData } });
     } catch (error) {
-        console.error('Error fetching test questions:', error);
-        return res.status(500).json({
-            success: false,
-            error: error.message || 'Internal server error'
-        });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
-// @desc    List all contests (for testing/debugging)
-// @route   GET /api/test/list/all
-// @access  Public
+// @desc    List all contests
 const listAllContests = async (req, res) => {
     try {
-        const contests = await Contest.find({}, { _id: 1, title: 1, description: 1, startTime: 1, endTime: 1, type: 1 });
-        
+        const contests = await Contest.find({}, { _id: 1, title: 1, description: 1 });
+        return res.json({ success: true, data: { contests } });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// @desc    End Test (Mark as Completed)
+const endTest = async (req, res) => {
+    try {
+        console.log("EndTest: Initiated");
+        const contestId = req.params.id || req.body.contestId || (req.contest && req.contest._id);
+        const userId = req.user.id || req.user._id || req.user.sub;
+        console.log("EndTest: Contest ID:", contestId, "User ID:", userId);
+
+        if (!contestId) {
+            console.log("EndTest: Missing Contest ID");
+            return res.status(400).json({ success: false, error: 'Contest ID is required' });
+        }
+
+        const Submission = require('../models/Submissions');
+        const submission = await Submission.findOne({ contest: contestId, user: userId });
+
+        if (!submission) {
+            console.log("EndTest: Submission not found");
+            return res.status(404).json({ success: false, error: 'Submission session not found. Did you start the test?' });
+        }
+
+        console.log("EndTest: Marking submission as completed");
+        submission.status = 'Completed';
+        submission.submittedAt = new Date();
+        await submission.save();
+
         return res.json({
             success: true,
-            data: {
-                total: contests.length,
-                contests: contests
-            }
+            message: 'Test completed successfully'
         });
     } catch (error) {
-        console.error('Error listing contests:', error);
-        return res.status(500).json({
-            success: false,
-            error: error.message || 'Internal server error'
-        });
+        console.error("EndTest Error:", error);
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 module.exports = {
-    startContest,
+    validateJoinId,
     manageViolations,
     checkTestId,
     getContestLanding,
     getContestData,
     getTestQuestions,
     listAllContests,
-    submitSolution,
-    endContest,
     startTest,
-    runCode
+    endTest
 };

@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Problem, MCQProblem } from "@/types/problem";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 interface MCQScreenProps {
   problem: MCQProblem;
@@ -19,6 +21,8 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const router = useRouter();
   const params = useParams();
+  const [isSaving, setIsSaving] = useState(false);
+  const { data: session } = useSession();
 
   // Create sorting logic matching TestHeader: MCQs first, then Coding
   const mcqProblems = problems.filter((p) => p.questionType !== "Coding");
@@ -29,14 +33,45 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
   const prevProblem = sortedProblems[currentIndex - 1];
   const nextProblem = sortedProblems[currentIndex + 1];
 
+  const handleSave = async (answers: string[]) => {
+    if (!session?.backendToken || !params.testid) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${params.testid}/mcq`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.backendToken}`
+        },
+        body: JSON.stringify({
+          contestId: params.testid,
+          questionId: problem._id || problem.id,
+          answer: answers
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.error || "Failed to save answer");
+      }
+    } catch (err) {
+      toast.error("Network error saving answer");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSingleSelect = (value: string) => {
-    setSelected([value]);
+    const newSelection = [value];
+    setSelected(newSelection);
+    handleSave(newSelection);
   };
 
   const handleMultipleSelect = (value: string) => {
-    setSelected((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
+    const newSelection = selected.includes(value)
+      ? selected.filter((v: string) => v !== value)
+      : [...selected, value];
+    setSelected(newSelection);
+    handleSave(newSelection);
   };
 
   const handlePrev = () => {
@@ -48,6 +83,10 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
   const handleNext = () => {
     if (nextProblem) {
       router.push(`/attempt/test/${params.testid}/question/${nextProblem.id}`);
+    } else {
+      // If "Finish", we can trigger the global submit if desired, 
+      // but usually the Submit button in Header handles final endTest.
+      toast.success("All questions completed! Click Submit to finish the test.");
     }
   };
 
@@ -63,6 +102,7 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
           <span className="text-sm font-medium text-muted-foreground">
             {problem.marks} Points
           </span>
+          {isSaving && <span className="text-xs text-muted-foreground animate-pulse ml-auto">Saving...</span>}
         </div>
         <ScrollArea className="min-h-0 px-6 h-[calc(90vh-7rem)] flex-1">
           <div className="py-6 space-y-6">

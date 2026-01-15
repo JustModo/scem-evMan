@@ -47,6 +47,7 @@ export default async function AdminTestDetailPage({
         participantsInProgress: 0,
         participantsCompleted: 0,
         totalQuestions: (data.questions as unknown[])?.length || 0,
+        joinId: data.joinId as string,
         createdAt: data.createdAt as string,
       } as Test;
     }
