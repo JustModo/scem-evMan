@@ -21,5 +21,6 @@ export interface Test {
   problems: string[] | any[];
   participants?: TestParticipant[];
   joinId: string;
+  rules?: string[];
   createdAt: string;
 }

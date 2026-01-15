@@ -13,6 +13,7 @@ export const testSchema = z.object({
   duration: z.string().min(1, "Duration is required"),
   startsAt: z.iso.datetime(),
   problems: z.array(z.string()),
+  rules: z.array(z.string()).default([]),
   status: z.enum(["waiting", "ongoing", "completed"]).optional(),
 });
 

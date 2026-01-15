@@ -24,7 +24,7 @@ export async function saveTest(_prevState: Record<string, unknown>, data: TestSc
         end: new Date(new Date(validatedData.startsAt).getTime() + durationMs).toISOString()
       },
       problemIds: validatedData.problems,
-      rules: [],
+      rules: validatedData.rules,
       type: "classic",
       visibility: "public",
       status: validatedData.status,

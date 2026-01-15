@@ -3,6 +3,7 @@
 import { Test, TestSchema, testSchema } from "@/types/test";
 import QuestionAddCard from "./add-question";
 import TestBasicCard from "./info-card";
+import RulesCard from "./rules-card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -26,6 +27,7 @@ export default function TestForm({ testData, availableQuestions = [] }: { testDa
       duration: "00:00:00",
       status: "waiting",
       problems: [],
+      rules: [],
       ...testData,
     },
   });
@@ -86,6 +88,7 @@ export default function TestForm({ testData, availableQuestions = [] }: { testDa
         <Form {...form}>
           <form id="test-form" onSubmit={handleSubmit} className="space-y-6">
             <TestBasicCard />
+            <RulesCard />
             <QuestionAddCard availableQuestions={availableQuestions} />
             <TestQuestions questions={questions} availableQuestions={availableQuestions} />
           </form>
