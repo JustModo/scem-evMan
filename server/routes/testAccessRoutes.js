@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-// Use the new protect middleware we discussed
-const { protect } = require('../middlewares/contestAuth'); 
+// Use the new requireAuth middleware
+const { requireAuth } = require('../middlewares/checkAuth'); 
 
 const { 
     validateJoinId, 
@@ -19,12 +19,12 @@ const {
 router.post('/validate', validateJoinId);
 
 // Landing Page Metadata
-router.get('/:id/landing', protect, getLandingDetails);
+router.get('/:id/landing', requireAuth(), getLandingDetails);
 
 // START the test (Creates the session)
-router.post('/start', protect, startTest);
+router.post('/start', requireAuth(), startTest);
 
 // Fetch Questions for the Session
-router.get('/data', protect, getContestData);
+router.get('/data', requireAuth(), getContestData);
 
 module.exports = router;

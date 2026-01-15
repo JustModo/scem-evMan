@@ -1,35 +1,31 @@
 {
-    "language": "java",
-    "boilerplate": "class Code {\n    public static void {method}({args}) {\n        // TODO: Implement solution\n        System.out.println(\"Output goes here\");\n    }\n}",
-    "template": "import java.util.*;\nimport java.util.stream.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n{input_reading_code}\n    }\n}\n\n{code}",
-    "types": {
-        "int": {
-            "reader": "scanner.nextInt()",
-            "hint": "int"
-        },
-        "float": {
-            "reader": "scanner.nextFloat()",
-            "hint": "float"
-        },
-        "char": {
-            "reader": "scanner.next().charAt(0)",
-            "hint": "char"
-        },
-        "string": {
-            "reader": "scanner.next()",
-            "hint": "String"
-        },
-        "int_array": {
-            "reader": "ArrayList<Integer> {var}_list = new ArrayList<>(); while(scanner.hasNextInt()) { {var}_list.add(scanner.nextInt()); } int[] {var} = {var}_list.stream().mapToInt(i -> i).toArray();",
-            "hint": "int[]"
-        },
-        "float_array": {
-            "reader": "ArrayList<Float> {var}_list = new ArrayList<>(); while(scanner.hasNextFloat()) { {var}_list.add(scanner.nextFloat()); } float[] {var} = new float[{var}_list.size()]; for(int i=0; i<{var}_list.size(); i++) {var}[i] = {var}_list.get(i);",
-            "hint": "float[]"
-        },
-        "string_array": {
-            "reader": "ArrayList<String> {var}_list = new ArrayList<>(); while(scanner.hasNext()) { {var}_list.add(scanner.next()); } String[] {var} = {var}_list.toArray(new String[0]);",
-            "hint": "String[]"
-        }
+  "language": "java",
+  "boilerplate": "class Code {\n    public static void {method}({args}) {\n        // TODO: Implement solution\n        System.out.println(\"Output goes here\");\n    }\n}",
+  "template": "import java.util.*;\nimport java.util.stream.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n{input_reading_code}\n    }\n}\n\n{code}",
+  "types": {
+    "int": {
+      "reader": "scanner.nextInt()",
+      "hint": "int"
+    },
+    "float": {
+      "reader": "scanner.nextFloat()",
+      "hint": "float"
+    },
+    "char": {
+      "reader": "scanner.next().charAt(0)",
+      "hint": "char"
+    },
+    "string": {
+      "reader": "scanner.next()",
+      "hint": "String"
+    },
+    "int_array": {
+      "reader": "int {var}_size = scanner.nextInt(); int[] {var} = new int[{var}_size]; for(int i=0; i<{var}_size; i++) { {var}[i] = scanner.nextInt(); }",
+      "hint": "int[]"
+    },
+    "float_array": {
+      "reader": "int {var}_size = scanner.nextInt(); float[] {var} = new float[{var}_size]; for(int i=0; i<{var}_size; i++) { {var}[i] = scanner.nextFloat(); }",
+      "hint": "float[]"
     }
+  }
 }

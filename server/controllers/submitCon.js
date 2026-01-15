@@ -101,12 +101,11 @@ const submitCode = async (req, res) => {
             const problemConfig = {
                 method: question.functionName || 'solve',
                 input: (question.inputVariables || []).map(v => ({
-                    variable: v.name,
+                    variable: v.variable,
                     type: v.type
                 }))
             };
             wrappedCode = judge.wrapCode(code, problemConfig);
-            console.log(`Wrapped code for ${language}:`, wrappedCode);
         } catch (err) {
             console.warn(`Could not wrap code for ${language}, using original code:`, err.message);
         }
@@ -116,77 +115,62 @@ const submitCode = async (req, res) => {
 
         // Execute code against all test cases in parallel
         const executionPromises = testCases.map(async (tc, index) => {
-            // Format input: if it's an object with structured data, convert to space-separated string
-            let input = '';
-            if (typeof tc.input === 'object' && tc.input !== null) {
-                // Extract values in order based on inputVariables
-                const values = [];
-                for (const inputVar of (question.inputVariables || [])) {
-                    const value = tc.input[inputVar.name];
-                    if (Array.isArray(value)) {
-                        values.push(...value);
-                    } else {
-                        values.push(value);
-                    }
-                }
-                input = values.join(' ');
-            } else if (typeof tc.input === 'string') {
-                // String input - handle both comma-separated and space-separated formats
-                // Replace commas with spaces to normalize, then collapse multiple spaces into one
-                input = tc.input.trim().replace(/,/g, ' ').replace(/\s+/g, ' ');
-            } else {
-                // For other types, just convert to string
-                input = String(tc.input);
-            }
+            // Simple input mapping
+            const input = typeof tc.input === 'string' ? tc.input : JSON.stringify(tc.input);
+            // Simple output mapping
+            const expectedOutput = typeof tc.output === 'string' ? tc.output : JSON.stringify(tc.output);
             
-            const expectedOutput = removeTrailingLineCommands(tc.output.trim());
-
+            // Encode to base64
+            const base64Input = Buffer.from(input).toString('base64');
+            const base64ExpectedOutput = Buffer.from(expectedOutput).toString('base64');
+            const base64SourceCode = Buffer.from(wrappedCode).toString('base64');
+            
             try {
                 const judge0Url = process.env.JUDGE0_URL || 'http://localhost:2358';
-                const response = await fetch(`${judge0Url}/submissions?base64_encoded=false&wait=true`, {
+                const response = await fetch(`${judge0Url}/submissions?base64_encoded=true&wait=true`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        source_code: wrappedCode,
+                        source_code: base64SourceCode,
                         language_id: judge0Id,
-                        stdin: input,
-                        expected_output: expectedOutput,
+                        stdin: base64Input,
+                        expected_output: base64ExpectedOutput,
                     }),
                 });
-
                 const result = await response.json();
-                
-                // Log full Judge0 response for debugging
-                console.log(`Judge0 response for test case ${index + 1}:`, JSON.stringify(result, null, 2));
-                
                 const isPassed = result.status && result.status.id === 3; // ID 3 is 'Accepted'
+
+                // Decode base64 outputs
+                const decodedStdout = result.stdout ? Buffer.from(result.stdout, 'base64').toString('utf-8') : '';
+                const decodedStderr = result.stderr ? Buffer.from(result.stderr, 'base64').toString('utf-8') : '';
+                const decodedCompileOutput = result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf-8') : '';
 
                 return {
                     testCase: index + 1,
                     passed: isPassed,
                     input: input,
                     expectedOutput: expectedOutput,
-                    actualOutput: removeTrailingLineCommands(result.stdout || result.stderr || result.compile_output || ""),
-                    error: result.stderr || result.compile_output || (result.status ? result.status.description : "Unknown Error"),
+                    actualOutput: removeTrailingLineCommands(decodedStdout || decodedStderr || decodedCompileOutput || ""),
+                    error: decodedStderr || decodedCompileOutput || (result.status ? result.status.description : "Unknown Error"),
                     status: result.status ? result.status.description : "Unknown",
                 };
 
             } catch (err) {
-                console.error("Judge0 execution error:", err);
+                console.error(`Judge0 execution error for test case ${index + 1}:`, err.message);
+                
                 return {
                     testCase: index + 1,
                     passed: false,
                     input: input,
                     expectedOutput: expectedOutput,
                     actualOutput: "",
-                    error: "Execution failed",
+                    error: `Execution failed: ${err.message}`,
                     status: "System Error",
                 };
             }
         });
 
         const testCaseResults = await Promise.all(executionPromises);
-
         // Calculate score based on percentage of passed test cases
         passedCount = testCaseResults.filter(r => r.passed).length;
         const totalTestCases = testCases.length;
