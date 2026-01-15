@@ -4,7 +4,7 @@ const cors = require("cors");
 
 const app = express();
 
-const { connectDB } = require("./controllers/dbCon");
+const { connectDB } = require("./helpers/dbCon");
 
 // const compRoutes = require("./routes/compilerRoutes");
 const contestRoutes = require("./routes/contestRoutes");

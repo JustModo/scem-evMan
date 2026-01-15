@@ -14,12 +14,14 @@ interface ContestDetails {
   rules: string[];
   duration: number;
   startTime: string;
+  endTime: string;
   serverTime: string;
   canStart: boolean;
+  isEnded?: boolean;
 }
 
 export default function ContestLanding() {
-  const { id } = useParams();
+  const { id: testid } = useParams();
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -48,10 +50,10 @@ export default function ContestLanding() {
   }, []);
 
   const fetchInstructions = useCallback(async () => {
-    if (status !== "authenticated" || !session?.backendToken) return;
+    if (status !== "authenticated" || !session?.backendToken || !testid) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}`, {
         headers: {
           "Authorization": `Bearer ${session.backendToken}`,
           "Content-Type": "application/json"
@@ -61,7 +63,10 @@ export default function ContestLanding() {
       const result = await res.json();
 
       if (result.success && result.data) {
-        setDetails(result.data);
+        const now = new Date().getTime();
+        const end = new Date(result.data.endTime).getTime();
+        const isEnded = now > end;
+        setDetails({ ...result.data, isEnded });
       } else {
         toast.error(result.message || "Failed to fetch data");
       }
@@ -70,14 +75,14 @@ export default function ContestLanding() {
     } finally {
       setLoading(false);
     }
-  }, [id, session, status]);
+  }, [testid, session, status]);
 
   useEffect(() => {
-    if (id && status === "authenticated") fetchInstructions();
-  }, [id, status, fetchInstructions]);
+    if (testid && status === "authenticated") fetchInstructions();
+  }, [testid, status, fetchInstructions]);
 
   useEffect(() => {
-    if (!details || details.canStart) return;
+    if (!details || details.canStart || details.isEnded) return;
 
     const interval = setInterval(() => {
       const isTimeUp = updateCountdown(details.startTime);
@@ -98,13 +103,23 @@ export default function ContestLanding() {
           "Authorization": `Bearer ${session?.backendToken}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ contestId: id })
+        body: JSON.stringify({ contestId: testid })
       });
 
       const result = await res.json();
       if (result.success) {
         toast.success("Good luck!");
-        router.push(`/test/${id}/session`);
+
+        // Fetch problems to redirect to the first one
+        const questionsRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}/data`, {
+          headers: { "Authorization": `Bearer ${session?.backendToken}` }
+        });
+        const questionsData = await questionsRes.json();
+        if (questionsData.success && questionsData.data.problems?.length > 0) {
+          router.push(`/attempt/test/${testid}/question/${questionsData.data.problems[0].id}`);
+        } else {
+          router.push(`/attempt/test/${testid}/session`); // fallback
+        }
       } else {
         toast.error(result.message || "Failed to start session");
       }
@@ -178,7 +193,17 @@ export default function ContestLanding() {
         <div className="w-full md:w-80 space-y-6">
           <div className="bg-card p-6 rounded-2xl border shadow-lg sticky top-24">
             <h3 className="text-lg font-bold mb-4">Session Status</h3>
-            {!details?.canStart ? (
+            {details?.isEnded ? (
+              <div className="text-center space-y-4">
+                <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                  <p className="text-xs font-bold text-red-600 uppercase text-center">Test Ended</p>
+                </div>
+                <Button disabled className="w-full py-6 text-lg font-bold opacity-80 cursor-not-allowed bg-muted text-muted-foreground">
+                  Access Closed
+                </Button>
+                <p className="text-[10px] text-muted-foreground">This assessment is no longer accepting submissions.</p>
+              </div>
+            ) : !details?.canStart ? (
               <div className="text-center space-y-4">
                 <div className="p-4 bg-muted rounded-xl">
                   <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Starting In</p>

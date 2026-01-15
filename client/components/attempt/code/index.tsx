@@ -1,4 +1,5 @@
 "use client";
+import React, { useState } from "react";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -10,6 +11,10 @@ import TestCasePanel from "./test-case";
 import { CodingProblem } from "@/types/problem";
 
 export function CodeScreen({ problem }: { problem: CodingProblem }) {
+  const availableLanguages = Object.keys(problem.boilerplateCode || {}) as Array<keyof typeof problem.boilerplateCode>;
+  const [code, setCode] = useState(problem.boilerplateCode && availableLanguages.length > 0 ? (problem.boilerplateCode[availableLanguages[0]] || "") : "// Start coding here");
+  const [language, setLanguage] = useState(availableLanguages.length > 0 ? String(availableLanguages[0]) : "javascript");
+
   return (
     <ResizablePanelGroup
       direction="horizontal"
@@ -25,13 +30,23 @@ export function CodeScreen({ problem }: { problem: CodingProblem }) {
         <ResizablePanelGroup direction="vertical" className="h-full w-full">
           <ResizablePanel defaultSize={55} minSize={6}>
             <div className="flex h-full w-full ">
-              <CodeEditorPanel problem={problem} />
+              <CodeEditorPanel
+                problem={problem}
+                code={code}
+                setCode={setCode}
+                language={language}
+                setLanguage={setLanguage}
+              />
             </div>
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize={45} minSize={6}>
             <div className="flex h-full w-full">
-              <TestCasePanel />
+              <TestCasePanel
+                problem={problem}
+                code={code}
+                language={language}
+              />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

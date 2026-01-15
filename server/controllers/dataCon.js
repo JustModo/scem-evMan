@@ -1,4 +1,4 @@
-const { connectDB } = require('../controllers/dbCon');
+const { connectDB } = require('../helpers/dbCon');
 const Question = require('../models/Question');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submissions');

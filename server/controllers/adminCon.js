@@ -1,7 +1,7 @@
 const Question = require('../models/Question');
 const Contest = require('../models/Contest');
 const Submission = require('../models/Submissions');
-const { connectDB } = require('./dbCon');
+const { connectDB } = require('../helpers/dbCon');
 const { getJudge } = require("@pomelo/code-gen");
 
 // --- Questions ---

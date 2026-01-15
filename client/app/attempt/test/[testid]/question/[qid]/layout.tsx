@@ -1,16 +1,6 @@
 import TestHeader from "@/components/attempt/test-header";
-import { db } from "@/lib/db";
+import { auth } from "@/auth";
 import React from "react";
-
-interface MongoContest {
-  _id: string;
-  questions?: string[];
-}
-
-interface MongoQuestion {
-  _id: string;
-  questionType: string;
-}
 
 export default async function TestLayout({
   children,
@@ -20,22 +10,24 @@ export default async function TestLayout({
   params: Promise<{ testid: string; qid: string }>;
 }) {
   const { testid } = await params;
+  const session = await auth();
 
-  // Fetch real contest to get the list of questions
-  const contest = await db.findOne<MongoContest>("contests", { _id: testid });
-  const questionIds = contest?.questions || [];
+  // Fetch real contest data via student-facing API
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}/data`, {
+    headers: {
+      "Authorization": `Bearer ${session?.backendToken}`,
+      "Content-Type": "application/json"
+    },
+    cache: "no-store"
+  });
 
-  // Fetch types for all questions in this test to pass to Header
-  const questions = await Promise.all(
-    questionIds.map((id: string) => db.findOne<MongoQuestion>("questions", { _id: id }))
-  );
+  const result = await res.json();
+  const problems = result.data?.problems || [];
 
-  const problemMeta = questions
-    .filter((q): q is MongoQuestion => q !== null)
-    .map((q) => ({
-      id: q._id,
-      type: q.questionType // Using questionType from DB ("Coding", "Single Correct", etc)
-    }));
+  const problemMeta = problems.map((q: any) => ({
+    id: q.id,
+    type: q.questionType
+  }));
 
   return (
     <main className="w-screen h-screen pt-12">
