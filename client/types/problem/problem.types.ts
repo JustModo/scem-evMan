@@ -5,8 +5,8 @@ export interface BaseProblem {
   description: string;
   marks: number;
   difficulty: "Easy" | "Medium" | "Hard";
-  questionType: "Single Correct" | "Multiple Correct" | "Coding"; // Added for handling generic type in list
-  type?: "coding" | "mcq"; // Keep for internal logic if needed, or map to questionType
+  questionType?: "Single Correct" | "Multiple Correct" | "Coding"; // Deprecated for identification
+  type: "coding" | "mcq"; // Primary identification field
 }
 
 export interface CodingProblem extends BaseProblem {

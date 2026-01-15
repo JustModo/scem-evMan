@@ -12,7 +12,6 @@ export default async function TestLayout({
   const { testid } = await params;
   const session = await auth();
 
-  // Fetch real contest data via student-facing API
   const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${testid}/data`, {
     headers: {
       "Authorization": `Bearer ${session?.backendToken}`,
@@ -26,7 +25,7 @@ export default async function TestLayout({
 
   const problemMeta = problems.map((q: any) => ({
     id: q.id,
-    type: q.questionType
+    type: q.type
   }));
 
   return (

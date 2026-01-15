@@ -1,15 +1,10 @@
-"use client";
-import { useSession } from "next-auth/react";
-
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { db } from "@/lib/db";
 import {
     Users,
     Award,
     User,
     ExternalLink,
     AlertCircle,
-    RefreshCcw,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +18,9 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
+import React from "react";
+import { notFound } from "next/navigation";
 
 /* ---------- Types ---------- */
 interface Participant {
@@ -46,113 +42,67 @@ interface TestResult {
     };
 }
 
-export default function AdminTestResultPage() {
-    const { id } = useParams();
-    const router = useRouter();
-    const { data: session, status } = useSession();
+interface MongoContest {
+    _id: string;
+    title: string;
+    description: string;
+}
 
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<TestResult | null>(null);
-    const [error, setError] = useState<string | null>(null);
+interface MongoUser {
+    _id: string;
+    name: string;
+    email: string;
+}
 
-    /* ---------- CORE LOGIC ---------- */
-    const fetchData = async () => {
-        if (status === "loading") return;
+interface MongoSubmission {
+    user?: MongoUser;
+    totalScore: number;
+    submittedAt: string;
+}
 
-        // Ensure user is authenticated
-        if (status === "unauthenticated" || !session?.backendToken) {
-            setError("You must be logged in to view these results.");
-            setLoading(false);
-            return;
-        }
+export default async function AdminTestResultPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
 
-        setLoading(true);
-        setError(null);
+    // Fetch contest details
+    const contest = await db.findOne<MongoContest>('contests', { _id: id });
+    if (!contest) {
+        return notFound();
+    }
 
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/admin/tests/${id}/result`, {
-                headers: {
-                    'Authorization': `Bearer ${session.backendToken}`
-                }
-            });
+    // Fetch submissions with populated user
+    const submissions = await db.find<MongoSubmission>('submissions',
+        { contest: id, status: 'Completed' },
+        { populate: 'user' }
+    );
 
-            if (response.status === 401) {
-                setError("Your session has expired. Please log in again.");
-                return;
-            }
+    // Transform Data
+    // Transform Data
+    const participants: Participant[] = submissions
+        .filter(sub => sub && sub.user) // Filter out corrupt data
+        .map(sub => ({
+            userId: sub.user?._id || 'unknown',
+            name: sub.user?.name || 'Unknown User',
+            email: sub.user?.email || 'N/A',
+            score: sub.totalScore || 0,
+            submittedAt: sub.submittedAt
+        }));
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch: ${response.statusText}`);
-            }
+    // Calculate Stats
+    const totalParticipants = participants.length;
+    const averageScore = totalParticipants > 0
+        ? participants.reduce((acc, p) => acc + p.score, 0) / totalParticipants
+        : 0;
 
-            const json = await response.json();
-
-            if (json.success) {
-                setData(json.results);
-            } else {
-                setError(json.error || "Failed to fetch results from the server.");
-            }
-        } catch (err: any) {
-            console.error("Error fetching results:", err);
-            setError(err.message || "An unexpected error occurred while fetching data.");
-        } finally {
-            setLoading(false);
+    const data: TestResult = {
+        id: contest._id,
+        testName: contest.title,
+        description: contest.description,
+        participants,
+        stats: {
+            totalParticipants,
+            averageScore
         }
     };
-
-    useEffect(() => {
-        if (status !== "loading") {
-            fetchData();
-        }
-    }, [id, status, session]);
-
-    if (loading) {
-        return (
-            <div className="flex-1 overflow-auto bg-background/50 backdrop-blur-3xl p-8 space-y-8 animate-in fade-in duration-700">
-                <div className="flex flex-col gap-4">
-                    <Skeleton className="h-12 w-1/3 bg-mountain-meadow-100/20" />
-                    <Skeleton className="h-4 w-1/2 bg-mountain-meadow-100/10" />
-                </div>
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Skeleton className="h-32 rounded-2xl bg-mountain-meadow-100/5" />
-                    <Skeleton className="h-32 rounded-2xl bg-mountain-meadow-100/5" />
-                </div>
-                <Skeleton className="h-[500px] w-full rounded-3xl bg-mountain-meadow-100/5" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex-1 flex items-center justify-center p-8 bg-background">
-                <Alert variant="destructive" className="max-w-md shadow-2xl border-red-200/50 bg-red-50/50 backdrop-blur-xl rounded-3xl p-8">
-                    <AlertCircle className="h-8 w-8 mb-4 text-red-600" />
-                    <AlertTitle className="text-xl font-bold text-red-800 mb-2">Data Synchronization Error</AlertTitle>
-                    <AlertDescription className="text-red-700 font-medium mb-6">
-                        {error}
-                    </AlertDescription>
-                    <div className="flex gap-4">
-                        <Button
-                            onClick={() => fetchData()}
-                            className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl px-6 gap-2"
-                        >
-                            <RefreshCcw className="h-4 w-4" />
-                            Retry Connection
-                        </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => router.push('/admin/tests')}
-                            className="border-red-200 text-red-800 hover:bg-red-100/50 font-bold rounded-xl px-6"
-                        >
-                            Go Back
-                        </Button>
-                    </div>
-                </Alert>
-            </div>
-        );
-    }
-
-    if (!data) return null;
 
     return (
         <div className="flex-1 overflow-auto bg-background selection:bg-mountain-meadow-200/30">
@@ -268,19 +218,21 @@ export default function AdminTestResultPage() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-9 w-9 rounded-full hover:bg-mountain-meadow-100 hover:text-mountain-meadow-700 transition-all border border-transparent hover:border-mountain-meadow-200/50"
-                                                            onClick={() => router.push(`/admin/users/${p.userId}`)}
+                                                            asChild
                                                         >
-                                                            <User className="h-4 w-4" />
+                                                            <Link href={`/admin/users/${p.userId}`}>
+                                                                <User className="h-4 w-4" />
+                                                            </Link>
                                                         </Button>
                                                         <Button
                                                             size="sm"
                                                             className="bg-mountain-meadow-400 hover:bg-mountain-meadow-500 text-white font-bold rounded-lg px-4 gap-2 shadow-lg shadow-mountain-meadow-200 transition-all active:scale-95"
-                                                            onClick={() =>
-                                                                router.push(`/admin/tests/${data.id}/submissions/${p.userId}`)
-                                                            }
+                                                            asChild
                                                         >
-                                                            <ExternalLink className="h-3.5 w-3.5" />
-                                                            Review
+                                                            <Link href={`/admin/tests/${data.id}/submissions/${p.userId}`}>
+                                                                <ExternalLink className="h-3.5 w-3.5" />
+                                                                Review
+                                                            </Link>
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -323,7 +275,7 @@ function AdvancedStatCard({ label, value, icon, color, textColor, trend }: any) 
             </CardContent>
 
             {/* Decorative Bottom Line */}
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-mountain-meadow-400 to-transparent opacity-30" />
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-mountain-meadow-400 to-transparent opacity-30" />
         </Card>
     );
 }

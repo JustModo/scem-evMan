@@ -42,7 +42,7 @@ export default async function TestContentPage(props: Props) {
 
   return (
     <div className="w-full h-full">
-      {currentProblem.questionType === "Coding" ? (
+      {currentProblem.type.toLowerCase() === "coding" ? (
         <CodeScreen problem={currentProblem as CodingProblem} />
       ) : (
         <MCQScreen

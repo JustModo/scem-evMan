@@ -141,6 +141,7 @@ const getContestData = async (req, res) => {
                 timeRemaining,
                 problems: questions.map(q => ({
                     id: q._id,
+                    type: q.type, // Added type field
                     title: q.title,
                     difficulty: q.difficulty,
                     description: q.description,
@@ -162,14 +163,19 @@ const getContestData = async (req, res) => {
 // @desc    Start test (User Attempt)
 const startTest = async (req, res) => {
     try {
+        console.log("StartTest: Initiated");
         const contest = req.contest;
         const userId = req.user.id || req.user._id || req.user.sub;
-        const contestId = contest._id;
+        console.log("StartTest: User ID:", userId);
 
-        const now = new Date(); // Already checked middleware but useful for timeRemaining
+        const contestId = contest._id;
+        console.log("StartTest: Contest ID:", contestId);
+
+        const now = new Date();
 
         const user = await User.findById(userId);
         if (user && !user.registeredContests.includes(contestId)) {
+            console.log("StartTest: Registering user for contest");
             user.registeredContests.push(contestId);
             await user.save();
         }
@@ -177,9 +183,14 @@ const startTest = async (req, res) => {
         // Initialize Submission if not exists
         const Submission = require('../models/Submissions');
         let submission = await Submission.findOne({ contest: contestId, user: userId });
+
         if (!submission) {
+            console.log("StartTest: Creating new submission");
             submission = new Submission({ contest: contestId, user: userId, status: 'Ongoing' });
             await submission.save();
+            console.log("StartTest: Submission created:", submission._id);
+        } else {
+            console.log("StartTest: Existing submission found:", submission._id);
         }
 
         return res.json({
@@ -192,6 +203,7 @@ const startTest = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error("StartTest Error:", error);
         return res.status(500).json({ success: false, error: error.message });
     }
 };
@@ -206,6 +218,7 @@ const getTestQuestions = async (req, res) => {
         const questions = await Question.find({ _id: { $in: contest.questions } });
         const questionsData = questions.map(q => ({
             id: q._id,
+            type: q.type || (q.questionType === 'Coding' ? 'coding' : 'mcq'), // Normalize type
             title: q.title,
             description: q.description,
             difficulty: q.difficulty,
@@ -239,16 +252,25 @@ const listAllContests = async (req, res) => {
 // @desc    End Test (Mark as Completed)
 const endTest = async (req, res) => {
     try {
-        const { contestId } = req.body;
+        console.log("EndTest: Initiated");
+        const contestId = req.params.id || req.body.contestId || (req.contest && req.contest._id);
         const userId = req.user.id || req.user._id || req.user.sub;
+        console.log("EndTest: Contest ID:", contestId, "User ID:", userId);
+
+        if (!contestId) {
+            console.log("EndTest: Missing Contest ID");
+            return res.status(400).json({ success: false, error: 'Contest ID is required' });
+        }
 
         const Submission = require('../models/Submissions');
         const submission = await Submission.findOne({ contest: contestId, user: userId });
 
         if (!submission) {
-            return res.status(404).json({ success: false, error: 'Submission not found' });
+            console.log("EndTest: Submission not found");
+            return res.status(404).json({ success: false, error: 'Submission session not found. Did you start the test?' });
         }
 
+        console.log("EndTest: Marking submission as completed");
         submission.status = 'Completed';
         submission.submittedAt = new Date();
         await submission.save();
@@ -258,6 +280,7 @@ const endTest = async (req, res) => {
             message: 'Test completed successfully'
         });
     } catch (error) {
+        console.error("EndTest Error:", error);
         return res.status(500).json({ success: false, error: error.message });
     }
 };

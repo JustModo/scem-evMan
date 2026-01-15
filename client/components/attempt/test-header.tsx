@@ -57,8 +57,12 @@ export default function TestHeader({ problems }: TestHeaderProps) {
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
 
-  const mcqProblems = problems.filter((p) => p.type !== "Coding");
-  const codingProblems = problems.filter((p) => p.type === "Coding");
+  const isCoding = (p: any) => {
+    return p.type === 'coding' || p.type === 'Coding';
+  };
+
+  const codingProblems = problems.filter(isCoding);
+  const mcqProblems = problems.filter((p) => !isCoding(p));
 
   return (
     <div className="flex items-center justify-center p-2 select-none h-12 absolute top-0 w-screen bg-primary">
