@@ -432,12 +432,117 @@ const runCode = async (req, res) => {
     }
 };
 
+// @desc    Get questions for a specific test
+// @route   GET /api/test/:id/questions
+// @access  Public
+const getTestQuestions = async (req, res) => {
+    try {
+        const { id: testId } = req.params;
+
+        // Validate test ID format
+        if (!testId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Test ID is required'
+            });
+        }
+
+        // Find the contest/test
+        const contest = await Contest.findById(testId);
+        if (!contest) {
+            return res.status(404).json({
+                success: false,
+                error: `Test with ID ${testId} not found`
+            });
+        }
+
+        // Check if test is active (optional: can add status check)
+        const currentTime = new Date();
+        const isActive = currentTime >= contest.startTime && currentTime <= contest.endTime;
+
+        // Fetch questions
+        const Question = require('../models/Question');
+        const questions = await Question.find({
+            _id: { $in: contest.questions }
+        });
+
+        // Map questions with metadata and sample test cases
+        const questionsData = questions.map(q => ({
+            id: q._id,
+            type: q.type,
+            title: q.title,
+            description: q.description,
+            difficulty: q.difficulty,
+            marks: q.marks,
+            questionType: q.questionType,
+            // Coding specific
+            constraints: q.constraints,
+            inputFormat: q.inputFormat,
+            outputFormat: q.outputFormat,
+            boilerplateCode: q.boilerplateCode,
+            functionName: q.functionName,
+            inputVariables: q.inputVariables,
+            // Sample test cases (limit to first 2 for preview)
+            sampleTestCases: q.testcases ? q.testcases.slice(0, 2) : [],
+            totalTestCases: q.testcases ? q.testcases.length : 0,
+            // MCQ specific
+            options: q.options,
+            // Don't return the correct answer to the client
+        }));
+
+        return res.json({
+            success: true,
+            data: {
+                testId: contest._id,
+                title: contest.title,
+                description: contest.description,
+                isActive,
+                totalQuestions: questionsData.length,
+                startTime: contest.startTime,
+                endTime: contest.endTime,
+                questions: questionsData
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching test questions:', error);
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+};
+
+// @desc    List all contests (for testing/debugging)
+// @route   GET /api/test/list/all
+// @access  Public
+const listAllContests = async (req, res) => {
+    try {
+        const contests = await Contest.find({}, { _id: 1, title: 1, description: 1, startTime: 1, endTime: 1, type: 1 });
+        
+        return res.json({
+            success: true,
+            data: {
+                total: contests.length,
+                contests: contests
+            }
+        });
+    } catch (error) {
+        console.error('Error listing contests:', error);
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+};
+
 module.exports = {
     startContest,
     manageViolations,
     checkTestId,
     getContestLanding,
     getContestData,
+    getTestQuestions,
+    listAllContests,
     submitSolution,
     endContest,
     startTest,
