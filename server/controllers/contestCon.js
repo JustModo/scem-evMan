@@ -99,7 +99,11 @@ const getContestLanding = async (req, res) => {
         const contest = req.contest;
         const now = new Date();
         const start = new Date(contest.startTime);
-        const canStart = now >= start && now <= new Date(contest.endTime);
+        // Check if contest is manually marked as Completed/Ended
+        const status = contest.status ? contest.status.toLowerCase() : '';
+        const isManuallyEnded = status === 'completed' || status === 'ended';
+
+        const canStart = now >= start && now <= new Date(contest.endTime) && !isManuallyEnded;
 
         return res.json({
             success: true,
@@ -111,6 +115,7 @@ const getContestLanding = async (req, res) => {
                 endTime: contest.endTime,
                 serverTime: now,
                 canStart: canStart,
+                isEnded: isManuallyEnded || now > new Date(contest.endTime), // Pass ended status
                 totalProblems: contest.questions.length,
                 author: contest.author || "SCEM Coding Club",
                 rules: contest.rules || []
@@ -126,10 +131,26 @@ const getContestData = async (req, res) => {
     try {
         const contest = req.contest;
 
-        // Fetch actual questions from Question model
         const questions = await require('../models/Question').find({
             _id: { $in: contest.questions }
         });
+
+        // Fetch User Submission to get saved state
+        const Submission = require('../models/Submissions');
+        // Middleware likely attached submission
+        const submission = req.submission || await Submission.findOne({ contest: contest._id, user: req.user.id });
+
+        const answerMap = {}; // Map questionId -> { answer, code }
+        if (submission && submission.submissions) {
+            submission.submissions.forEach(s => {
+                if (s.question) {
+                    answerMap[s.question.toString()] = {
+                        answer: s.answer,
+                        code: s.code
+                    };
+                }
+            });
+        }
 
         const timeRemaining = Math.max(0, (new Date(contest.endTime) - new Date()) / 1000);
 
@@ -151,7 +172,9 @@ const getContestData = async (req, res) => {
                     boilerplateCode: q.boilerplateCode,
                     questionType: q.questionType,
                     options: q.options,
-                    marks: q.marks
+                    marks: q.marks,
+                    savedAnswer: answerMap[q._id.toString()] ? answerMap[q._id.toString()].answer : undefined,
+                    savedCode: answerMap[q._id.toString()] ? answerMap[q._id.toString()].code : undefined
                 }))
             }
         });
@@ -182,7 +205,12 @@ const startTest = async (req, res) => {
 
         // Initialize Submission if not exists
         const Submission = require('../models/Submissions');
-        let submission = await Submission.findOne({ contest: contestId, user: userId });
+        // Middleware might have attached submission
+        let submission = req.submission;
+
+        if (!submission) {
+            submission = await Submission.findOne({ contest: contestId, user: userId });
+        }
 
         if (!submission) {
             console.log("StartTest: Creating new submission");
@@ -190,7 +218,8 @@ const startTest = async (req, res) => {
             await submission.save();
             console.log("StartTest: Submission created:", submission._id);
         } else {
-            console.log("StartTest: Existing submission found:", submission._id);
+            // Middleware already checked if it was Completed and threw 403 if checkAttemptStatus was set
+            console.log("StartTest: Resuming existing submission:", submission._id);
         }
 
         return res.json({

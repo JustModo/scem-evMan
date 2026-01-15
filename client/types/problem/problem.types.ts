@@ -7,6 +7,8 @@ export interface BaseProblem {
   difficulty: "Easy" | "Medium" | "Hard";
   questionType?: "Single Correct" | "Multiple Correct" | "Coding"; // Deprecated for identification
   type: "coding" | "mcq"; // Primary identification field
+  savedAnswer?: string[]; // Persisted MCQ answer
+  savedCode?: string;     // Persisted Code
 }
 
 export interface CodingProblem extends BaseProblem {
