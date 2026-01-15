@@ -8,7 +8,7 @@ services:
 
   server:
     build:
-      context: ../..
+      context: .
       dockerfile: server/Dockerfile
     ports:
       - "8080:8080"
@@ -29,7 +29,7 @@ services:
 
   client:
     build:
-      context: ../..
+      context: .
       dockerfile: client/Dockerfile.dev
     ports:
       - "3000:3000"
@@ -47,7 +47,7 @@ services:
 
   seed:
     build:
-      context: ../..
+      context: .
       dockerfile: server/Dockerfile
     command: node scripts/seed.js
     environment:
