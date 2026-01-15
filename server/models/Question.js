@@ -25,10 +25,8 @@ const questionSchema = new mongoose.Schema({
   outputFormat: String,
   boilerplateCode: {
     c: String,
-    cpp: String,
     java: String,
     python: String,
-    javascript: String,
   },
   functionName: String,
   inputVariables: [{
@@ -39,7 +37,7 @@ const questionSchema = new mongoose.Schema({
     }
   }],
   testcases: [{
-    input: Object,
+    input: String,
     output: String
   }],
 }, { timestamps: true });
