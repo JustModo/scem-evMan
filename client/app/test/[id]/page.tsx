@@ -70,7 +70,7 @@ export default function ContestLanding() {
       } else {
         toast.error(result.message || "Failed to fetch data");
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to load instructions");
     } finally {
       setLoading(false);
@@ -123,7 +123,7 @@ export default function ContestLanding() {
       } else {
         toast.error(result.error || result.message || "Failed to start session");
       }
-    } catch (error) {
+    } catch {
       toast.error("Network error: Could not start assessment");
     }
   };

@@ -11,6 +11,7 @@ export interface MongoTestContent {
   _id?: string;
   title: string;
   description: string;
+  startsAt?: string;
   startTime?: string;
   endTime?: string;
   status?: string;

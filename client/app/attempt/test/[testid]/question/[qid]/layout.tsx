@@ -1,5 +1,6 @@
 import TestHeader from "@/components/attempt/test-header";
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import React from "react";
 
 export default async function TestLayout({
@@ -21,9 +22,19 @@ export default async function TestLayout({
   });
 
   const result = await res.json();
+
+  /*
+   * SECURITY CHECK:
+   * If the user has completed the test, the middleware returns 403.
+   * We must redirect them out of the attempt area immediately.
+   */
+  if (!res.ok || !result.success || result.isCompleted) {
+    redirect(`/test/${testid}`);
+  }
+
   const problems = result.data?.problems || [];
 
-  const problemMeta = problems.map((q: any) => ({
+  const problemMeta = problems.map((q: { id: string; type: string }) => ({
     id: q.id,
     type: q.type
   }));

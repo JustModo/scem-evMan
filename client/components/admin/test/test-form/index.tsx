@@ -4,7 +4,7 @@ import { Test, TestSchema, testSchema } from "@/types/test";
 import QuestionAddCard from "./add-question";
 import TestBasicCard from "./info-card";
 import RulesCard from "./rules-card";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import Link from "next/link";
@@ -20,7 +20,7 @@ import { Problem } from "@/types/problem";
 export default function TestForm({ testData, availableQuestions = [] }: { testData: Test | null; availableQuestions?: Problem[] }) {
   const router = useRouter();
   const form = useForm<TestSchema>({
-    resolver: zodResolver(testSchema),
+    resolver: zodResolver(testSchema) as Resolver<TestSchema>,
     defaultValues: {
       title: "",
       description: "",

@@ -53,7 +53,7 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
       if (!data.success) {
         toast.error(data.error || "Failed to save answer");
       }
-    } catch (err) {
+    } catch {
       toast.error("Network error saving answer");
     } finally {
       setIsSaving(false);
