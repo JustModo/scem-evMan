@@ -188,7 +188,7 @@ const getAdminContests = async (req, res) => {
     try {
         await connectDB();
         // Return summary fields
-        const contests = await Contest.find().select('title description createdAt questions author startTime endTime status joinId');
+        const contests = await Contest.find().select('title description createdAt questions author startTime endTime joinId');
         const now = new Date();
 
         const summary = await Promise.all(contests.map(async c => {
@@ -212,13 +212,26 @@ const getAdminContests = async (req, res) => {
             const completed = contestSubmissions.filter(s => s.status === 'Completed').length;
             const ongoing = total - completed;
 
+            // Compute Status Dynamically (Pure Time-Based)
+            let computedStatus = 'waiting';
+            // Only override if it's not manually ended/completed
+            const isManuallyEnded = false; // Status field removed, relying on time only
+
+            if (!isManuallyEnded) {
+                if (now > end) {
+                    computedStatus = 'completed';
+                } else if (now >= start && now <= end) {
+                    computedStatus = 'ongoing';
+                }
+            }
+
             return {
                 id: c._id,
                 title: c.title,
                 description: c.description,
                 createdAt: c.createdAt,
-                status: c.status,
-                participants: total, // Total for backward compat or generic usage
+                status: computedStatus,
+                participants: total,
                 participantsCompleted: completed,
                 participantsInProgress: ongoing,
                 problemCount: c.questions ? c.questions.length : 0,
@@ -279,7 +292,6 @@ const createContest = async (req, res) => {
             rules, // Now [String], matches schema
             type, visibility,
             joinId, // Save generated ID
-            status: req.body.status || 'waiting', // Save Status
             author: author || "Admin" // Required field
         });
 
@@ -295,9 +307,9 @@ const updateContest = async (req, res) => {
     try {
         await connectDB();
         const { id } = req.params;
-        const { title, description, duration, problemIds, rules, status, visibility } = req.body;
+        const { title, description, duration, problemIds, rules, visibility } = req.body;
 
-        const updates = { title, description, rules, status, visibility };
+        const updates = { title, description, rules, visibility };
         if (duration) {
             updates.startTime = new Date(duration.start);
             updates.endTime = new Date(duration.end);
@@ -338,6 +350,16 @@ const deleteContest = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Cannot delete an ongoing contest' });
         }
 
+        // Double check time (in case cron/status is stale)
+        const now = new Date();
+        const start = new Date(contest.startTime);
+        const end = new Date(contest.endTime);
+        const isRunning = now >= start && now <= end;
+
+        if (isRunning) {
+            return res.status(400).json({ success: false, error: 'Cannot delete a contest that is currently active (Time-based protection).' });
+        }
+
         await Contest.findByIdAndDelete(id);
 
         res.status(200).json({ success: true, message: 'Contest deleted successfully' });
@@ -371,10 +393,16 @@ const getAdminStats = async (req, res) => {
         ]);
 
         const recentTests = await Promise.all(recentTestsData.map(async (contest) => {
-            const participants = await Submission.countDocuments({ contest: contest._id });
+            const submissions = await Submission.find({ contest: contest._id }).select('status');
+            const total = submissions.length;
+            const completed = submissions.filter(s => s.status === 'Completed').length;
+            const inProgress = total - completed;
+
             return {
                 ...contest,
-                participants
+                participants: total,
+                participantsCompleted: completed,
+                participantsInProgress: inProgress
             };
         }));
 

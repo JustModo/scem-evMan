@@ -16,9 +16,9 @@ const port = process.env.PORT || 8080;
 // Connect to Database
 connectDB();
 
-// Initialize Cron Jobs
-const initCron = require("./services/cron");
-initCron();
+// Initialize Cron Jobs (Removed: using lazy/computed status)
+// const initCron = require("./services/cron");
+// initCron();
 
 app.use(
   cors({

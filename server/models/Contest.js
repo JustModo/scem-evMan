@@ -42,11 +42,6 @@ const contestSchema = new mongoose.Schema({
     enum: ['public', 'private'],
     default: 'private',
   },
-  status: {
-    type: String,
-    enum: ['waiting', 'ongoing', 'completed'],
-    default: 'waiting',
-  },
 }, { timestamps: true });
 
 module.exports = mongoose.models.Contest || mongoose.model('Contest', contestSchema);

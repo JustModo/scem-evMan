@@ -1,6 +1,5 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const { SignJWT } = require('jose');
 
 const handleLogin = async (req, res) => {
     try {
@@ -20,16 +19,8 @@ const handleLogin = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
-        const token = await new SignJWT({ userId: user._id.toString(), role: user.role, email: user.email })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setIssuedAt()
-            .setExpirationTime('24h')
-            .sign(secret);
-
         res.json({
             success: true,
-            token,
             user: {
                 _id: user._id,
                 email: user.email,
@@ -69,17 +60,9 @@ const handleRegister = async (req, res) => {
 
         await newUser.save();
 
-        const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
-        const token = await new SignJWT({ userId: newUser._id.toString(), role: newUser.role, email: newUser.email })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setIssuedAt()
-            .setExpirationTime('24h')
-            .sign(secret);
-
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
-            token,
             user: {
                 _id: newUser._id,
                 email: newUser.email,
