@@ -6,7 +6,7 @@ x-logging: &default-logging
 
 services:
   judge0-server:
-    image: judge0/judge0:1.13.1
+    image: mrkushalsm/judge0
     ports:
       - "2358:2358"
     volumes:
@@ -24,8 +24,8 @@ services:
       - judge0-redis
 
   judge0-workers:
-    image: judge0/judge0:1.13.1
-    command: ["./scripts/workers"]
+    image: mrkushalsm/judge0
+    command: [ "./scripts/workers" ]
     volumes:
       - ./config/judge0/judge0.conf:/judge0.conf:ro
     env_file:
@@ -53,12 +53,7 @@ services:
 
   judge0-redis:
     image: redis:7.2.4
-    command:
-      [
-        "bash",
-        "-c",
-        'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"',
-      ]
+    command: [ "bash", "-c", 'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"' ]
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     <<: *default-logging
