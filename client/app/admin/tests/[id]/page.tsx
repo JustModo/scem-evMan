@@ -22,6 +22,14 @@ export default async function AdminTestDetailPage({
 
   try {
     const data = await db.findOne<Record<string, unknown>>("contests", { _id: id }, { populate: ["questions"] });
+    // Fetch submissions to calculate stats
+    const submissions = await db.find<Record<string, unknown>>("submissions", { contest: id }) || [];
+    
+    // Calculate stats
+    const totalParticipants = submissions.length;
+    const completed = submissions.filter(s => s.status === 'Completed').length;
+    const inProgress = totalParticipants - completed;
+
     if (data) {
       const startTime = data.startTime as string;
       const endTime = data.endTime as string;
@@ -44,8 +52,8 @@ export default async function AdminTestDetailPage({
           id: (q?._id as string) ?? (q?.id as string),
         })),
         status: data.status as "waiting" | "ongoing" | "completed",
-        participantsInProgress: 0,
-        participantsCompleted: 0,
+        participantsInProgress: inProgress,
+        participantsCompleted: completed,
         totalQuestions: (data.questions as unknown[])?.length || 0,
         joinId: data.joinId as string,
         createdAt: data.createdAt as string,

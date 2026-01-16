@@ -14,7 +14,9 @@ interface MongoTest {
   startTime: string;
   endTime: string;
   questions?: unknown[];
+  rules?: string[];
   status?: string;
+  joinId?: string;
   createdAt?: string;
 }
 
@@ -68,10 +70,12 @@ export default async function AdminTestEditPage({
       startsAt: testDataRaw.startTime ? new Date(testDataRaw.startTime).toISOString() : '',
       duration: durationStr,
       problems: testDataRaw.questions || [],
+      rules: testDataRaw.rules || [],
       status: (testDataRaw.status || "waiting") as "waiting" | "ongoing" | "completed",
       totalQuestions: testDataRaw.questions?.length || 0,
       participantsInProgress: 0,
       participantsCompleted: 0,
+      joinId: testDataRaw.joinId || '',
       createdAt: testDataRaw.createdAt || new Date().toISOString(),
     };
   }

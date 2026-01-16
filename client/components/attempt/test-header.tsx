@@ -24,6 +24,42 @@ export default function TestHeader({ problems }: TestHeaderProps) {
   const [isFinishing, setIsFinishing] = React.useState(false);
   const { data: session } = useSession();
 
+  // Handle BFCache (Back/Forward Cache)
+  // If user presses back button after finishing, force a refresh to trigger server-side checks
+  React.useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        router.refresh();
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [router]);
+
+  // Client-side verification on mount to handle back navigation / stale cache
+  React.useEffect(() => {
+    const verifyStatus = async () => {
+      if (!session?.backendToken || !params.testid) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/contest/${params.testid}/data`, {
+          headers: {
+            "Authorization": `Bearer ${session.backendToken}`,
+            "Content-Type": "application/json"
+          },
+          cache: "no-store"
+        });
+        const data = await res.json();
+        // If server says completed or prohibited, kick them out
+        if (!res.ok || (data.isCompleted)) {
+          router.replace(`/test/${params.testid}`);
+        }
+      } catch {
+        // network error etc, maybe safe to ignore or retry
+      }
+    };
+    verifyStatus();
+  }, [session, params.testid, router]);
+
   const handleFinish = async () => {
     if (!session?.backendToken || !params.testid) return;
     if (!confirm("Are you sure you want to finish the test? You cannot change your answers after this.")) return;
@@ -44,7 +80,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
       } else {
         toast.error(data.error || "Failed to submit test");
       }
-    } catch (err) {
+    } catch {
       toast.error("Network error finishing test");
     } finally {
       setIsFinishing(false);
@@ -57,7 +93,7 @@ export default function TestHeader({ problems }: TestHeaderProps) {
     scrollRef.current?.scrollBy({ left: distance, behavior: "smooth" });
   };
 
-  const isCoding = (p: any) => {
+  const isCoding = (p: ProblemMeta) => {
     return p.type === 'coding' || p.type === 'Coding';
   };
 

@@ -18,7 +18,7 @@ interface MCQScreenProps {
 }
 
 export default function MCQScreen({ problem, problems }: MCQScreenProps) {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(problem.savedAnswer || []);
   const router = useRouter();
   const params = useParams();
   const [isSaving, setIsSaving] = useState(false);
@@ -53,7 +53,7 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
       if (!data.success) {
         toast.error(data.error || "Failed to save answer");
       }
-    } catch (err) {
+    } catch {
       toast.error("Network error saving answer");
     } finally {
       setIsSaving(false);

@@ -11,15 +11,18 @@ export interface MongoTestContent {
   _id?: string;
   title: string;
   description: string;
+  startsAt?: string;
   startTime?: string;
   endTime?: string;
   status?: string;
   problemCount?: number;
   questions?: unknown[];
-  startsAt?: string;
   participants?: number;
+  participantsInProgress?: number;
+  participantsCompleted?: number;
   joinId?: string;
   createdAt?: string;
+  duration?: string;
 }
 
 interface Props {
@@ -57,11 +60,11 @@ export function TestsList({ initialTests }: Props) {
       questions: t.problemCount || t.questions?.length || 0,
       totalQuestions: t.problemCount || t.questions?.length || 0,
       problems: (t.questions || []) as string[],
-      duration: durationStr.trim(),
+      duration: t.duration || durationStr.trim(),
       startsAt: t.startsAt || t.startTime || '',
-      participantsInProgress: t.participants || 0,
-      participantsCompleted: 0,
-      joinId: t.joinId || '',
+       participantsInProgress: t.participantsInProgress ?? t.participants ?? 0,
+       participantsCompleted: t.participantsCompleted ?? 0,
+       joinId: t.joinId || '',
       createdAt: t.createdAt || '',
     };
   });

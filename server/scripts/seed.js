@@ -188,7 +188,7 @@ const seedDatabase = async () => {
         author: adminUser._id.toString(),
         rules: ['No plagiarism allowed', 'Time limit: 3 hours'],
         visibility: 'public',
-        status: 'waiting',
+        visibility: 'public',
       },
       {
         title: 'Quick MCQ Quiz',
@@ -201,7 +201,7 @@ const seedDatabase = async () => {
         author: adminUser._id.toString(),
         rules: ['Single attempt only', 'No negative marking'],
         visibility: 'public',
-        status: 'waiting',
+        visibility: 'public',
       },
     ];
 

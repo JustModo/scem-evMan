@@ -1,4 +1,5 @@
 const Contest = require('../models/Contest');
+const Submission = require('../models/Submissions');
 
 /**
  * Middleware to validate contest access
@@ -6,6 +7,7 @@ const Contest = require('../models/Contest');
  * @param {boolean} options.checkStarted - Verify if the contest has started
  * @param {boolean} options.checkEnded - Verify if the contest has ended
  * @param {boolean} options.checkRegistered - Verify if user is registered (requires auth middleware first)
+ * @param {string} options.checkAttemptStatus - 'NotCompleted' (blocks if completed)
  */
 const validateContest = (options = {}) => async (req, res, next) => {
     try {
@@ -29,8 +31,11 @@ const validateContest = (options = {}) => async (req, res, next) => {
             return res.status(403).json({ success: false, error: 'Contest has not started yet' });
         }
 
-        if (options.checkEnded && now > endTime) {
-            return res.status(403).json({ success: false, error: 'Contest has already ended' });
+        // Check if contest is manually marked as Completed/Ended or Time is up
+        const status = contest.status ? contest.status.toLowerCase() : '';
+        const isManuallyEnded = status === 'completed' || status === 'ended';
+        if (options.checkEnded && (now > endTime || isManuallyEnded)) {
+            return res.status(403).json({ success: false, error: 'Contest has ended' });
         }
 
         // Optional: Check registration if user is attached (auth middleware expected)
@@ -41,6 +46,24 @@ const validateContest = (options = {}) => async (req, res, next) => {
             // But usually registration check might be separate or part of the "start" logic
             // We'll leave strict registration check to the controller or specific middleware if needed
             // to avoid circular dependency or complex user fetching here if not already done.
+        }
+
+        // Check Attempt Status
+        if (options.checkAttemptStatus && req.user) {
+            const userId = req.user.id || req.user._id || req.user.sub;
+            const submission = await Submission.findOne({ contest: contest._id, user: userId });
+
+            if (options.checkAttemptStatus === 'NotCompleted') {
+                if (submission && submission.status === 'Completed') {
+                    return res.status(403).json({
+                        success: false,
+                        isCompleted: true,
+                        error: 'You have already completed this test.'
+                    });
+                }
+            }
+            // Attach submission to request to avoid re-fetching
+            if (submission) req.submission = submission;
         }
 
         // Attach to request

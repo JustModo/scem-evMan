@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Editor from "@monaco-editor/react";
 import {
   Select,
@@ -26,7 +26,7 @@ export default function CodeEditorPanel({
   code: string;
   setCode: (code: string) => void;
   language: string;
-  setLanguage: (lang: any) => void;
+  setLanguage: (lang: string) => void;
 }) {
   const boilerplate = problem.boilerplateCode || {};
   const availableLanguages = Object.keys(boilerplate) as Language[];

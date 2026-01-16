@@ -61,7 +61,7 @@ export default function TestCasePanel({
       } else {
         toast.error(data.error || "Execution failed");
       }
-    } catch (err) {
+    } catch {
       toast.error("Network error");
     } finally {
       setIsRunning(false);
@@ -93,7 +93,7 @@ export default function TestCasePanel({
       } else {
         toast.error(data.error || "Submission failed");
       }
-    } catch (err) {
+    } catch {
       toast.error("Network error");
     } finally {
       setIsRunning(false);

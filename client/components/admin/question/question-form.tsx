@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, Fragment, useActionState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -66,7 +66,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
 
 
   const form = useForm<QuestionSchema>({
-    resolver: zodResolver(questionSchema),
+    resolver: zodResolver(questionSchema) as Resolver<QuestionSchema>,
     defaultValues: {
       ...getDefaultValues(),
       ...initialData,
@@ -90,6 +90,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
               ? deserializeInput(tc.input, transformedData.inputVariables as InputVariable[])
               : tc.input,
           output: tc.output as string,
+          isVisible: tc.isVisible as boolean ?? false,
         }));
       }
 
@@ -129,6 +130,7 @@ export default function QuestionForm({ type, isCreating, initialData }: Props) {
           ...tc,
           input: serializeInput(tc.input as Record<string, unknown>, submissionData.inputVariables as InputVariable[]),
           output: tc.output as string,
+          isVisible: tc.isVisible as boolean ?? false,
         }));
         
         startTransition(() => {
