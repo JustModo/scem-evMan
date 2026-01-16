@@ -59,10 +59,8 @@ export default function TestCasePanel({
       if (data.success) {
         setResults(data.results);
       } else {
-        toast.error(data.error || "Execution failed");
       }
     } catch {
-      toast.error("Network error");
     } finally {
       setIsRunning(false);
     }
@@ -89,12 +87,9 @@ export default function TestCasePanel({
       const data = await res.json();
       if (data.success) {
         setResults(data.results);
-        toast.success("Solution Submitted!");
       } else {
-        toast.error(data.error || "Submission failed");
       }
     } catch {
-      toast.error("Network error");
     } finally {
       setIsRunning(false);
     }
