@@ -73,7 +73,7 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id 
             const decodedCompileOutput = result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf-8') : '';
 
             return {
-                testCase: tc._id || index + 1,
+                testCase: index + 1,
                 passed: isPassed,
                 input: tc.isVisible ? input : undefined, // Hide input if not visible
                 expectedOutput: tc.isVisible ? expectedOutput : undefined,
@@ -84,7 +84,7 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id 
             };
         } catch (err) {
             return {
-                testCase: tc._id || index + 1,
+                testCase: index + 1,
                 passed: false,
                 status: "System Error",
                 error: err.message,
