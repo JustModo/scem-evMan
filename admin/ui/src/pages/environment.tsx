@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, CheckCircle, AlertCircle } from "lucide-react";
+import { Save, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 export default function EnvironmentPage() {
   const [config, setConfig] = useState<ConfigSnapshot | null>(null);
@@ -29,12 +29,25 @@ export default function EnvironmentPage() {
     }).catch(() => {});
   }, []);
 
+  async function performRestart(target: "all" | "caddy" | "judge") {
+    try {
+      await api.restart(target);
+    } catch (err: any) {
+      setMessage({ type: "error", text: `Restart error: ${err.message}` });
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     setMessage(null);
     try {
-      await api.updateConfig({ appEnv, configYaml, caddyfile, judge0 });
+      const res = await api.updateConfig({ appEnv, configYaml, caddyfile, judge0 });
       setMessage({ type: "success", text: "Configuration saved successfully." });
+      
+      const restartAction = (res as any)?.restartAction;
+      if (restartAction && restartAction !== "none") {
+        await performRestart(restartAction);
+      }
     } catch (err: any) {
       setMessage({ type: "error", text: err.message });
     }
@@ -57,6 +70,13 @@ export default function EnvironmentPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground">
+          Directly edit environment variables, proxy configs, and platform YAML setup. Saving will dynamically restart the relevant Docker containers.
+        </p>
+      </div>
+
+
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="appenv">app.env</TabsTrigger>
@@ -102,7 +122,7 @@ export default function EnvironmentPage() {
               value={caddyfile}
               onChange={(e) => setCaddyfile(e.target.value)}
               rows={12}
-              className="text-xs"
+              className="text-xs font-mono"
             />
           </div>
         </TabsContent>
@@ -116,7 +136,7 @@ export default function EnvironmentPage() {
               value={judge0}
               onChange={(e) => setJudge0(e.target.value)}
               rows={10}
-              className="text-xs"
+              className="text-xs font-mono"
             />
           </div>
         </TabsContent>
@@ -127,7 +147,7 @@ export default function EnvironmentPage() {
         <div
           className={`flex items-start gap-2 p-3 rounded-md text-sm ${
             message.type === "success"
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+              ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
               : "bg-destructive/10 border border-destructive/20 text-destructive"
           }`}
         >
@@ -145,11 +165,15 @@ export default function EnvironmentPage() {
       {/* Actions */}
       <div className="flex gap-3">
         <Button onClick={handleSave} disabled={saving}>
-          <Save className="h-4 w-4" />
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
           {saving ? "Saving..." : "Save All"}
         </Button>
         <Button variant="outline" onClick={handleValidate}>
-          <CheckCircle className="h-4 w-4" />
+          <CheckCircle className="h-4 w-4 mr-2" />
           Validate
         </Button>
       </div>

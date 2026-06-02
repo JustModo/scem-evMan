@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { streamRequest } from "@/api/index.js";
+import { api } from "@/api/index.js";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -8,23 +8,17 @@ import { Separator } from "@/components/ui/separator";
 
 export default function SettingsPage() {
   const [uninstallMode, setUninstallMode] = useState("keep-data");
-  const [uninstallLog, setUninstallLog] = useState<string | null>(null);
   const [uninstalling, setUninstalling] = useState(false);
   const [confirmUninstall, setConfirmUninstall] = useState(false);
 
   async function handleUninstall() {
     setUninstalling(true);
-    setUninstallLog("Starting uninstall...\n");
     try {
-      const result = await streamRequest("/uninstall", {
-        method: "POST",
-        body: JSON.stringify({ mode: uninstallMode }),
-      });
-      setUninstallLog((prev) => (prev ?? "") + result.output + `\n[${result.exitCode === 0 ? "Done" : "Failed"}]`);
+      await api.uninstall(uninstallMode);
     } catch (err: any) {
-      setUninstallLog((prev) => (prev ?? "") + `\nError: ${err.message}`);
+      console.error(err);
+      setUninstalling(false);
     }
-    setUninstalling(false);
     setConfirmUninstall(false);
   }
 
@@ -80,11 +74,7 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {uninstallLog && (
-            <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-64 whitespace-pre-wrap border">
-              {uninstallLog}
-            </pre>
-          )}
+
         </div>
       </section>
     </div>

@@ -6,9 +6,10 @@ export const api = {
   getStatus: () => request<Status>("/status"),
 
   // Lifecycle
-  start: (onChunk?: (text: string) => void) => streamRequest("/start", { method: "POST", onChunk }),
-  stop: (onChunk?: (text: string) => void) => streamRequest("/stop", { method: "POST", onChunk }),
-  restart: (onChunk?: (text: string) => void) => streamRequest("/restart", { method: "POST", onChunk }),
+  start: () => request("/start", { method: "POST" }).finally(() => window.dispatchEvent(new Event("command-started"))),
+  stop: () => request("/stop", { method: "POST" }).finally(() => window.dispatchEvent(new Event("command-started"))),
+  restart: (target?: "all" | "caddy" | "judge") =>
+    request("/restart", { method: "POST", body: JSON.stringify({ target }) }).finally(() => window.dispatchEvent(new Event("command-started"))),
 
   // Config
   getConfig: () => request<ConfigSnapshot>("/config"),
@@ -31,7 +32,7 @@ export const api = {
 
   // Uninstall
   uninstall: (mode: string) =>
-    streamRequest("/uninstall", { method: "POST", body: JSON.stringify({ mode }) }),
+    request("/uninstall", { method: "POST", body: JSON.stringify({ mode }) }).finally(() => window.dispatchEvent(new Event("command-started"))),
 
   // Users
   listUsers: (params?: { role?: string; page?: number; limit?: number }) => {
@@ -50,49 +51,59 @@ export const api = {
 };
 
 /**
- * Stream a response from the daemon and return the full output text + exit code.
+ * Connect to the ongoing background command stream and listen to logs.
  */
-export async function streamRequest(
-  path: string,
-  options?: RequestInit & { onChunk?: (text: string) => void }
-): Promise<{ output: string; exitCode: number }> {
-  const res = await fetch(`/api${path}`, {
-    headers: {
-      "content-type": "application/json",
-      ...(options?.headers || {}),
-    },
-    ...options,
-  });
-
-  if (!res.ok) {
-    const payload = await res.json().catch(() => null);
-    throw new Error(payload?.error || payload?.message || "Request failed");
-  }
-
-  const reader = res.body?.getReader();
-  if (!reader) return { output: "", exitCode: 0 };
-
-  const decoder = new TextDecoder();
-  let output = "";
-  let exitCode = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const text = decoder.decode(value, { stream: true });
-    const exitMatch = text.match(/\[POMELO_EXIT:(\d+)\]/);
-    
-    let chunkOutput = text;
-    if (exitMatch) {
-      exitCode = parseInt(exitMatch[1], 10);
-      chunkOutput = text.replace(/\n?\[POMELO_EXIT:\d+\]\n?/g, "");
+export async function connectCommandStream(
+  onChunk: (text: string) => void,
+  onExit: (code: number) => void,
+  onIdle: () => void
+): Promise<void> {
+  try {
+    const res = await fetch(`/api/command/stream`);
+    if (!res.ok) {
+      onIdle();
+      return;
     }
     
-    output += chunkOutput;
-    if (options?.onChunk && chunkOutput) {
-      options.onChunk(chunkOutput);
+    if (res.headers.get("content-type")?.includes("application/json")) {
+      onIdle();
+      return;
     }
-  }
 
-  return { output, exitCode };
+    const reader = res.body?.getReader();
+    if (!reader) {
+      onIdle();
+      return;
+    }
+
+    const decoder = new TextDecoder();
+    let exitCode = 0;
+    let didExit = false;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const text = decoder.decode(value, { stream: true });
+      
+      let chunkOutput = text;
+      const exitMatch = text.match(/\[POMELO_EXIT:(\d+)\]/);
+      if (exitMatch) {
+        exitCode = parseInt(exitMatch[1], 10);
+        chunkOutput = text.replace(/\n?\[POMELO_EXIT:\d+\]\n?/g, "");
+        didExit = true;
+      }
+      
+      if (chunkOutput) {
+        onChunk(chunkOutput);
+      }
+    }
+
+    if (didExit) {
+      onExit(exitCode);
+    } else {
+      onIdle();
+    }
+  } catch (err) {
+    onIdle();
+  }
 }

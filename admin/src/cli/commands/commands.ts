@@ -41,16 +41,21 @@ export async function handleStreamingCommand(
     });
 
     const contentType = res.headers.get("content-type") || "";
-    if (!res.ok) {
-      if (contentType.includes("application/json")) {
-        const payload = await res.json();
+    if (contentType.includes("application/json")) {
+      const payload = await res.json();
+      if (!res.ok) {
         exitWithError(payload?.error || "Request failed", payload?.code || 1);
       } else {
-        exitWithError(
-          (await res.text()) || `Request failed (${res.status})`,
-          1,
-        );
+        logSuccess(successMessage);
       }
+      return;
+    }
+
+    if (!res.ok) {
+      exitWithError(
+        (await res.text()) || `Request failed (${res.status})`,
+        1,
+      );
       return;
     }
 

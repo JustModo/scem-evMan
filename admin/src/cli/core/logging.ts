@@ -27,7 +27,7 @@ export function logError(msg: string) {
 }
 
 export function logStep(msg: string) {
-  console.log(`\n${colors.bold}${colors.cyan}──── ${msg} ────${colors.reset}`);
+  console.log(`${colors.bold}${colors.cyan}──── ${msg} ────${colors.reset}`);
 }
 
 export function exitWithError(message: string, code: number) {

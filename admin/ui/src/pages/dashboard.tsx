@@ -10,7 +10,6 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<Status | null>(null);
   const [storage, setStorage] = useState<StorageUsage | null>(null);
   const [loading, setLoading] = useState(true);
-  const [actionLog, setActionLog] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
 
   async function refresh() {
@@ -25,17 +24,15 @@ export default function DashboardPage() {
 
   useEffect(() => { refresh(); }, []);
 
-  async function runAction(action: (onChunk: (text: string) => void) => Promise<{ output: string; exitCode: number }>, label: string) {
+  async function runAction(action: () => Promise<any>) {
     setRunning(true);
-    setActionLog(`Running: ${label}...\n`);
     try {
-      const result = await action((chunk) => {
-        setActionLog((prev) => (prev ?? "") + chunk);
-      });
-      setActionLog((prev) => (prev ?? "") + `\n[${result.exitCode === 0 ? "Done" : "Failed"}]`);
+      await action();
+      // Add a small delay so daemon can fully trigger operation in background
+      await new Promise((r) => setTimeout(r, 1000));
       await refresh();
     } catch (err: any) {
-      setActionLog((prev) => (prev ?? "") + `\nError: ${err.message}`);
+      console.error(err);
     }
     setRunning(false);
   }
@@ -88,7 +85,7 @@ export default function DashboardPage() {
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">Quick Actions</h3>
         <div className="flex gap-3">
           <Button
-            onClick={() => runAction((onChunk) => api.start(onChunk), "Start")}
+            onClick={() => runAction(() => api.start())}
             disabled={running}
           >
             {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
@@ -96,7 +93,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => runAction((onChunk) => api.stop(onChunk), "Stop")}
+            onClick={() => runAction(() => api.stop())}
             disabled={running}
           >
             <Square className="h-4 w-4" />
@@ -104,7 +101,7 @@ export default function DashboardPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => runAction((onChunk) => api.restart(onChunk), "Restart")}
+            onClick={() => runAction(() => api.restart())}
             disabled={running}
           >
             <RotateCcw className="h-4 w-4" />
@@ -140,24 +137,6 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
-
-      {/* Action Log */}
-      {actionLog && (
-        <>
-          <Separator />
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Output</h3>
-              <Button variant="ghost" size="sm" onClick={() => setActionLog(null)}>
-                Clear
-              </Button>
-            </div>
-            <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-64 whitespace-pre-wrap">
-              {actionLog}
-            </pre>
-          </section>
-        </>
-      )}
 
       <Separator />
 

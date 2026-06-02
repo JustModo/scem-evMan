@@ -3,8 +3,9 @@ import { join } from "path";
 import { errorResponse } from "../web/http";
 import {
   isOperationRunning,
-  markOperationIdle,
+  markOperationFinished,
   markOperationRunning,
+  appendOperationLog,
 } from "./operations";
 import { getComposeConfig } from "../core/paths";
 import { getCurrentReleaseDir } from "../core/release";
@@ -49,17 +50,17 @@ export async function compose(
   });
 }
 
-export async function streamComposeResponse(
+export async function startCompose(
   paths: Paths,
   operation: string,
   composeExtraArgs: string[],
 ) {
   if (isOperationRunning()) {
-    return errorResponse("Another operation is in progress", 1);
+    throw new Error("Another operation is in progress");
   }
 
   if (!(await dockerAvailable())) {
-    return errorResponse("Docker unavailable", 3, 503);
+    throw new Error("Docker unavailable");
   }
 
   const releaseDir = getCurrentReleaseDir(paths);
@@ -71,72 +72,53 @@ export async function streamComposeResponse(
   markOperationRunning(operation);
 
   const proc = Bun.spawn({
-    cmd: ["docker", ...composeArgs(paths, releaseDir, composeExtraArgs)],
+    cmd: ["stdbuf", "-oL", "-eL", "docker", ...composeArgs(paths, releaseDir, composeExtraArgs)],
     cwd: releaseDir,
     stdout: "pipe",
     stderr: "pipe",
-    env: process.env,
+    env: { ...process.env, BUILDKIT_PROGRESS: "plain" },
   });
 
-  proc.exited.finally(() => {
-    markOperationIdle();
-  });
-
-  const encoder = new TextEncoder();
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      let isClosed = false;
-      const safeEnqueue = (chunk: any) => {
-        if (!isClosed) {
-          try {
-            controller.enqueue(chunk);
-          } catch {}
+  async function readStream(stream: ReadableStream) {
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          appendOperationLog(decoder.decode(value, { stream: true }));
         }
-      };
-
-      const pOut = proc.stdout
-        .pipeTo(
-          new WritableStream({
-            write(chunk) {
-              safeEnqueue(chunk);
-            },
-          }),
-        )
-        .catch(() => {});
-
-      const pErr = proc.stderr
-        .pipeTo(
-          new WritableStream({
-            write(chunk) {
-              safeEnqueue(chunk);
-            },
-          }),
-        )
-        .catch(() => {});
-
-      const exitCode = await proc.exited;
-
-      await Promise.race([
-        Promise.all([pOut, pErr]),
-        new Promise((r) => setTimeout(r, 3000)),
-      ]);
-
-      if (!isClosed) {
-        isClosed = true;
-        try {
-          controller.enqueue(encoder.encode(`\n[POMELO_EXIT:${exitCode}]\n`));
-        } catch {}
-        try {
-          controller.close();
-        } catch {}
+      } catch (err) {
+        break;
       }
-    },
-    cancel() {},
-  });
+    }
+  }
 
-  return new Response(stream, {
-    headers: { "content-type": "text/plain; charset=utf-8" },
+  readStream(proc.stdout).catch(() => {});
+  readStream(proc.stderr).catch(() => {});
+
+  proc.exited.finally(async () => {
+    try {
+      if (proc.exitCode === 0 && composeExtraArgs.includes("up")) {
+        appendOperationLog("\nRestarting Caddy proxy to apply configuration...\n");
+        const caddyProc = Bun.spawn({
+          cmd: ["stdbuf", "-oL", "-eL", "docker", ...composeArgs(paths, releaseDir, ["restart", "caddy"])],
+          cwd: releaseDir,
+          stdout: "pipe",
+          stderr: "pipe",
+        });
+
+        readStream(caddyProc.stdout).catch(() => {});
+        readStream(caddyProc.stderr).catch(() => {});
+        await caddyProc.exited;
+        markOperationFinished(caddyProc.exitCode ?? 1);
+      } else {
+        markOperationFinished(proc.exitCode ?? 1);
+      }
+    } catch {
+      markOperationFinished(proc.exitCode ?? 1);
+    }
   });
 }
 

@@ -1,9 +1,10 @@
-import { logsResponse, streamComposeResponse } from "../services/compose";
+import { logsResponse, startCompose } from "../services/compose";
 import { getConfigSnapshot, updateConfig, validateConfig } from "../core/config";
 import { errorResponse, json, normalizeError, readJson } from "./http";
 import { getStatus, getStorageUsage } from "../services/status";
-import { streamUninstall } from "../services/uninstall";
+import { startUninstall } from "../services/uninstall";
 import { createUser, deleteUser, listUsers, updateUser } from "../services/users";
+import { isOperationRunning, getOperationState, getLogBuffer, subscribeToLogs } from "../services/operations";
 import type { Paths } from "../core/types";
 
 export function createApiHandler(paths: Paths) {
@@ -17,16 +18,76 @@ export function createApiHandler(paths: Paths) {
         return json({ status: "ok", data: await getStatus(paths) });
       }
 
+      if (method === "GET" && url.pathname === "/api/command/stream") {
+        const state = getOperationState();
+        if (state.status === "idle" && state.exitCode === undefined) {
+          return json({ status: "idle" });
+        }
+
+        const encoder = new TextEncoder();
+        let cleanup: (() => void) | undefined;
+
+        const stream = new ReadableStream({
+          start(controller) {
+            const sendChunk = (text: string) => {
+              try {
+                controller.enqueue(encoder.encode(text));
+              } catch {}
+            };
+
+            // Send past logs immediately
+            const buffer = getLogBuffer();
+            if (buffer) sendChunk(buffer);
+
+            if (!isOperationRunning()) {
+              sendChunk(`\n[POMELO_EXIT:${state.exitCode ?? 0}]\n`);
+              controller.close();
+              return;
+            }
+
+            cleanup = subscribeToLogs({
+              onChunk: (chunk) => sendChunk(chunk),
+              onExit: (code) => {
+                sendChunk(`\n[POMELO_EXIT:${code}]\n`);
+                try { controller.close(); } catch {}
+              },
+            });
+          },
+          cancel() {
+            cleanup?.();
+          },
+        });
+
+        return new Response(stream, {
+          headers: { 
+            "content-type": "text/event-stream; charset=utf-8",
+            "cache-control": "no-cache",
+            "connection": "keep-alive",
+          },
+        });
+      }
+
       if (method === "POST" && url.pathname === "/api/start") {
-        return streamComposeResponse(paths, "start", ["up", "-d", "--build"]);
+        await startCompose(paths, "start", ["up", "-d", "--build"]);
+        return json({ status: "ok" });
       }
 
       if (method === "POST" && url.pathname === "/api/stop") {
-        return streamComposeResponse(paths, "stop", ["stop"]);
+        await startCompose(paths, "stop", ["stop"]);
+        return json({ status: "ok" });
       }
 
       if (method === "POST" && url.pathname === "/api/restart") {
-        return streamComposeResponse(paths, "restart", ["up", "-d", "--build"]);
+        const body = await readJson(req);
+        const target = body?.target; // "all" | "caddy" | "judge"
+        const args = ["up", "-d", "--build"];
+        if (target === "caddy") {
+          args.push("caddy");
+        } else if (target === "judge") {
+          args.push("judge0-server", "judge0-workers");
+        }
+        await startCompose(paths, "restart", args);
+        return json({ status: "ok" });
       }
 
       if (method === "GET" && url.pathname === "/api/logs") {
@@ -39,7 +100,28 @@ export function createApiHandler(paths: Paths) {
 
       if (method === "PUT" && url.pathname === "/api/config") {
         const body = await readJson(req);
-        return json({ status: "ok", data: updateConfig(paths, body) });
+        
+        // Detect what changed before writing
+        const currentConfig = getConfigSnapshot(paths);
+        const appEnvChanged = typeof body.appEnv === "string" && body.appEnv !== currentConfig.appEnv;
+        const configYamlChanged = typeof body.configYaml === "string" && body.configYaml !== currentConfig.configYaml;
+        const caddyfileChanged = typeof body.caddyfile === "string" && body.caddyfile !== currentConfig.caddyfile;
+        const judge0Changed = typeof body.judge0 === "string" && body.judge0 !== currentConfig.judge0;
+
+        updateConfig(paths, body);
+
+        let restartAction: "none" | "all" | "caddy" | "judge" = "none";
+        if (appEnvChanged || configYamlChanged) {
+          restartAction = "all";
+        } else if (caddyfileChanged && judge0Changed) {
+          restartAction = "all";
+        } else if (caddyfileChanged) {
+          restartAction = "caddy";
+        } else if (judge0Changed) {
+          restartAction = "judge";
+        }
+
+        return json({ status: "ok", data: { saved: true, restartAction } });
       }
 
       if (method === "POST" && url.pathname === "/api/config/validate") {
@@ -47,8 +129,13 @@ export function createApiHandler(paths: Paths) {
       }
 
       if (method === "POST" && url.pathname === "/api/uninstall") {
+        if (isOperationRunning()) {
+          return errorResponse("Another operation is in progress", 1);
+        }
         const body = await readJson(req);
-        return streamUninstall(paths, body.mode);
+        // Start uninstall in the background
+        startUninstall(paths, body.mode).catch(console.error);
+        return json({ status: "ok" });
       }
 
       if (method === "GET" && url.pathname === "/api/storage") {

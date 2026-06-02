@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, streamRequest } from "@/api/index.js";
+import { api } from "@/api/index.js";
 import type { Status, ContainerInfo } from "@/types.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,6 @@ export default function ContainersPage() {
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
-  const [actionLog, setActionLog] = useState<string | null>(null);
 
   async function refresh() {
     setLoading(true);
@@ -23,17 +22,13 @@ export default function ContainersPage() {
 
   useEffect(() => { refresh(); }, []);
 
-  async function runAction(action: (onChunk: (text: string) => void) => Promise<{ output: string; exitCode: number }>, label: string) {
+  async function runAction(action: () => Promise<any>) {
     setRunning(true);
-    setActionLog(`Running: ${label}...\n`);
     try {
-      const result = await action((chunk) => {
-        setActionLog((prev) => (prev ?? "") + chunk);
-      });
-      setActionLog((prev) => (prev ?? "") + `\n[${result.exitCode === 0 ? "Done" : "Failed"}]`);
+      await action();
       await refresh();
     } catch (err: any) {
-      setActionLog((prev) => (prev ?? "") + `\nError: ${err.message}`);
+      console.error(err);
     }
     setRunning(false);
   }
@@ -57,7 +52,7 @@ export default function ContainersPage() {
       {/* Actions */}
       <div className="flex items-center gap-3">
         <Button
-          onClick={() => runAction((onChunk) => api.start(onChunk), "Start All")}
+          onClick={() => runAction(() => api.start())}
           disabled={running}
           size="sm"
         >
@@ -66,7 +61,7 @@ export default function ContainersPage() {
         </Button>
         <Button
           variant="outline"
-          onClick={() => runAction((onChunk) => api.stop(onChunk), "Stop All")}
+          onClick={() => runAction(() => api.stop())}
           disabled={running}
           size="sm"
         >
@@ -75,7 +70,7 @@ export default function ContainersPage() {
         </Button>
         <Button
           variant="outline"
-          onClick={() => runAction((onChunk) => api.restart(onChunk), "Restart All")}
+          onClick={() => runAction(() => api.restart())}
           disabled={running}
           size="sm"
         >
@@ -133,21 +128,6 @@ export default function ContainersPage() {
         </Table>
       )}
 
-      {/* Action Log */}
-      {actionLog && (
-        <>
-          <Separator />
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Output</h3>
-              <Button variant="ghost" size="sm" onClick={() => setActionLog(null)}>Clear</Button>
-            </div>
-            <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-64 whitespace-pre-wrap">
-              {actionLog}
-            </pre>
-          </div>
-        </>
-      )}
 
       {/* Docker Status */}
       <Separator />

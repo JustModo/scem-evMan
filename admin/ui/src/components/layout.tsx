@@ -1,6 +1,6 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { api } from "@/api/index.js";
+import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { api, connectCommandStream } from "@/api/index.js";
 import type { Status } from "@/types.js";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -12,7 +12,51 @@ import {
   ScrollText,
   Users,
   Rocket,
+  Loader2,
 } from "lucide-react";
+
+function CommandBanner() {
+  const [isRunning, setIsRunning] = useState(false);
+  const streamRef = useRef(false);
+
+  useEffect(() => {
+    function checkStream() {
+      if (streamRef.current) return;
+      streamRef.current = true;
+      connectCommandStream(
+        () => {
+          setIsRunning(true);
+        },
+        () => {
+          setIsRunning(false);
+          streamRef.current = false;
+        },
+        () => {
+          setIsRunning(false);
+          streamRef.current = false;
+        }
+      );
+    }
+
+    checkStream();
+    window.addEventListener("command-started", checkStream);
+    return () => window.removeEventListener("command-started", checkStream);
+  }, []);
+
+  if (!isRunning) return null;
+
+  return (
+    <div className="bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-500 px-8 py-3 flex items-center justify-between text-sm shrink-0 shadow-sm z-10">
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="font-medium tracking-tight">System operation in progress...</span>
+      </div>
+      <Link to="/logs" className="hover:text-emerald-400 font-medium bg-emerald-500/20 px-3 py-1 rounded-md transition-colors">
+        View Live Logs
+      </Link>
+    </div>
+  );
+}
 
 const NAV_GROUPS = [
   {
@@ -120,6 +164,7 @@ export default function Layout() {
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-background">
+        <CommandBanner />
         <header className="shrink-0 px-8 py-5 border-b border-border flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold tracking-tight">{pageTitle}</h2>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, streamRequest } from "@/api/index.js";
+import { api } from "@/api/index.js";
 import type { ConfigSnapshot } from "@/types.js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,6 @@ export default function SetupPage() {
   const [domain, setDomain] = useState("localhost");
   const [protocol, setProtocol] = useState<"http" | "https">("http");
   const [domainSaving, setDomainSaving] = useState(false);
-
-  // Status/Log state
-  const [actionLog, setActionLog] = useState<string | null>(null);
 
   useEffect(() => {
     loadConfig();
@@ -110,12 +107,10 @@ export default function SetupPage() {
   }
 
   async function performRestart() {
-    setActionLog("Restarting containers to apply changes...\n");
     try {
-      const result = await streamRequest("/restart", { method: "POST" });
-      setActionLog((prev) => (prev ?? "") + result.output + `\n[${result.exitCode === 0 ? "Done" : "Failed"}]`);
+      await api.restart("all");
     } catch (err: any) {
-      setActionLog((prev) => (prev ?? "") + `\nError: ${err.message}`);
+      console.error(err);
     }
   }
 
@@ -128,7 +123,7 @@ export default function SetupPage() {
       await loadConfig();
       await performRestart();
     } catch (err: any) {
-      setActionLog(`Error: ${err.message}`);
+      console.error(err);
     }
     setMongoSaving(false);
   }
@@ -142,7 +137,7 @@ export default function SetupPage() {
       await loadConfig();
       await performRestart();
     } catch (err: any) {
-      setActionLog(`Error: ${err.message}`);
+      console.error(err);
     }
     setJudgeSaving(false);
   }
@@ -156,7 +151,7 @@ export default function SetupPage() {
       await loadConfig();
       await performRestart();
     } catch (err: any) {
-      setActionLog(`Error: ${err.message}`);
+      console.error(err);
     }
     setDomainSaving(false);
   }
@@ -170,15 +165,7 @@ export default function SetupPage() {
         </p>
       </div>
 
-      {actionLog && (
-        <div className="bg-muted border rounded-md p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold uppercase tracking-wide">Deployment Output</h4>
-            <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => setActionLog(null)}>Dismiss</Button>
-          </div>
-          <pre className="text-xs font-mono overflow-auto max-h-48 whitespace-pre-wrap">{actionLog}</pre>
-        </div>
-      )}
+
 
       <div className="space-y-10">
         {/* MongoDB Section */}
