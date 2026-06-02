@@ -34,24 +34,29 @@ export async function handleStreamingCommand(
 ) {
   const url = `${API_BASE}${path}`;
   try {
-    const res = await fetch(url, {
+    let res = await fetch(url, {
       method,
       headers: body ? { "Content-Type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const contentType = res.headers.get("content-type") || "";
+    let contentType = res.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
       const payload = await res.json();
       if (!res.ok) {
         exitWithError(payload?.error || "Request failed", payload?.code || 1);
-      } else {
-        logSuccess(successMessage);
+        return;
       }
-      return;
-    }
-
-    if (!res.ok) {
+      
+      // Successfully initiated the operation. Now stream from /api/command/stream
+      res = await fetch(`${API_BASE}/api/command/stream`);
+      contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        // Returned { status: "idle" } or similar, meaning nothing to stream
+        logSuccess(successMessage);
+        return;
+      }
+    } else if (!res.ok) {
       exitWithError(
         (await res.text()) || `Request failed (${res.status})`,
         1,
