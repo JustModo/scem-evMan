@@ -66,7 +66,7 @@ A simple contest platform with a Next.js frontend (`client`), an Express backend
   - Where: `root`, `server`, `client`
   - What: MongoDB connection string
   - Local example: `mongodb://localhost:27017/pomelo`
-  - Docker example: `mongodb://mongo:27017/pomelo`
+  - Docker example: `mongodb://localhost:27017/pomelo`
 
 - JUDGE0_URL
 

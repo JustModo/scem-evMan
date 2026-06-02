@@ -1,5 +1,5 @@
 import { request } from "./client.js";
-import type { ConfigSnapshot, CreateUserPayload, Status, StorageUsage, UpdateUserPayload, User } from "../types.js";
+import type { ConfigSnapshot, CreateUserPayload, Status, StorageUsage, UpdateUserPayload, User, PaginatedUsers } from "../types.js";
 
 export const api = {
   // Health & Status
@@ -34,7 +34,13 @@ export const api = {
     streamRequest("/uninstall", { method: "POST", body: JSON.stringify({ mode }) }),
 
   // Users
-  listUsers: () => request<User[]>("/users"),
+  listUsers: (params?: { role?: string; page?: number; limit?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.role) query.set("role", params.role);
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.limit) query.set("limit", String(params.limit));
+    return request<PaginatedUsers>(`/users?${query.toString()}`);
+  },
   createUser: (data: CreateUserPayload) =>
     request<User>("/users", { method: "POST", body: JSON.stringify(data) }),
   updateUser: (id: string, data: UpdateUserPayload) =>

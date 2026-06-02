@@ -56,7 +56,13 @@ export function createApiHandler(paths: Paths) {
       }
 
       if (method === "GET" && url.pathname === "/api/users") {
-        return json({ status: "ok", data: await listUsers(paths) });
+        const role = url.searchParams.get("role") || undefined;
+        const page = Number(url.searchParams.get("page") || "1");
+        const limit = Number(url.searchParams.get("limit") || "10");
+        return json({
+          status: "ok",
+          data: await listUsers(paths, { role, page, limit }),
+        });
       }
 
       if (method === "POST" && url.pathname === "/api/users") {

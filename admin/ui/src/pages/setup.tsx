@@ -13,7 +13,7 @@ export default function SetupPage() {
 
   // Form states
   const [mongoMode, setMongoMode] = useState<"self" | "external">("self");
-  const [mongoUri, setMongoUri] = useState("mongodb://mongo:27017/pomelo");
+  const [mongoUri, setMongoUri] = useState("mongodb://localhost:27017/pomelo");
   const [mongoSaving, setMongoSaving] = useState(false);
 
   const [judgeMode, setJudgeMode] = useState<"self" | "external">("self");
@@ -38,7 +38,7 @@ export default function SetupPage() {
       const env = parseEnv(c.appEnv);
       
       if (env.MONGODB_URI) {
-        const isSelf = env.MONGODB_URI.includes("mongo:27017");
+        const isSelf = env.MONGODB_URI.includes("localhost:27017") || env.MONGODB_URI.includes("mongo:27017");
         setMongoMode(isSelf ? "self" : "external");
         setMongoUri(env.MONGODB_URI);
       }
@@ -122,7 +122,7 @@ export default function SetupPage() {
   async function handleSaveMongo() {
     setMongoSaving(true);
     try {
-      const finalMongoUri = mongoMode === "self" ? "mongodb://mongo:27017/pomelo" : mongoUri;
+      const finalMongoUri = mongoMode === "self" ? "mongodb://localhost:27017/pomelo" : mongoUri;
       const newEnv = updateEnvContent(config?.appEnv || "", { MONGODB_URI: finalMongoUri });
       await api.updateConfig({ appEnv: newEnv });
       await loadConfig();

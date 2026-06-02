@@ -9,12 +9,24 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash2, Shield, User as UserIcon, RefreshCw } from "lucide-react";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [activeTab, setActiveTab] = useState<string>("admin");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Paginated states
+  const [adminPage, setAdminPage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
+  
+  const [adminData, setAdminData] = useState<{ users: User[]; total: number; totalPages: number }>({
+    users: [], total: 0, totalPages: 1
+  });
+  const [userData, setUserData] = useState<{ users: User[]; total: number; totalPages: number }>({
+    users: [], total: 0, totalPages: 1
+  });
 
   // Create dialog
   const [showCreate, setShowCreate] = useState(false);
@@ -22,36 +34,95 @@ export default function UsersPage() {
     name: "", email: "", password: "", role: "user",
   });
   const [creating, setCreating] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string; name?: string } | null>(null);
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  async function refresh() {
+  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  async function loadTab(role: "admin" | "user", page: number) {
     setLoading(true);
     setError(null);
     try {
-      setUsers(await api.listUsers());
+      const data = await api.listUsers({ role, page, limit: 10 });
+      if (role === "admin") {
+        setAdminData({ users: data.users, total: data.total, totalPages: data.totalPages });
+      } else {
+        setUserData({ users: data.users, total: data.total, totalPages: data.totalPages });
+      }
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    loadTab(activeTab as "admin" | "user", activeTab === "admin" ? adminPage : userPage);
+  }, [activeTab, adminPage, userPage]);
+
+  function refreshCurrent() {
+    loadTab(activeTab as "admin" | "user", activeTab === "admin" ? adminPage : userPage);
+  }
+
+  function validateForm(): boolean {
+    const errors: { email?: string; password?: string; name?: string } = {};
+
+    if (!createForm.email.trim()) {
+      errors.email = "Email is required";
+    } else if (createForm.email.length > 254) {
+      errors.email = "Email must be 254 characters or less";
+    } else if (!EMAIL_REGEX.test(createForm.email)) {
+      errors.email = "Invalid email format";
+    }
+
+    if (!createForm.password) {
+      errors.password = "Password is required";
+    } else if (createForm.password.length < 6 || createForm.password.length > 72) {
+      errors.password = "Password must be between 6 and 72 characters";
+    }
+
+    if (createForm.name && createForm.name.length > 100) {
+      errors.name = "Name must be 100 characters or less";
+    }
+
+    setValidationErrors(Object.keys(errors).length > 0 ? errors : null);
+    return Object.keys(errors).length === 0;
+  }
 
   async function handleCreate() {
+    if (!validateForm()) return;
     setCreating(true);
     setError(null);
     try {
       await api.createUser(createForm);
       setShowCreate(false);
       setCreateForm({ name: "", email: "", password: "", role: "user" });
-      await refresh();
+      setValidationErrors(null);
+      
+      // Load first page of the role we just created
+      if (createForm.role === "admin") {
+        setAdminPage(1);
+        if (activeTab === "admin") {
+          loadTab("admin", 1);
+        } else {
+          setActiveTab("admin");
+        }
+      } else {
+        setUserPage(1);
+        if (activeTab === "user") {
+          loadTab("user", 1);
+        } else {
+          setActiveTab("user");
+        }
+      }
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   }
 
   async function handleDelete() {
@@ -61,22 +132,120 @@ export default function UsersPage() {
     try {
       await api.deleteUser(deleteTarget._id);
       setDeleteTarget(null);
-      await refresh();
+      refreshCurrent();
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setDeleting(false);
     }
-    setDeleting(false);
   }
 
   async function handleRoleChange(user: User, newRole: "admin" | "user") {
     setError(null);
     try {
       await api.updateUser(user._id, { role: newRole });
-      await refresh();
+      refreshCurrent();
     } catch (err: any) {
       setError(err.message);
     }
   }
+
+  const renderPagination = (currentPage: number, totalPages: number, setPage: (p: number) => void) => {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-xs text-muted-foreground">
+          Page {currentPage} of {totalPages}
+        </p>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(Math.min(currentPage + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTable = (usersList: User[]) => {
+    if (usersList.length === 0) {
+      return (
+        <div className="py-12 text-center">
+          <p className="text-muted-foreground">No users found in this section.</p>
+        </div>
+      );
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="w-[100px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {usersList.map((user) => (
+            <TableRow key={user._id}>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  {user.role === "admin" ? (
+                    <Shield className="h-4 w-4 text-foreground" />
+                  ) : (
+                    <UserIcon className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  {user.name || "—"}
+                </div>
+              </TableCell>
+              <TableCell className="font-mono text-xs">{user.email}</TableCell>
+              <TableCell>
+                <Select
+                  value={user.role}
+                  onValueChange={(value) => handleRoleChange(user, value as "admin" | "user")}
+                >
+                  <SelectTrigger className="w-24 h-7 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="user">User</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDeleteTarget(user)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -86,12 +255,12 @@ export default function UsersPage() {
           Manage admin and user accounts. Users are stored in MongoDB.
         </p>
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={refresh} disabled={loading}>
+          <Button variant="ghost" size="sm" onClick={refreshCurrent} disabled={loading}>
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button size="sm" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
-            Add User
+            Add Account
           </Button>
         </div>
       </div>
@@ -104,71 +273,34 @@ export default function UsersPage() {
 
       <Separator />
 
-      {/* Users Table */}
-      {loading ? (
-        <p className="text-sm text-muted-foreground py-8 text-center">Loading users...</p>
-      ) : users.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-muted-foreground">No users found.</p>
-          <p className="text-sm text-muted-foreground mt-1">Create an admin account to get started.</p>
-        </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user._id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {user.role === "admin" ? (
-                      <Shield className="h-4 w-4 text-foreground" />
-                    ) : (
-                      <UserIcon className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    {user.name || "—"}
-                  </div>
-                </TableCell>
-                <TableCell className="font-mono text-xs">{user.email}</TableCell>
-                <TableCell>
-                  <Select
-                    value={user.role}
-                    onValueChange={(value) => handleRoleChange(user, value as "admin" | "user")}
-                  >
-                    <SelectTrigger className="w-24 h-7 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="user">User</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setDeleteTarget(user)}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="admin">Administrators ({adminData.total})</TabsTrigger>
+          <TabsTrigger value="user">Regular Users ({userData.total})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="admin">
+          {loading ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">Loading administrators...</p>
+          ) : (
+            <>
+              {renderTable(adminData.users)}
+              {renderPagination(adminPage, adminData.totalPages, setAdminPage)}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="user">
+          {loading ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">Loading users...</p>
+          ) : (
+            <>
+              {renderTable(userData.users)}
+              {renderPagination(userPage, userData.totalPages, setUserPage)}
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Create User Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
@@ -184,9 +316,16 @@ export default function UsersPage() {
               <Input
                 id="new-name"
                 value={createForm.name}
-                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                onChange={(e) => {
+                  setCreateForm({ ...createForm, name: e.target.value });
+                  if (validationErrors?.name) setValidationErrors({ ...validationErrors, name: undefined });
+                }}
                 placeholder="John Doe"
+                className={validationErrors?.name ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {validationErrors?.name && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-email">Email</Label>
@@ -194,9 +333,16 @@ export default function UsersPage() {
                 id="new-email"
                 type="email"
                 value={createForm.email}
-                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                onChange={(e) => {
+                  setCreateForm({ ...createForm, email: e.target.value });
+                  if (validationErrors?.email) setValidationErrors({ ...validationErrors, email: undefined });
+                }}
                 placeholder="admin@example.com"
+                className={validationErrors?.email ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {validationErrors?.email && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.email}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-password">Password</Label>
@@ -204,9 +350,16 @@ export default function UsersPage() {
                 id="new-password"
                 type="password"
                 value={createForm.password}
-                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                onChange={(e) => {
+                  setCreateForm({ ...createForm, password: e.target.value });
+                  if (validationErrors?.password) setValidationErrors({ ...validationErrors, password: undefined });
+                }}
                 placeholder="Minimum 6 characters"
+                className={validationErrors?.password ? "border-destructive focus-visible:ring-destructive" : ""}
               />
+              {validationErrors?.password && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.password}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-role">Role</Label>

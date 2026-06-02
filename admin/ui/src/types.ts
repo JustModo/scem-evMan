@@ -64,3 +64,11 @@ export type UpdateUserPayload = {
   password?: string;
   role?: "admin" | "user";
 };
+
+export type PaginatedUsers = {
+  users: User[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};

@@ -464,7 +464,7 @@ if [[ ! -s "$APP_ROOT/config/app.env" ]]; then
 DOMAIN=localhost
 PROTOCOL=http
 AUTH_SECRET=${AUTH_SECRET}
-MONGODB_URI=mongodb://mongo:27017/pomelo
+MONGODB_URI=mongodb://localhost:27017/pomelo
 JUDGE0_URL=http://judge0-server:2358
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 REDIS_PASSWORD=${REDIS_PASSWORD}
