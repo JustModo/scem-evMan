@@ -4,7 +4,7 @@ export default function Footer() {
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "unknown";
 
   return (
-    <footer className="w-full border-t border-border/40 mt-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <footer className="w-full border-t border-border/40 mt-16 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">

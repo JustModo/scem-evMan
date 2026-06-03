@@ -114,9 +114,12 @@ export default function Layout() {
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
-        <div className="px-5 py-5">
-          <h1 className="text-lg font-bold tracking-tight">Pomelo</h1>
-          <p className="text-xs text-sidebar-foreground/50 mt-0.5">Admin Panel</p>
+        <div className="px-5 py-5 flex items-center gap-3">
+          <img src="/icon.svg" alt="Pomelo Icon" className="w-8 h-8" />
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">Pomelo</h1>
+            <p className="text-xs text-sidebar-foreground/50 mt-0.5">Admin Panel</p>
+          </div>
         </div>
 
         <Separator className="bg-sidebar-muted" />
