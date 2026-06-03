@@ -1,6 +1,7 @@
 import { existsSync, rmSync, unlinkSync } from "fs";
 import { join } from "path";
-import { composeArgs } from "./compose";
+import { ComposeCommand } from "./compose-command";
+import { readStream } from "./compose";
 import { getCurrentReleaseDir } from "../core/release";
 import { run } from "../core/run";
 import type { Paths } from "../core/types";
@@ -22,30 +23,14 @@ export async function startUninstall(paths: Paths, mode = "default") {
 
   if (currentDir && existsSync(currentDir)) {
     appendOperationLog("Stopping Docker services...\n");
+    const desc = ComposeCommand.forTeardown(paths).down();
     const proc = Bun.spawn({
-      cmd: ["stdbuf", "-oL", "-eL", "docker", ...composeArgs(paths, currentDir, ["down", "-v"])],
-      cwd: currentDir,
+      cmd: ["stdbuf", "-oL", "-eL", ...desc.cmd],
+      cwd: desc.cwd,
       stdout: "pipe",
       stderr: "pipe",
-      env: process.env,
+      env: desc.env,
     });
-
-    const decoder = new TextDecoder();
-
-    async function readStream(stream: ReadableStream) {
-      const reader = stream.getReader();
-      while (true) {
-        try {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (value) {
-            appendOperationLog(decoder.decode(value, { stream: true }));
-          }
-        } catch (err) {
-          break;
-        }
-      }
-    }
 
     readStream(proc.stdout).catch(() => {});
     readStream(proc.stderr).catch(() => {});

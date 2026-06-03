@@ -88,34 +88,25 @@ export default function SetupPage() {
     return newLines.join("\n");
   }
 
-  function buildCaddyfile(dom: string, proto: string) {
-    if (proto === "https") {
-      return [
-        `https://${dom} {`,
-        "  encode zstd gzip",
-        "  reverse_proxy client:3000",
-        "}",
-        "",
-      ].join("\n");
-    }
-    return [
-      "{",
-      "  auto_https off",
-      "}",
-      "",
-      `http://${dom}:80 {`,
-      "  encode zstd gzip",
-      "  reverse_proxy client:3000",
-      "}",
-      "",
-    ].join("\n");
-  }
-
-  async function performRestart() {
-    try {
-      await api.restart("all");
-    } catch (err: any) {
-      console.error(err);
+  /**
+   * Apply the restart action returned by the server after a config update.
+   * Maps server-side restartAction values to the appropriate API call.
+   */
+  async function applyRestartAction(restartAction: string) {
+    switch (restartAction) {
+      case "restart-all":
+        await api.restart("all");
+        break;
+      case "reload-caddy":
+        await api.restart("caddy");
+        break;
+      case "restart-caddy":
+        await api.restart("caddy-restart");
+        break;
+      case "restart-judge":
+        await api.restart("judge");
+        break;
+      // "none" — nothing to do
     }
   }
 
@@ -137,9 +128,9 @@ export default function SetupPage() {
         if (!doc.infrastructure.database) doc.infrastructure.database = {};
         doc.infrastructure.database.mode = mongoMode;
       });
-      await api.updateConfig({ appEnv: newEnv, configYaml: newYaml });
+      const result = await api.updateConfig({ appEnv: newEnv, configYaml: newYaml });
       await loadConfig();
-      await performRestart();
+      await applyRestartAction((result as any)?.restartAction ?? "restart-all");
     } catch (err: any) {
       console.error(err);
     }
@@ -155,9 +146,9 @@ export default function SetupPage() {
         if (!doc.infrastructure.judge0) doc.infrastructure.judge0 = {};
         doc.infrastructure.judge0.mode = judgeMode;
       });
-      await api.updateConfig({ appEnv: newEnv, configYaml: newYaml });
+      const result = await api.updateConfig({ appEnv: newEnv, configYaml: newYaml });
       await loadConfig();
-      await performRestart();
+      await applyRestartAction((result as any)?.restartAction ?? "restart-all");
     } catch (err: any) {
       console.error(err);
     }
@@ -172,10 +163,10 @@ export default function SetupPage() {
         doc.app.domain = domain;
         doc.app.protocol = protocol;
       });
-      const newCaddy = buildCaddyfile(domain, protocol);
-      await api.updateConfig({ configYaml: newYaml, caddyfile: newCaddy });
+      // Server generates Caddyfile from configYaml automatically
+      const result = await api.updateConfig({ configYaml: newYaml });
       await loadConfig();
-      await performRestart();
+      await applyRestartAction((result as any)?.restartAction ?? "restart-all");
     } catch (err: any) {
       console.error(err);
     }

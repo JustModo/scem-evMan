@@ -1,11 +1,62 @@
+import YAML from "yaml";
 import { logsResponse, startCompose } from "../services/compose";
-import { getConfigSnapshot, updateConfig, validateConfig } from "../core/config";
+import { ComposeCommand } from "../services/compose-command";
+import { getConfigSnapshot, updateConfig, validateConfig, parseConfigYaml, ensureConfigDefaults } from "../core/config";
+import { getCurrentReleaseDir } from "../core/release";
 import { errorResponse, json, normalizeError, readJson } from "./http";
 import { getStatus, getStorageUsage } from "../services/status";
 import { startUninstall } from "../services/uninstall";
 import { createUser, deleteUser, listUsers, updateUser } from "../services/users";
 import { isOperationRunning, getOperationState, getLogBuffer, subscribeToLogs } from "../services/operations";
 import type { Paths } from "../core/types";
+
+/**
+ * Determine the correct restart action and Caddy handling after config changes.
+ */
+function determineRestartAction(
+  paths: Paths,
+  body: any,
+  currentConfig: ReturnType<typeof getConfigSnapshot>,
+): "none" | "restart-all" | "reload-caddy" | "restart-caddy" | "restart-judge" {
+  const appEnvChanged = typeof body.appEnv === "string" && body.appEnv !== currentConfig.appEnv;
+  const configYamlChanged = typeof body.configYaml === "string" && body.configYaml !== currentConfig.configYaml;
+  const caddyfileChanged = typeof body.caddyfile === "string" && body.caddyfile !== currentConfig.caddyfile;
+  const judge0Changed = typeof body.judge0 === "string" && body.judge0 !== currentConfig.judge0;
+
+  // If core app config or env changed, full restart is needed
+  if (appEnvChanged || configYamlChanged) {
+    // Check if ports changed in configYaml — Caddy needs a container restart for port changes
+    if (configYamlChanged) {
+      const oldCfg = parseConfigYaml(paths) || {};
+      let newCfg: any = {};
+      try {
+        newCfg = YAML.parse(body.configYaml) || {};
+      } catch {}
+
+      const oldHttpPort = oldCfg.ports?.caddyHttp ?? 80;
+      const oldHttpsPort = oldCfg.ports?.caddyHttps ?? 443;
+      const newHttpPort = newCfg.ports?.caddyHttp ?? 80;
+      const newHttpsPort = newCfg.ports?.caddyHttps ?? 443;
+
+      if (oldHttpPort !== newHttpPort || oldHttpsPort !== newHttpsPort) {
+        return "restart-all"; // Port changes need full container restart
+      }
+    }
+    return "restart-all";
+  }
+
+  if (caddyfileChanged && judge0Changed) {
+    return "restart-all";
+  }
+  if (caddyfileChanged) {
+    return "reload-caddy";
+  }
+  if (judge0Changed) {
+    return "restart-judge";
+  }
+
+  return "none";
+}
 
 export function createApiHandler(paths: Paths) {
   return async function handleApi(req: Request, url: URL, method: string) {
@@ -68,25 +119,47 @@ export function createApiHandler(paths: Paths) {
       }
 
       if (method === "POST" && url.pathname === "/api/start") {
-        await startCompose(paths, "start", ["up", "-d", "--build"]);
+        ensureConfigDefaults(paths, getCurrentReleaseDir(paths));
+        const compose = ComposeCommand.from(paths);
+        await startCompose(paths, "start", [
+          { label: "Stopping existing containers...", descriptor: ComposeCommand.forTeardown(paths).downKeepVolumes() },
+          { descriptor: compose.up() },
+        ]);
         return json({ status: "ok" });
       }
 
       if (method === "POST" && url.pathname === "/api/stop") {
-        await startCompose(paths, "stop", ["stop"]);
+        await startCompose(paths, "stop", [
+          { descriptor: ComposeCommand.forTeardown(paths).stop() },
+        ]);
         return json({ status: "ok" });
       }
 
       if (method === "POST" && url.pathname === "/api/restart") {
         const body = await readJson(req);
-        const target = body?.target; // "all" | "caddy" | "judge"
-        const args = ["up", "-d", "--build"];
+        const target = body?.target; // "all" | "caddy" | "caddy-restart" | "judge"
+        const compose = ComposeCommand.from(paths);
+
         if (target === "caddy") {
-          args.push("caddy");
+          await startCompose(paths, "restart", [
+            { descriptor: compose.reloadCaddy() },
+          ]);
+        } else if (target === "caddy-restart") {
+          await startCompose(paths, "restart", [
+            { descriptor: compose.restartCaddy() },
+          ]);
         } else if (target === "judge") {
-          args.push("judge0-server", "judge0-workers");
+          await startCompose(paths, "restart", [
+            { descriptor: compose.restartServices("judge0-server", "judge0-workers") },
+          ]);
+        } else {
+          // "all" or unspecified — down then up with caddy reload
+          ensureConfigDefaults(paths, getCurrentReleaseDir(paths));
+          await startCompose(paths, "restart", [
+            { label: "Stopping existing containers...", descriptor: ComposeCommand.forTeardown(paths).downKeepVolumes() },
+            { descriptor: compose.up() },
+          ]);
         }
-        await startCompose(paths, "restart", args);
         return json({ status: "ok" });
       }
 
@@ -100,26 +173,10 @@ export function createApiHandler(paths: Paths) {
 
       if (method === "PUT" && url.pathname === "/api/config") {
         const body = await readJson(req);
-        
-        // Detect what changed before writing
         const currentConfig = getConfigSnapshot(paths);
-        const appEnvChanged = typeof body.appEnv === "string" && body.appEnv !== currentConfig.appEnv;
-        const configYamlChanged = typeof body.configYaml === "string" && body.configYaml !== currentConfig.configYaml;
-        const caddyfileChanged = typeof body.caddyfile === "string" && body.caddyfile !== currentConfig.caddyfile;
-        const judge0Changed = typeof body.judge0 === "string" && body.judge0 !== currentConfig.judge0;
+        const restartAction = determineRestartAction(paths, body, currentConfig);
 
         updateConfig(paths, body);
-
-        let restartAction: "none" | "all" | "caddy" | "judge" = "none";
-        if (appEnvChanged || configYamlChanged) {
-          restartAction = "all";
-        } else if (caddyfileChanged && judge0Changed) {
-          restartAction = "all";
-        } else if (caddyfileChanged) {
-          restartAction = "caddy";
-        } else if (judge0Changed) {
-          restartAction = "judge";
-        }
 
         return json({ status: "ok", data: { saved: true, restartAction } });
       }

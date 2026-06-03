@@ -174,20 +174,28 @@ export function buildCaddyfile(dom: string, proto: string) {
   if (proto === "https") {
     return [
       `https://${dom} {`,
-      "  encode zstd gzip",
-      "  reverse_proxy client:3000",
+      "\tencode zstd gzip",
+      "\tlog {",
+      "\t\toutput file /var/log/caddy/access.log",
+      "\t}",
+      "",
+      "\treverse_proxy client:3000",
       "}",
       "",
     ].join("\n");
   }
   return [
     "{",
-    "  auto_https off",
+    "\tauto_https off",
     "}",
     "",
     `http://${dom}:80 {`,
-    "  encode zstd gzip",
-    "  reverse_proxy client:3000",
+    "\tencode zstd gzip",
+    "\tlog {",
+    "\t\toutput file /var/log/caddy/access.log",
+    "\t}",
+    "",
+    "\treverse_proxy client:3000",
     "}",
     "",
   ].join("\n");

@@ -1,15 +1,13 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { errorResponse } from "../web/http";
 import {
   isOperationRunning,
   markOperationFinished,
   markOperationRunning,
   appendOperationLog,
 } from "./operations";
-import { getComposeConfig } from "../core/paths";
-import { getCurrentReleaseDir } from "../core/release";
-import { ensureConfigDefaults, parseConfigYaml } from "../core/config";
+import { ComposeCommand } from "./compose-command";
+import type { CommandDescriptor } from "./compose-command";
 import { run } from "../core/run";
 import type { Paths } from "../core/types";
 
@@ -18,66 +16,47 @@ export async function dockerAvailable() {
   return res.code === 0;
 }
 
-export function composeArgs(
-  paths: Paths,
-  releaseDir: string,
-  extraArgs: string[],
-) {
-  const cfg = getComposeConfig();
-  return [
-    "compose",
-    "--project-name",
-    cfg.project,
-    "--env-file",
-    paths.envFile,
-    "-f",
-    cfg.app,
-    "-f",
-    cfg.judge,
-    "--project-directory",
-    releaseDir,
-    ...extraArgs,
-  ];
+/**
+ * Read a Bun subprocess stream and pipe chunks into the operation log.
+ * Shared by startCompose and startUninstall.
+ */
+export async function readStream(stream: ReadableStream) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    try {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        appendOperationLog(decoder.decode(value, { stream: true }));
+      }
+    } catch {
+      break;
+    }
+  }
 }
 
-function getComposeEnv(paths: Paths) {
-  const cfgYaml = parseConfigYaml(paths) || {};
-  const caddyHttp = cfgYaml.ports?.caddyHttp ?? 80;
-  const caddyHttps = cfgYaml.ports?.caddyHttps ?? 443;
-  const dbMode = cfgYaml.infrastructure?.database?.mode ?? "internal";
-  const judgeMode = cfgYaml.infrastructure?.judge0?.mode ?? "internal";
-  const domain = cfgYaml.app?.domain ?? "localhost";
-  const protocol = cfgYaml.app?.protocol ?? "http";
-
-  const profiles: string[] = [];
-  if (dbMode === "internal") profiles.push("internal-db");
-  if (judgeMode === "internal") profiles.push("internal-judge0");
-
-  return {
-    ...process.env,
-    DOMAIN: domain,
-    PROTOCOL: protocol,
-    CADDY_HTTP_PORT: String(caddyHttp),
-    CADDY_HTTPS_PORT: String(caddyHttps),
-    COMPOSE_PROFILES: profiles.join(","),
-  };
-}
-
-export async function compose(
-  paths: Paths,
-  releaseDir: string,
-  extraArgs: string[],
-) {
-  return run("docker", composeArgs(paths, releaseDir, extraArgs), {
-    cwd: releaseDir,
-    env: getComposeEnv(paths),
+/**
+ * Run a compose command synchronously and return { code, stdout, stderr }.
+ */
+export async function runCompose(desc: CommandDescriptor) {
+  return run(desc.cmd[0], desc.cmd.slice(1), {
+    cwd: desc.cwd,
+    env: desc.env,
   });
 }
 
+/**
+ * Run a sequence of compose commands in the background with streaming output.
+ *
+ * @param operation  Human-readable name (e.g. "start", "restart")
+ * @param steps      Sequential command descriptors with labels.
+ *                   Execution stops at the first failure.
+ */
 export async function startCompose(
   paths: Paths,
   operation: string,
-  composeExtraArgs: string[],
+  steps: { label?: string; descriptor: CommandDescriptor }[],
 ) {
   if (isOperationRunning()) {
     throw new Error("Another operation is in progress");
@@ -87,64 +66,36 @@ export async function startCompose(
     throw new Error("Docker unavailable");
   }
 
-  const releaseDir = getCurrentReleaseDir(paths);
-
-  if (operation === "start" || operation === "restart") {
-    ensureConfigDefaults(paths, releaseDir);
-  }
+  if (!steps.length) return;
 
   markOperationRunning(operation);
 
-  const proc = Bun.spawn({
-    cmd: ["stdbuf", "-oL", "-eL", "docker", ...composeArgs(paths, releaseDir, composeExtraArgs)],
-    cwd: releaseDir,
-    stdout: "pipe",
-    stderr: "pipe",
-    env: { ...getComposeEnv(paths), BUILDKIT_PROGRESS: "plain" },
-  });
-
-  async function readStream(stream: ReadableStream) {
-    const reader = stream.getReader();
-    const decoder = new TextDecoder();
-    while (true) {
-      try {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (value) {
-          appendOperationLog(decoder.decode(value, { stream: true }));
-        }
-      } catch (err) {
-        break;
-      }
-    }
-  }
-
-  readStream(proc.stdout).catch(() => {});
-  readStream(proc.stderr).catch(() => {});
-
-  proc.exited.finally(async () => {
+  // Run steps sequentially in background
+  (async () => {
+    let lastCode = 0;
     try {
-      if (proc.exitCode === 0 && composeExtraArgs.includes("up")) {
-        appendOperationLog("\nRestarting Caddy proxy to apply configuration...\n");
-        const caddyProc = Bun.spawn({
-          cmd: ["stdbuf", "-oL", "-eL", "docker", ...composeArgs(paths, releaseDir, ["restart", "caddy"])],
-          cwd: releaseDir,
+      for (const step of steps) {
+        if (step.label) appendOperationLog(`\n${step.label}\n`);
+
+        const proc = Bun.spawn({
+          cmd: ["stdbuf", "-oL", "-eL", ...step.descriptor.cmd],
+          cwd: step.descriptor.cwd,
           stdout: "pipe",
           stderr: "pipe",
-          env: getComposeEnv(paths),
+          env: { ...step.descriptor.env, BUILDKIT_PROGRESS: "plain" },
         });
 
-        readStream(caddyProc.stdout).catch(() => {});
-        readStream(caddyProc.stderr).catch(() => {});
-        await caddyProc.exited;
-        markOperationFinished(caddyProc.exitCode ?? 1);
-      } else {
-        markOperationFinished(proc.exitCode ?? 1);
+        readStream(proc.stdout).catch(() => {});
+        readStream(proc.stderr).catch(() => {});
+        await proc.exited;
+        lastCode = proc.exitCode ?? 1;
+        if (lastCode !== 0) break;
       }
     } catch {
-      markOperationFinished(proc.exitCode ?? 1);
+      lastCode = 1;
     }
-  });
+    markOperationFinished(lastCode);
+  })();
 }
 
 export async function logsResponse(paths: Paths, params: URLSearchParams) {
@@ -158,17 +109,16 @@ export async function logsResponse(paths: Paths, params: URLSearchParams) {
     return new Response(content, { headers: { "content-type": "text/plain" } });
   }
 
-  const releaseDir = getCurrentReleaseDir(paths);
-  const serviceArgs = source === "app" ? [] : [source];
-  const args = ["logs", "--no-color", "--tail", String(tail), ...serviceArgs];
-  if (follow) args.splice(1, 0, "--follow");
+  const compose = ComposeCommand.from(paths);
+  const services = source === "app" ? undefined : [source];
+  const desc = compose.logs({ services, tail, follow });
 
   const proc = Bun.spawn({
-    cmd: ["docker", ...composeArgs(paths, releaseDir, args)],
-    cwd: releaseDir,
+    cmd: desc.cmd,
+    cwd: desc.cwd,
     stdout: "pipe",
     stderr: "pipe",
-    env: getComposeEnv(paths),
+    env: desc.env,
   });
 
   const stream = new ReadableStream({

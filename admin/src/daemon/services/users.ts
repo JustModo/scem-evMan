@@ -2,18 +2,26 @@ import { existsSync, readFileSync } from "fs";
 import { MongoClient, ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import { createError } from "../core/errors";
-import { parseEnv } from "../core/config";
+import { parseConfigYaml, parseEnv } from "../core/config";
 import type { Paths } from "../core/types";
 
 let mongoClient: MongoClient | null = null;
 let currentMongoUri: string | null = null;
 
 function getMongoUri(paths: Paths): string {
+  const cfgYaml = parseConfigYaml(paths) || {};
+  const dbMode = cfgYaml.infrastructure?.database?.mode ?? "internal";
+
   if (existsSync(paths.envFile)) {
     const env = parseEnv(readFileSync(paths.envFile, "utf8"));
-    if (env.MONGODB_URI) return env.MONGODB_URI;
+    if (env.MONGODB_URI) {
+      if (dbMode === "internal") {
+        return env.MONGODB_URI.replace("mongodb://mongo:", "mongodb://localhost:");
+      }
+      return env.MONGODB_URI;
+    }
   }
-  return "mongodb://mongo:27017/pomelo";
+  return "mongodb://localhost:27017/pomelo";
 }
 
 async function getDb(paths: Paths) {
@@ -21,7 +29,7 @@ async function getDb(paths: Paths) {
   if (mongoClient && currentMongoUri !== uri) {
     try {
       await mongoClient.close();
-    } catch {}
+    } catch { }
     mongoClient = null;
   }
 

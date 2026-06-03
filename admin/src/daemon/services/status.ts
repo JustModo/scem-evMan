@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { compose, dockerAvailable } from "./compose";
+import { dockerAvailable, runCompose } from "./compose";
+import { ComposeCommand } from "./compose-command";
 import { getOperationState } from "./operations";
-import { getCurrentReleaseDir } from "../core/release";
 import { run } from "../core/run";
 import type { Paths } from "../core/types";
 
@@ -29,8 +29,7 @@ export async function getStatus(paths: Paths) {
   const dockerOk = await dockerAvailable();
   let containers: any[] = [];
 
-  const releaseDir = getCurrentReleaseDir(paths);
-  const res = await compose(paths, releaseDir, ["ps", "--format", "json"]);
+  const res = await runCompose(ComposeCommand.from(paths).ps());
   if (res.code === 0 && res.stdout.trim()) {
     try {
       const stdout = res.stdout.trim();

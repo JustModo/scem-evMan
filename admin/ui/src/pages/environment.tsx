@@ -102,7 +102,7 @@ export default function EnvironmentPage() {
         <TabsContent value="config">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Application configuration in YAML format. Includes settings like update channel and telemetry.
+              Application configuration in YAML format.
             </p>
             <Textarea
               value={configYaml}

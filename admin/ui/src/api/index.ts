@@ -8,7 +8,7 @@ export const api = {
   // Lifecycle
   start: () => request("/start", { method: "POST" }).finally(() => window.dispatchEvent(new Event("command-started"))),
   stop: () => request("/stop", { method: "POST" }).finally(() => window.dispatchEvent(new Event("command-started"))),
-  restart: (target?: "all" | "caddy" | "judge") =>
+  restart: (target?: "all" | "caddy" | "caddy-restart" | "judge") =>
     request("/restart", { method: "POST", body: JSON.stringify({ target }) }).finally(() => window.dispatchEvent(new Event("command-started"))),
 
   // Config
