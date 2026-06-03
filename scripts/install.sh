@@ -203,6 +203,53 @@ else
   HAS_SYSTEMD=false
 fi
 
+# --- 1.5. Port Collision Checks ---
+log_step "Checking port availability"
+
+BLOCKED_PORTS=()
+
+check_port() {
+  local port=$1
+  local desc=$2
+  local in_use=false
+
+  if command -v ss &>/dev/null; then
+    if ss -tuln | awk '{print $5}' | grep -E -q ":${port}$"; then
+      in_use=true
+    fi
+  elif command -v netstat &>/dev/null; then
+    if netstat -tuln | awk '{print $4}' | grep -E -q ":${port}$"; then
+      in_use=true
+    fi
+  else
+    if (bash -c "timeout 1 echo >/dev/tcp/127.0.0.1/${port}" 2>/dev/null); then
+      in_use=true
+    fi
+  fi
+
+  if [[ "$in_use" == true ]]; then
+    BLOCKED_PORTS+=("${port} (${desc})")
+  fi
+}
+
+check_port 80 "HTTP / Caddy"
+check_port 443 "HTTPS / Caddy"
+check_port 27017 "MongoDB"
+check_port 8462 "Pomelo Admin UI"
+
+if [[ ${#BLOCKED_PORTS[@]} -gt 0 ]]; then
+  echo ""
+  log_error "The following required ports are currently in use:"
+  for blocked in "${BLOCKED_PORTS[@]}"; do
+    echo -e "    ${YELLOW}• Port $blocked${NC}"
+  done
+  echo ""
+  log_error "Please free these ports before proceeding with the installation."
+  exit 1
+else
+  log_success "All required ports are available."
+fi
+
 # --- 2. Permission Check ---
 if [[ "$EUID" -ne 0 ]]; then
   if [[ ! -w "$(dirname "$APP_ROOT")" ]] && [[ ! -d "$APP_ROOT" || ! -w "$APP_ROOT" ]]; then
