@@ -33,7 +33,9 @@ app.use(
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Pomelo API online");
+  res.json({
+    message: "Pomelo API online"
+  });
 });
 
 // Routes

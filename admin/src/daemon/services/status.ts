@@ -1,4 +1,4 @@
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { compose, dockerAvailable } from "./compose";
 import { getOperationState } from "./operations";
@@ -7,7 +7,25 @@ import { run } from "../core/run";
 import type { Paths } from "../core/types";
 
 export async function getStatus(paths: Paths) {
-  const current = "local";
+  let current = "unknown";
+  try {
+    const manifestPathRoot = join(paths.root, "manifest.json");
+    const manifestPathApp = join(paths.root, "app", "manifest.json");
+    
+    if (existsSync(manifestPathRoot)) {
+      const manifest = JSON.parse(readFileSync(manifestPathRoot, "utf-8"));
+      current = manifest.version || "unknown";
+    } else if (existsSync(manifestPathApp)) {
+      const manifest = JSON.parse(readFileSync(manifestPathApp, "utf-8"));
+      current = manifest.version || "unknown";
+    } else {
+      const pkgUrl = new URL("../../../../package.json", import.meta.url);
+      const pkg = JSON.parse(readFileSync(pkgUrl, "utf-8"));
+      current = pkg.version || "unknown";
+    }
+  } catch (e) {
+    // fallback if both are missing
+  }
   const dockerOk = await dockerAvailable();
   let containers: any[] = [];
 

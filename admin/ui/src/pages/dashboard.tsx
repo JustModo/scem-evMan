@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, streamRequest } from "@/api/index.js";
+import { api } from "@/api/index.js";
 import type { Status, StorageUsage } from "@/types.js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,13 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 max-w-4xl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <Badge variant="outline" className="font-mono bg-background">
+          v{import.meta.env.VITE_APP_VERSION || status?.currentVersion || "unknown"}
+        </Badge>
+      </div>
+
       {/* System Status */}
       <section>
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">System Status</h3>

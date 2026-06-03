@@ -180,7 +180,7 @@ COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 COMMIT_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "")
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
 
 cat <<EOF > "$PKG_DIR/manifest.json"
 {
@@ -188,9 +188,8 @@ cat <<EOF > "$PKG_DIR/manifest.json"
   "version": "$VERSION",
   "buildDate": "$BUILD_DATE",
   "commitHash": "$COMMIT_HASH",
-  "commitMessage": "$COMMIT_MSG",
   "branch": "$BRANCH",
-  "description": "Production build — zero-install deployment archive"
+  "description": "Pomelo Production Deployment Archive"
 }
 EOF
 log_info "Version: $VERSION | Commit: $COMMIT_HASH ($BRANCH)"
