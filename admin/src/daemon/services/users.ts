@@ -13,7 +13,7 @@ function getMongoUri(paths: Paths): string {
     const env = parseEnv(readFileSync(paths.envFile, "utf8"));
     if (env.MONGODB_URI) return env.MONGODB_URI;
   }
-  return "mongodb://localhost:27017/pomelo";
+  return "mongodb://mongo:27017/pomelo";
 }
 
 async function getDb(paths: Paths) {

@@ -110,7 +110,7 @@ export function defaultEnv() {
     "DOMAIN=localhost",
     "PROTOCOL=http",
     `AUTH_SECRET=${genSecret(64)}`,
-    "MONGODB_URI=mongodb://localhost:27017/pomelo",
+    "MONGODB_URI=mongodb://mongo:27017/pomelo",
     "JUDGE0_URL=http://judge0-server:2358",
     `POSTGRES_PASSWORD=${genSecret(64)}`,
     `REDIS_PASSWORD=${genSecret(64)}`,
