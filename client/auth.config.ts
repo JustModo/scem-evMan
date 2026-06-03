@@ -38,7 +38,7 @@ export const authConfig = {
     secret: process.env.AUTH_SECRET,
     logger: {
         error(error: any) {
-            if (error?.name === 'CredentialsSignin') return;
+            if (error?.name === 'CredentialsSignin' || error?.type === 'CredentialsSignin' || error?.code === 'credentials') return;
             console.error(error);
         }
     },
@@ -114,8 +114,8 @@ export const authConfig = {
 
 
                         return null;
-                    } catch (error) {
-                        console.error('Auth API error:', error);
+                    } catch (error: any) {
+                        console.error(`Auth API error: ${error.message || 'Unknown error'}`);
                         return null;
                     }
                 }

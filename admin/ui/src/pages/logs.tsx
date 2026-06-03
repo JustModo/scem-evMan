@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { api, connectCommandStream } from "@/api/index.js";
+import { useState } from "react";
+import { api } from "@/api/index.js";
+import { useLogs } from "@/contexts/LogsContext";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
@@ -22,37 +23,7 @@ export default function LogsPage() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const [liveLog, setLiveLog] = useState<string | null>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const streamRef = useRef(false);
-
-  useEffect(() => {
-    function checkStream() {
-      if (streamRef.current) return;
-      streamRef.current = true;
-      setIsStreaming(true);
-      connectCommandStream(
-        (chunk) => {
-          setLiveLog((prev) => (prev ?? "") + chunk);
-        },
-        (code) => {
-          setLiveLog((prev) => (prev ?? "") + `\n[Done (exit ${code})]`);
-          streamRef.current = false;
-          setIsStreaming(false);
-        },
-        () => {
-          streamRef.current = false;
-          setIsStreaming(false);
-          // Only clear if empty, so we retain past logs if they just finished
-          setLiveLog((prev) => prev || null);
-        }
-      );
-    }
-    
-    checkStream();
-    window.addEventListener("command-started", checkStream);
-    return () => window.removeEventListener("command-started", checkStream);
-  }, []);
+  const { liveLog, isStreaming } = useLogs();
 
   async function loadLogs() {
     setLoading(true);
@@ -96,7 +67,7 @@ export default function LogsPage() {
         <Separator className="mb-4" />
 
         {/* Log Output */}
-        <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-[calc(100vh-280px)] min-h-[200px] whitespace-pre-wrap text-foreground/80 border">
+        <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-[calc(100vh-280px)] min-h-[200px] whitespace-pre-wrap break-all text-foreground/80 border">
           {text || "No logs loaded. Select a source and click Load."}
         </pre>
       </div>
@@ -112,7 +83,7 @@ export default function LogsPage() {
             </div>
           )}
         </div>
-        <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-96 min-h-[200px] whitespace-pre-wrap text-foreground/80 border">
+        <pre className="text-xs font-mono bg-muted p-4 rounded-md overflow-auto max-h-96 min-h-[200px] whitespace-pre-wrap break-all text-foreground/80 border">
           {liveLog || "No active or recent deployment operations."}
         </pre>
       </div>

@@ -10,13 +10,13 @@ const connectDB = async () => {
     console.log(`Connecting to MongoDB at ${process.env.MONGODB_URI}...`);
     await mongoose.connect(process.env.MONGODB_URI);
     isCon = true;
-    console.log('Conencted to MongoDB');
+    console.log('Connected to MongoDB');
 
     // Run pending schema migrations
     await runMigrations();
   } catch (error) {
-    console.error('MongoDB connection or migration error:', error);
-    throw new Error('Failed to connect to MongoDB or run migrations');
+    console.error(`\nMongoDB Connection Error: ${error.message}\n`);
+    process.exit(1);
   }
 };
 

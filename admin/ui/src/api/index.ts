@@ -56,10 +56,11 @@ export const api = {
 export async function connectCommandStream(
   onChunk: (text: string) => void,
   onExit: (code: number) => void,
-  onIdle: () => void
+  onIdle: () => void,
+  signal?: AbortSignal
 ): Promise<void> {
   try {
-    const res = await fetch(`/api/command/stream`);
+    const res = await fetch(`/api/command/stream`, { signal });
     if (!res.ok) {
       onIdle();
       return;
@@ -103,7 +104,9 @@ export async function connectCommandStream(
     } else {
       onIdle();
     }
-  } catch (err) {
-    onIdle();
+  } catch (err: any) {
+    if (err.name !== "AbortError") {
+      onIdle();
+    }
   }
 }
