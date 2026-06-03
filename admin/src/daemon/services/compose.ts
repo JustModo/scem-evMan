@@ -9,7 +9,7 @@ import {
 } from "./operations";
 import { getComposeConfig } from "../core/paths";
 import { getCurrentReleaseDir } from "../core/release";
-import { ensureConfigDefaults } from "../core/config";
+import { ensureConfigDefaults, parseConfigYaml } from "../core/config";
 import { run } from "../core/run";
 import type { Paths } from "../core/types";
 
@@ -40,6 +40,29 @@ export function composeArgs(
   ];
 }
 
+function getComposeEnv(paths: Paths) {
+  const cfgYaml = parseConfigYaml(paths) || {};
+  const caddyHttp = cfgYaml.ports?.caddyHttp ?? 80;
+  const caddyHttps = cfgYaml.ports?.caddyHttps ?? 443;
+  const dbMode = cfgYaml.infrastructure?.database?.mode ?? "internal";
+  const judgeMode = cfgYaml.infrastructure?.judge0?.mode ?? "internal";
+  const domain = cfgYaml.app?.domain ?? "localhost";
+  const protocol = cfgYaml.app?.protocol ?? "http";
+
+  const profiles: string[] = [];
+  if (dbMode === "internal") profiles.push("internal-db");
+  if (judgeMode === "internal") profiles.push("internal-judge0");
+
+  return {
+    ...process.env,
+    DOMAIN: domain,
+    PROTOCOL: protocol,
+    CADDY_HTTP_PORT: String(caddyHttp),
+    CADDY_HTTPS_PORT: String(caddyHttps),
+    COMPOSE_PROFILES: profiles.join(","),
+  };
+}
+
 export async function compose(
   paths: Paths,
   releaseDir: string,
@@ -47,6 +70,7 @@ export async function compose(
 ) {
   return run("docker", composeArgs(paths, releaseDir, extraArgs), {
     cwd: releaseDir,
+    env: getComposeEnv(paths),
   });
 }
 
@@ -76,7 +100,7 @@ export async function startCompose(
     cwd: releaseDir,
     stdout: "pipe",
     stderr: "pipe",
-    env: { ...process.env, BUILDKIT_PROGRESS: "plain" },
+    env: { ...getComposeEnv(paths), BUILDKIT_PROGRESS: "plain" },
   });
 
   async function readStream(stream: ReadableStream) {
@@ -107,6 +131,7 @@ export async function startCompose(
           cwd: releaseDir,
           stdout: "pipe",
           stderr: "pipe",
+          env: getComposeEnv(paths),
         });
 
         readStream(caddyProc.stdout).catch(() => {});
@@ -143,7 +168,7 @@ export async function logsResponse(paths: Paths, params: URLSearchParams) {
     cwd: releaseDir,
     stdout: "pipe",
     stderr: "pipe",
-    env: process.env,
+    env: getComposeEnv(paths),
   });
 
   const stream = new ReadableStream({

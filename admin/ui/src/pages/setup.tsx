@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import YAML from "yaml";
 import { api } from "@/api/index.js";
 import type { ConfigSnapshot } from "@/types.js";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,11 @@ export default function SetupPage() {
   const [config, setConfig] = useState<ConfigSnapshot | null>(null);
 
   // Form states
-  const [mongoMode, setMongoMode] = useState<"self" | "external">("self");
+  const [mongoMode, setMongoMode] = useState<"internal" | "external">("internal");
   const [mongoUri, setMongoUri] = useState("mongodb://mongo:27017/pomelo");
   const [mongoSaving, setMongoSaving] = useState(false);
 
-  const [judgeMode, setJudgeMode] = useState<"self" | "external">("self");
+  const [judgeMode, setJudgeMode] = useState<"internal" | "external">("internal");
   const [judgeUrl, setJudgeUrl] = useState("http://judge0-server:2358");
   const [judgeSaving, setJudgeSaving] = useState(false);
 
@@ -34,18 +35,22 @@ export default function SetupPage() {
       setConfig(c);
       const env = parseEnv(c.appEnv);
       
-      if (env.MONGODB_URI) {
-        const isSelf = env.MONGODB_URI.includes("localhost:27017") || env.MONGODB_URI.includes("mongo:27017");
-        setMongoMode(isSelf ? "self" : "external");
-        setMongoUri(env.MONGODB_URI);
+      let cfgYaml: any = {};
+      try {
+        cfgYaml = YAML.parse(c.configYaml) || {};
+      } catch (e) {}
+
+      if (env.MONGODB_URI) setMongoUri(env.MONGODB_URI);
+      if (env.JUDGE0_URL) setJudgeUrl(env.JUDGE0_URL);
+
+      if (cfgYaml.infrastructure?.database?.mode) {
+        setMongoMode(cfgYaml.infrastructure.database.mode);
       }
-      if (env.JUDGE0_URL) {
-        const isSelf = env.JUDGE0_URL.includes("judge0-server");
-        setJudgeMode(isSelf ? "self" : "external");
-        setJudgeUrl(env.JUDGE0_URL);
+      if (cfgYaml.infrastructure?.judge0?.mode) {
+        setJudgeMode(cfgYaml.infrastructure.judge0.mode);
       }
-      if (env.DOMAIN) setDomain(env.DOMAIN);
-      if (env.PROTOCOL) setProtocol(env.PROTOCOL as "http" | "https");
+      if (cfgYaml.app?.domain) setDomain(cfgYaml.app.domain);
+      if (cfgYaml.app?.protocol) setProtocol(cfgYaml.app.protocol);
     } catch {}
   }
 
@@ -114,12 +119,25 @@ export default function SetupPage() {
     }
   }
 
+  function updateYaml(content: string, updates: (doc: any) => void) {
+    let doc: any = {};
+    try {
+      doc = YAML.parse(content) || {};
+    } catch {}
+    updates(doc);
+    return YAML.stringify(doc);
+  }
+
   async function handleSaveMongo() {
     setMongoSaving(true);
     try {
-      const finalMongoUri = mongoMode === "self" ? "mongodb://mongo:27017/pomelo" : mongoUri;
-      const newEnv = updateEnvContent(config?.appEnv || "", { MONGODB_URI: finalMongoUri });
-      await api.updateConfig({ appEnv: newEnv });
+      const newEnv = updateEnvContent(config?.appEnv || "", { MONGODB_URI: mongoUri });
+      const newYaml = updateYaml(config?.configYaml || "", (doc) => {
+        if (!doc.infrastructure) doc.infrastructure = {};
+        if (!doc.infrastructure.database) doc.infrastructure.database = {};
+        doc.infrastructure.database.mode = mongoMode;
+      });
+      await api.updateConfig({ appEnv: newEnv, configYaml: newYaml });
       await loadConfig();
       await performRestart();
     } catch (err: any) {
@@ -131,9 +149,13 @@ export default function SetupPage() {
   async function handleSaveJudge() {
     setJudgeSaving(true);
     try {
-      const finalJudgeUrl = judgeMode === "self" ? "http://judge0-server:2358" : judgeUrl;
-      const newEnv = updateEnvContent(config?.appEnv || "", { JUDGE0_URL: finalJudgeUrl });
-      await api.updateConfig({ appEnv: newEnv });
+      const newEnv = updateEnvContent(config?.appEnv || "", { JUDGE0_URL: judgeUrl });
+      const newYaml = updateYaml(config?.configYaml || "", (doc) => {
+        if (!doc.infrastructure) doc.infrastructure = {};
+        if (!doc.infrastructure.judge0) doc.infrastructure.judge0 = {};
+        doc.infrastructure.judge0.mode = judgeMode;
+      });
+      await api.updateConfig({ appEnv: newEnv, configYaml: newYaml });
       await loadConfig();
       await performRestart();
     } catch (err: any) {
@@ -145,9 +167,13 @@ export default function SetupPage() {
   async function handleSaveDomain() {
     setDomainSaving(true);
     try {
-      const newEnv = updateEnvContent(config?.appEnv || "", { DOMAIN: domain, PROTOCOL: protocol });
+      const newYaml = updateYaml(config?.configYaml || "", (doc) => {
+        if (!doc.app) doc.app = {};
+        doc.app.domain = domain;
+        doc.app.protocol = protocol;
+      });
       const newCaddy = buildCaddyfile(domain, protocol);
-      await api.updateConfig({ appEnv: newEnv, caddyfile: newCaddy });
+      await api.updateConfig({ configYaml: newYaml, caddyfile: newCaddy });
       await loadConfig();
       await performRestart();
     } catch (err: any) {
@@ -175,9 +201,9 @@ export default function SetupPage() {
             <h3 className="text-lg font-medium">MongoDB</h3>
           </div>
           <div className="pl-7 space-y-5">
-            <RadioGroup value={mongoMode} onValueChange={(v) => setMongoMode(v as "self" | "external")} className="gap-4">
+            <RadioGroup value={mongoMode} onValueChange={(v) => setMongoMode(v as "internal" | "external")} className="gap-4">
               <div className="flex items-start gap-3">
-                <RadioGroupItem value="self" id="mongo-self" className="mt-0.5" />
+                <RadioGroupItem value="internal" id="mongo-self" className="mt-0.5" />
                 <div>
                   <Label htmlFor="mongo-self" className="cursor-pointer">Self-hosted (Docker)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">Uses the bundled MongoDB container. Recommended for most setups.</p>
@@ -219,9 +245,9 @@ export default function SetupPage() {
             <h3 className="text-lg font-medium">Judge0 Engine</h3>
           </div>
           <div className="pl-7 space-y-5">
-            <RadioGroup value={judgeMode} onValueChange={(v) => setJudgeMode(v as "self" | "external")} className="gap-4">
+            <RadioGroup value={judgeMode} onValueChange={(v) => setJudgeMode(v as "internal" | "external")} className="gap-4">
               <div className="flex items-start gap-3">
-                <RadioGroupItem value="self" id="judge-self" className="mt-0.5" />
+                <RadioGroupItem value="internal" id="judge-self" className="mt-0.5" />
                 <div>
                   <Label htmlFor="judge-self" className="cursor-pointer">Self-hosted (Docker)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">Runs Judge0 server and workers in Docker. Requires privileged mode.</p>

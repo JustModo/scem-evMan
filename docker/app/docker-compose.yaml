@@ -2,6 +2,7 @@ services:
   mongo:
     image: mongo:7.0
     restart: unless-stopped
+    profiles: ["internal-db"]
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
@@ -28,6 +29,7 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+        required: false
     volumes:
       - /opt/pomelo/data:/app/data
       - /opt/pomelo/config:/app/config:ro
@@ -51,8 +53,8 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
     volumes:
       - /opt/pomelo/config/Caddyfile:/etc/caddy/Caddyfile:ro
       - /opt/pomelo/runtime/logs:/var/log/caddy

@@ -22,6 +22,14 @@ export async function runDaemon(argv: string[], moduleUrl: string) {
   const paths = getPaths();
   ensureBase(paths);
 
+  // We need to conditionally import parseConfigYaml because it's not present in this scope yet
+  // Or we can just import it at the top
+  const { parseConfigYaml } = await import("./core/config");
+  const cfgYaml = parseConfigYaml(paths);
+  if (cfgYaml?.ports?.admin) {
+    paths.apiPort = Number(cfgYaml.ports.admin);
+  }
+
   const logFile = getLogFilePath(paths);
   const logger = createLogger(logFile);
 
