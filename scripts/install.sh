@@ -104,7 +104,7 @@ if [[ "$ACTION" == "uninstall" ]]; then
   echo -e "  ${DIM}Installation root: $APP_ROOT${NC}"
   echo ""
   prompt "Are you sure? [y/N]:"
-  read -r confirm
+  read -r confirm < /dev/tty
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     echo "  Aborted."
     exit 0
@@ -150,7 +150,7 @@ if [[ "$ACTION" == "uninstall" ]]; then
 
   echo ""
   prompt "Also remove data and config? (database, uploads, configs) [y/N]:"
-  read -r remove_data
+  read -r remove_data < /dev/tty
 
 
   if [[ "$remove_data" == "y" || "$remove_data" == "Y" ]]; then
@@ -231,7 +231,7 @@ resolve_port() {
     log_warn "Port ${default_port} (${desc}) is already in use."
     while true; do
       prompt "Alternative port for ${desc} [default: ${default_port}]: "
-      read -r alt_port
+      read -r alt_port < /dev/tty
       if [[ -z "$alt_port" ]]; then
         chosen=$default_port
         break
@@ -352,7 +352,7 @@ else
 
   echo ""
   prompt "Enter version to install (press Enter for ${GREEN}$latest_tag${NC}):"
-  read -r selected_version
+  read -r selected_version < /dev/tty
   selected_version="${selected_version:-$latest_tag}"
 
   # Validate the selected version exists
@@ -363,22 +363,17 @@ else
   log_info "Selected version: ${BOLD}$selected_version${NC}"
 
   # Download the release asset
-  DOWNLOAD_URL="https://github.com/$GITHUB_REPO/releases/download/$selected_version/build.tar.gz"
+  DOWNLOAD_URL="https://github.com/$GITHUB_REPO/releases/download/$selected_version/pomelo-$selected_version.tar.gz"
 
   log_step "Downloading release"
   log_info "URL: ${DIM}$DOWNLOAD_URL${NC}"
 
   TMP_DIR=$(mktemp -d)
   trap 'rm -rf "$TMP_DIR"' EXIT
-  ARCHIVE_PATH="$TMP_DIR/build.tar.gz"
+  ARCHIVE_PATH="$TMP_DIR/pomelo-$selected_version.tar.gz"
 
   if ! curl -fL --progress-bar "$DOWNLOAD_URL" -o "$ARCHIVE_PATH" 2>&1; then
-    # Fallback: try the source archive
-    log_warn "Release asset 'build.tar.gz' not found. Trying source archive..."
-    DOWNLOAD_URL="https://github.com/$GITHUB_REPO/archive/refs/tags/$selected_version.tar.gz"
-    log_info "Fallback URL: ${DIM}$DOWNLOAD_URL${NC}"
-    curl -fL --progress-bar "$DOWNLOAD_URL" -o "$ARCHIVE_PATH" || \
-      fatal "Failed to download version $selected_version from GitHub."
+    fatal "Release asset 'pomelo-$selected_version.tar.gz' not found for version $selected_version."
   fi
 
   ARCHIVE_SIZE=$(du -sh "$ARCHIVE_PATH" 2>/dev/null | cut -f1)
@@ -423,6 +418,10 @@ else
 fi
 
 log_success "Archive extracted to ${DIM}$APP_ROOT/app${NC}"
+
+# Ensure permissions allow regular users to run the CLI
+chmod a+rx "$APP_ROOT"
+chmod -R a+rX "$APP_ROOT/app"
 
 # Show manifest if present
 if [[ -f "$APP_ROOT/app/manifest.json" ]]; then
