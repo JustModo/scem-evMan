@@ -230,7 +230,7 @@ resolve_port() {
   if port_in_use "$default_port"; then
     log_warn "Port ${default_port} (${desc}) is already in use."
     while true; do
-      prompt "Enter an alternative port for ${desc} (or press Enter to keep ${default_port} and resolve it yourself):"
+      prompt "Alternative port for ${desc} [default: ${default_port}]: "
       read -r alt_port
       if [[ -z "$alt_port" ]]; then
         chosen=$default_port
@@ -250,7 +250,7 @@ resolve_port() {
     if [[ "$chosen" != "$default_port" ]]; then
       log_success "Using port ${chosen} for ${desc}."
     else
-      log_warn "Keeping port ${default_port} for ${desc} — make sure it is free before starting."
+      log_warn "Keeping port ${default_port} (must free before start)"
     fi
   else
     log_success "Port ${default_port} (${desc}) is available."
@@ -259,8 +259,11 @@ resolve_port() {
 }
 
 resolve_port 80   "HTTP / Caddy"    CADDY_HTTP_PORT
+echo ""
 resolve_port 443  "HTTPS / Caddy"   CADDY_HTTPS_PORT
+echo ""
 resolve_port 8462 "Pomelo Admin UI" ADMIN_PORT
+echo ""
 
 # --- MongoDB port: non-blocking, auto-configure external mode if taken ---
 MONGO_DB_MODE="internal"
@@ -561,9 +564,9 @@ ports:
 
 infrastructure:
   database:
-    mode: "${MONGO_DB_MODE}"  # 'internal' or 'external'
+    mode: "${MONGO_DB_MODE}"
   judge0:
-    mode: "internal"  # 'internal' or 'external'
+    mode: "internal"
 YAML_EOF
 fi
 

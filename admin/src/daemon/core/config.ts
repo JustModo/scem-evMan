@@ -19,9 +19,9 @@ export function defaultConfigYaml() {
     "",
     "infrastructure:",
     "  database:",
-    "    mode: \"internal\"  # 'internal' or 'external'",
+    "    mode: \"internal\"",
     "  judge0:",
-    "    mode: \"internal\"  # 'internal' or 'external'",
+    "    mode: \"internal\"",
   ].join("\n") + "\n";
 }
 
