@@ -206,48 +206,73 @@ fi
 # --- 1.5. Port Collision Checks ---
 log_step "Checking port availability"
 
-BLOCKED_PORTS=()
-
-check_port() {
+# Returns 0 if port is in use, 1 if free
+port_in_use() {
   local port=$1
-  local desc=$2
-  local in_use=false
-
   if command -v ss &>/dev/null; then
-    if ss -tuln | awk '{print $5}' | grep -E -q ":${port}$"; then
-      in_use=true
-    fi
+    ss -tuln | awk '{print $5}' | grep -E -q ":${port}$"
   elif command -v netstat &>/dev/null; then
-    if netstat -tuln | awk '{print $4}' | grep -E -q ":${port}$"; then
-      in_use=true
-    fi
+    netstat -tuln | awk '{print $4}' | grep -E -q ":${port}$"
   else
-    if (bash -c "timeout 1 echo >/dev/tcp/127.0.0.1/${port}" 2>/dev/null); then
-      in_use=true
-    fi
-  fi
-
-  if [[ "$in_use" == true ]]; then
-    BLOCKED_PORTS+=("${port} (${desc})")
+    bash -c "timeout 1 echo >/dev/tcp/127.0.0.1/${port}" 2>/dev/null
   fi
 }
 
-check_port 80 "HTTP / Caddy"
-check_port 443 "HTTPS / Caddy"
-check_port 27017 "MongoDB"
-check_port 8462 "Pomelo Admin UI"
+# Prompt user to choose an alternative port when the default is taken.
+# Sets the named variable (3rd arg) to the chosen port.
+# All interactive output goes to stderr so callers can safely use the result.
+resolve_port() {
+  local default_port=$1
+  local desc=$2
+  local -n _result_ref=$3
+  local chosen=$default_port
 
-if [[ ${#BLOCKED_PORTS[@]} -gt 0 ]]; then
-  echo ""
-  log_error "The following required ports are currently in use:"
-  for blocked in "${BLOCKED_PORTS[@]}"; do
-    echo -e "    ${YELLOW}• Port $blocked${NC}"
-  done
-  echo ""
-  log_error "Please free these ports before proceeding with the installation."
-  exit 1
+  if port_in_use "$default_port"; then
+    log_warn "Port ${default_port} (${desc}) is already in use."
+    while true; do
+      prompt "Enter an alternative port for ${desc} (or press Enter to keep ${default_port} and resolve it yourself):"
+      read -r alt_port
+      if [[ -z "$alt_port" ]]; then
+        chosen=$default_port
+        break
+      fi
+      if ! [[ "$alt_port" =~ ^[0-9]+$ ]] || [[ "$alt_port" -lt 1 ]] || [[ "$alt_port" -gt 65535 ]]; then
+        log_error "Invalid port number. Enter a value between 1 and 65535."
+        continue
+      fi
+      if port_in_use "$alt_port"; then
+        log_error "Port $alt_port is also in use. Try another."
+        continue
+      fi
+      chosen=$alt_port
+      break
+    done
+    if [[ "$chosen" != "$default_port" ]]; then
+      log_success "Using port ${chosen} for ${desc}."
+    else
+      log_warn "Keeping port ${default_port} for ${desc} — make sure it is free before starting."
+    fi
+  else
+    log_success "Port ${default_port} (${desc}) is available."
+  fi
+  _result_ref=$chosen
+}
+
+resolve_port 80   "HTTP / Caddy"    CADDY_HTTP_PORT
+resolve_port 443  "HTTPS / Caddy"   CADDY_HTTPS_PORT
+resolve_port 8462 "Pomelo Admin UI" ADMIN_PORT
+
+# --- MongoDB port: non-blocking, auto-configure external mode if taken ---
+MONGO_DB_MODE="internal"
+MONGO_URI="mongodb://mongo:27017/pomelo"
+
+if port_in_use 27017; then
+  log_warn "Port 27017 (MongoDB) is already in use."
+  log_warn "Pomelo will use ${BOLD}external${NC} database mode, connecting to the existing MongoDB at localhost:27017."
+  MONGO_DB_MODE="external"
+  MONGO_URI="mongodb://localhost:27017/pomelo"
 else
-  log_success "All required ports are available."
+  log_success "Port 27017 (MongoDB) is available."
 fi
 
 # --- 2. Permission Check ---
@@ -497,11 +522,11 @@ log_step "Initializing configuration"
 
 if [[ ! -s "$APP_ROOT/config/app.env" ]]; then
   log_info "Generating secure environment variables..."
-  
+
   gen_secret() {
     openssl rand -hex 32
   }
-  
+
   AUTH_SECRET=$(gen_secret)
   POSTGRES_PASSWORD=$(gen_secret)
   REDIS_PASSWORD=$(gen_secret)
@@ -509,7 +534,7 @@ if [[ ! -s "$APP_ROOT/config/app.env" ]]; then
   cat > "$APP_ROOT/config/app.env" <<EOF
 # --- SECRETS & URIS ---
 AUTH_SECRET=${AUTH_SECRET}
-MONGODB_URI=mongodb://mongo:27017/pomelo
+MONGODB_URI=${MONGO_URI}
 JUDGE0_URL=http://judge0-server:2358
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 REDIS_PASSWORD=${REDIS_PASSWORD}
@@ -530,13 +555,13 @@ app:
   protocol: "http"
 
 ports:
-  admin: 8462
-  caddyHttp: 80
-  caddyHttps: 443
+  admin: ${ADMIN_PORT}
+  caddyHttp: ${CADDY_HTTP_PORT}
+  caddyHttps: ${CADDY_HTTPS_PORT}
 
 infrastructure:
   database:
-    mode: "internal"  # 'internal' or 'external'
+    mode: "${MONGO_DB_MODE}"  # 'internal' or 'external'
   judge0:
     mode: "internal"  # 'internal' or 'external'
 YAML_EOF
@@ -568,7 +593,7 @@ echo -e "  ${BOLD}Daemon:${NC}         systemd (${GREEN}persistent${NC})"
 else
 echo -e "  ${BOLD}Daemon:${NC}         background process (${YELLOW}non-persistent${NC})"
 fi
-echo -e "  ${BOLD}Admin UI:${NC}       ${CYAN}http://127.0.0.1:8462${NC}"
+echo -e "  ${BOLD}Admin UI:${NC}       ${CYAN}http://127.0.0.1:${ADMIN_PORT}${NC}"
 echo -e "  ${BOLD}CLI:${NC}            ${DIM}pomelo --help${NC}"
 echo ""
 echo -e "  ${BOLD}Quick Start:${NC}"
