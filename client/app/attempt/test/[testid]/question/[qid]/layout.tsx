@@ -4,6 +4,7 @@ import IntegrityMonitor from "@/components/attempt/integrity-monitor";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import React from "react";
+import { getBaseUrl } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Test Attempt",
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
     follow: false,
   },
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function TestLayout({
   children,
@@ -24,7 +27,7 @@ export default async function TestLayout({
   const { testid } = await params;
   const session = await auth();
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test/${testid}/data`, {
+  const res = await fetch(`${getBaseUrl()}/api/test/${testid}/data`, {
     headers: {
       "Authorization": `Bearer ${session?.backendToken}`,
       "Content-Type": "application/json"

@@ -11,11 +11,13 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="w-full min-h-screen pt-12">
-      <HeroSection />
-      <AboutSection />
-      <FeaturesSection />
-      <Footer />
-    </main>
+    <div className="h-screen overflow-y-auto w-full">
+      <main className="w-full min-h-screen pt-12">
+        <HeroSection />
+        <AboutSection />
+        <FeaturesSection />
+        <Footer />
+      </main>
+    </div>
   );
 }

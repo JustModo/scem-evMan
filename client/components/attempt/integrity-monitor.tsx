@@ -24,6 +24,8 @@ const VIOLATION_COOLDOWN_MS = 1000;
 const SCREENSHOT_OBFUSCATION_MS = 500;
 const FINAL_MODAL_DELAY_MS = 5000;
 
+export const DISABLE_PROCTORING = false; // TEMP MARKER: Set this to false to re-enable proctoring
+
 const violationMessages: Record<ViolationType, { title: string; description: string }> = {
   VISIBILITY_HIDDEN: {
     title: "Return to the test",
@@ -210,6 +212,7 @@ export default function IntegrityMonitor() {
 
   useEffect(() => {
     if (!testId) return;
+    if (DISABLE_PROCTORING) return;
 
     const storedCount = readViolationCount(testId);
     setViolationCount(storedCount);
@@ -220,11 +223,13 @@ export default function IntegrityMonitor() {
     return () => {
       clearTimers();
       resetAttemptObfuscation();
+      void exitTestFullscreen();
     };
   }, [clearTimers, forceSubmitTest, testId]);
 
   useEffect(() => {
     if (!testId) return;
+    if (DISABLE_PROCTORING) return;
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {

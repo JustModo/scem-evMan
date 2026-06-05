@@ -5,6 +5,10 @@ import Navbar from "@/components/global-navbar";
 import { SessionProvider } from "@/components/session-provider";
 import { Toaster } from "sonner";
 
+const domain = process.env.DOMAIN || "localhost:3000";
+const protocol = process.env.PROTOCOL || "http";
+const clientUrl = `${protocol}://${domain}`;
+
 export const metadata: Metadata = {
   title: {
     default: "Pomelo | Online Coding Contest & Assessment Platform",
@@ -25,7 +29,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Pomelo Team" }],
   creator: "Pomelo Team",
   publisher: "Pomelo",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000"),
+  metadataBase: new URL(clientUrl),
   robots: {
     index: false,
     follow: false,
@@ -33,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000",
+    url: clientUrl,
     title: "Pomelo | Online Coding Contest Platform",
     description: "Lightweight, modern coding contest platform with real-time code execution via Judge0.",
     siteName: "Pomelo",
@@ -53,7 +57,7 @@ export default function RootLayout({
   return (
     <SessionProvider>
       <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
-        <body className="antialiased">
+        <body className="antialiased h-screen overflow-hidden">
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

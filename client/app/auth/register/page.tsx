@@ -13,7 +13,7 @@ import { RiLockPasswordFill } from "react-icons/ri";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { register } from "@/app/actions/auth";
+import { register } from "@/actions/auth";
 
 function RegisterForm() {
   const [email, setEmail] = useState("");
@@ -226,6 +226,7 @@ function RegisterForm() {
                   {loading ? "Loading..." : "Continue"}
                 </Button>
 
+                {/*
                 <div className="flex items-center my-2">
                   <hr className="grow border-muted" />
                   <span className="px-4 text-sm text-muted-foreground">OR</span>
@@ -251,6 +252,7 @@ function RegisterForm() {
                     </>
                   )}
                 </Button>
+                */}
               </div>
             </form>
 

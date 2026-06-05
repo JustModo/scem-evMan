@@ -25,7 +25,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
   })
 );
@@ -33,7 +33,9 @@ app.use(
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("SOSCEvMan API is running...");
+  res.json({
+    message: "Pomelo API online"
+  });
 });
 
 // Routes

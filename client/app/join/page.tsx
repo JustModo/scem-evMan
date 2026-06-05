@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 
+
+import { joinTest } from "@/actions/contest";
+
 export default function JoinContestPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -25,22 +28,9 @@ export default function JoinContestPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test/join`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ joinId: otp }),
-        }
-      );
-
-      const result = await response.json();
+      const result = await joinTest(otp);
 
       if (result.success) {
-        toast.success(`Joining: ${result.title}`);
         router.push(`/test/${result.contestId}`);
       } else {
         toast.error(result.message || "Invalid Join ID");

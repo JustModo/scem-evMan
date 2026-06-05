@@ -12,6 +12,8 @@ import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
+import { submitMcq } from "@/actions/contest";
+
 interface MCQScreenProps {
   problem: MCQProblem;
   problems: Problem[];
@@ -22,7 +24,6 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
   const router = useRouter();
   const params = useParams();
   const [isSaving, setIsSaving] = useState(false);
-  const { data: session } = useSession();
 
   // Create sorting logic matching TestHeader: MCQs first, then Coding
   const mcqProblems = problems.filter((p) => p.questionType !== "Coding");
@@ -34,22 +35,10 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
   const nextProblem = sortedProblems[currentIndex + 1];
 
   const handleSave = async (answers: string[]) => {
-    if (!session?.backendToken || !params.testid) return;
+    if (!params.testid) return;
     setIsSaving(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/test/${params.testid}/mcq`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.backendToken}`
-        },
-        body: JSON.stringify({
-          contestId: params.testid,
-          questionId: problem._id || problem.id,
-          answer: answers
-        })
-      });
-      const data = await res.json();
+      const data = await submitMcq(params.testid as string, String(problem._id || problem.id), answers);
       if (!data.success) {
         toast.error(data.error || "Failed to save answer");
       }
@@ -83,10 +72,6 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
   const handleNext = () => {
     if (nextProblem) {
       router.push(`/attempt/test/${params.testid}/question/${nextProblem.id}`);
-    } else {
-      // If "Finish", we can trigger the global submit if desired, 
-      // but usually the Submit button in Header handles final endTest.
-      toast.success("All questions completed! Click Submit to finish the test.");
     }
   };
 
@@ -219,6 +204,7 @@ export default function MCQScreen({ problem, problems }: MCQScreenProps) {
           <Button
             className="px-6 font-medium"
             onClick={handleNext}
+            disabled={!nextProblem}
           >
             {nextProblem ? "Next" : "Finish"}
           </Button>

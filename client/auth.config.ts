@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
 import { SignJWT } from "jose"
+import { getBaseUrl } from "@/lib/env";
 
 // Helper to mint a token for the Express Request
 // this minting happens on Next.js server side.
@@ -34,6 +35,13 @@ async function mintBackendToken(user: User) {
 }
 
 export const authConfig = {
+    secret: process.env.AUTH_SECRET,
+    logger: {
+        error(error: any) {
+            if (error?.name === 'CredentialsSignin' || error?.type === 'CredentialsSignin' || error?.code === 'credentials') return;
+            console.error(error);
+        }
+    },
     pages: {
         signIn: '/auth/login',
     },
@@ -92,7 +100,7 @@ export const authConfig = {
                     const { email, password } = parsedCredentials.data;
 
                     try {
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`, {
+                        const res = await fetch(`${getBaseUrl()}/api/auth/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email, password })
@@ -106,8 +114,8 @@ export const authConfig = {
 
 
                         return null;
-                    } catch (error) {
-                        console.error('Auth API error:', error);
+                    } catch (error: any) {
+                        console.error(`Auth API error: ${error.message || 'Unknown error'}`);
                         return null;
                     }
                 }

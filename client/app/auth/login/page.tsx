@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { authenticate } from "@/app/actions/auth";
+import { authenticate } from "@/actions/auth";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -159,6 +159,7 @@ function LoginForm() {
                 </div>
               </div>
 
+              {/*
               <div className="text-right -mt-2">
                 <Link
                   href="/auth/forgot-password"
@@ -167,6 +168,7 @@ function LoginForm() {
                   Forgot Password?
                 </Link>
               </div>
+              */}
 
               <Button
                 type="submit"
@@ -197,6 +199,7 @@ function LoginForm() {
                 </Button>
               </div>
 
+              {/*
               <div className="flex items-center my-6">
                 <hr className="grow border-muted" />
                 <span className="px-4 text-sm text-muted-foreground">OR</span>
@@ -222,6 +225,7 @@ function LoginForm() {
                   </>
                 )}
               </Button>
+              */}
             </form>
 
             <p className="text-xs text-muted-foreground text-center">
