@@ -13,6 +13,7 @@ import {
   Users,
   Rocket,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 
 function CommandBanner() {
@@ -54,6 +55,41 @@ function CommandBanner() {
       <Link to="/logs" className="hover:text-emerald-400 font-medium bg-emerald-500/20 px-3 py-1 rounded-md transition-colors">
         View Live Logs
       </Link>
+    </div>
+  );
+}
+
+function ErrorBanner() {
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    function handleError(e: Event) {
+      const customEvent = e as CustomEvent<string>;
+      setError(customEvent.detail);
+    }
+    function clearError() {
+      setError(null);
+    }
+
+    window.addEventListener("action-error", handleError);
+    window.addEventListener("action-started", clearError);
+    return () => {
+      window.removeEventListener("action-error", handleError);
+      window.removeEventListener("action-started", clearError);
+    };
+  }, []);
+
+  if (!error) return null;
+
+  return (
+    <div className="bg-destructive/10 border-b border-destructive/20 text-destructive px-8 py-3 flex items-center justify-between text-sm shrink-0 shadow-sm z-10">
+      <div className="flex items-center gap-2">
+        <AlertCircle className="h-4 w-4 shrink-0" />
+        <span className="font-medium tracking-tight whitespace-pre-wrap">{error}</span>
+      </div>
+      <button onClick={() => setError(null)} className="hover:text-destructive/80 transition-colors shrink-0 ml-4 font-medium">
+        Dismiss
+      </button>
     </div>
   );
 }
@@ -167,6 +203,7 @@ export default function Layout() {
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden bg-background">
+        <ErrorBanner />
         <CommandBanner />
         <header className="shrink-0 px-8 py-5 border-b border-border flex items-center justify-between">
           <div>

@@ -6,10 +6,24 @@ export const api = {
   getStatus: () => request<Status>("/status"),
 
   // Lifecycle
-  start: () => request("/start", { method: "POST" }).finally(() => window.dispatchEvent(new Event("command-started"))),
-  stop: () => request("/stop", { method: "POST" }).finally(() => window.dispatchEvent(new Event("command-started"))),
-  restart: (target?: "all" | "caddy" | "caddy-restart" | "judge") =>
-    request("/restart", { method: "POST", body: JSON.stringify({ target }) }).finally(() => window.dispatchEvent(new Event("command-started"))),
+  start: () => {
+    window.dispatchEvent(new Event("action-started"));
+    return request("/start", { method: "POST" })
+      .catch((err) => { window.dispatchEvent(new CustomEvent("action-error", { detail: err.message })); throw err; })
+      .finally(() => window.dispatchEvent(new Event("command-started")));
+  },
+  stop: () => {
+    window.dispatchEvent(new Event("action-started"));
+    return request("/stop", { method: "POST" })
+      .catch((err) => { window.dispatchEvent(new CustomEvent("action-error", { detail: err.message })); throw err; })
+      .finally(() => window.dispatchEvent(new Event("command-started")));
+  },
+  restart: (target?: "all" | "caddy" | "caddy-restart" | "judge") => {
+    window.dispatchEvent(new Event("action-started"));
+    return request("/restart", { method: "POST", body: JSON.stringify({ target }) })
+      .catch((err) => { window.dispatchEvent(new CustomEvent("action-error", { detail: err.message })); throw err; })
+      .finally(() => window.dispatchEvent(new Event("command-started")));
+  },
 
   // Config
   getConfig: () => request<ConfigSnapshot>("/config"),
@@ -17,6 +31,7 @@ export const api = {
     request("/config", { method: "PUT", body: JSON.stringify(payload) }),
   validateConfig: () =>
     request<{ envErrors: string[] }>("/config/validate", { method: "POST" }),
+  testConnection: (payload: { type: string, uri: string }) => request("/test-connection", { method: "POST", body: JSON.stringify(payload) }),
 
   // Storage
   getStorage: () => request<StorageUsage>("/storage"),
@@ -31,8 +46,12 @@ export const api = {
   },
 
   // Uninstall
-  uninstall: (mode: string) =>
-    request("/uninstall", { method: "POST", body: JSON.stringify({ mode }) }).finally(() => window.dispatchEvent(new Event("command-started"))),
+  uninstall: (mode: string) => {
+    window.dispatchEvent(new Event("action-started"));
+    return request("/uninstall", { method: "POST", body: JSON.stringify({ mode }) })
+      .catch((err) => { window.dispatchEvent(new CustomEvent("action-error", { detail: err.message })); throw err; })
+      .finally(() => window.dispatchEvent(new Event("command-started")));
+  },
 
   // Users
   listUsers: (params?: { role?: string; page?: number; limit?: number }) => {

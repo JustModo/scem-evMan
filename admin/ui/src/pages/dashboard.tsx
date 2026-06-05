@@ -28,13 +28,14 @@ export default function DashboardPage() {
     setRunning(true);
     try {
       await action();
+    } catch (err: any) {
+      console.error(err);
+    } finally {
       // Add a small delay so daemon can fully trigger operation in background
       await new Promise((r) => setTimeout(r, 1000));
       await refresh();
-    } catch (err: any) {
-      console.error(err);
+      setRunning(false);
     }
-    setRunning(false);
   }
 
   const containerCount = status?.containers?.length ?? 0;
@@ -90,33 +91,35 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <section>
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">Quick Actions</h3>
-        <div className="flex gap-3">
-          <Button
-            onClick={() => runAction(() => api.start())}
-            disabled={running}
-          >
-            {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Start
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => runAction(() => api.stop())}
-            disabled={running}
-          >
-            <Square className="h-4 w-4" />
-            Stop
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => runAction(() => api.restart())}
-            disabled={running}
-          >
-            <RotateCcw className="h-4 w-4" />
-            Restart
-          </Button>
-          <Button variant="ghost" onClick={refresh} disabled={loading}>
-            Refresh
-          </Button>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Button
+              onClick={() => runAction(() => api.start())}
+              disabled={running}
+            >
+              {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              Start
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => runAction(() => api.stop())}
+              disabled={running}
+            >
+              <Square className="h-4 w-4" />
+              Stop
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => runAction(() => api.restart())}
+              disabled={running}
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restart
+            </Button>
+            <Button variant="ghost" onClick={refresh} disabled={loading}>
+              Refresh
+            </Button>
+          </div>
         </div>
       </section>
 

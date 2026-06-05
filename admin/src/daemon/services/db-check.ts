@@ -1,42 +1,24 @@
+import { MongoClient } from "mongodb";
+
 /**
- * Validates that an external MongoDB URI is reachable via TCP before starting the stack.
+ * Validates that an external MongoDB URI is reachable and has read/write permissions.
  * Only used when database.mode = "external" — internal mode launches Mongo via Docker Compose.
  */
 export async function validateMongoConnection(uri: string): Promise<void> {
-  const { hostname, port: portStr } = parseMongoUri(uri);
-  const port = portStr ? parseInt(portStr, 10) : 27017;
-
-  await new Promise<void>((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error(`Timed out connecting to MongoDB at ${hostname}:${port}`));
-    }, 3000);
-
-    Bun.connect({
-      hostname,
-      port,
-      socket: {
-        open(socket) {
-          clearTimeout(timeout);
-          socket.end();
-          resolve();
-        },
-        error(_socket, err) {
-          clearTimeout(timeout);
-          reject(err);
-        },
-        connectError(_socket, err) {
-          clearTimeout(timeout);
-          reject(err);
-        },
-        // Required by Bun socket type but unused here
-        data() {},
-        close() {},
-      },
-    }).catch((err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-  });
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
+  try {
+    await client.connect();
+    const db = client.db();
+    
+    // Test write permission to ensure full operability
+    const testCol = db.collection("__pomelo_test_connection");
+    await testCol.insertOne({ test: true, createdAt: new Date() });
+    await testCol.deleteOne({ test: true });
+  } catch (err: any) {
+    throw new Error(`MongoDB connection/permission failed: ${err.message}`);
+  } finally {
+    await client.close(true);
+  }
 }
 
 function parseMongoUri(uri: string): { hostname: string; port: string | null } {

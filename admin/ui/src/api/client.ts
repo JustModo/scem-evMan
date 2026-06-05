@@ -15,7 +15,9 @@ export async function request<T>(
   const payload = await res.json().catch(() => null);
 
   if (!res.ok) {
-    const message = payload?.error || payload?.message || "Request failed";
+    const message = typeof payload?.error === "string"
+      ? payload.error
+      : (payload?.message || "Request failed");
     throw new Error(message);
   }
 

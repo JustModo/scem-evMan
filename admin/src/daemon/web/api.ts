@@ -67,6 +67,26 @@ function determineRestartAction(
   return "none";
 }
 
+async function runPreStartChecks(paths: Paths): Promise<Response | null> {
+  const cfgYaml = parseConfigYaml(paths) || {};
+  if (cfgYaml.infrastructure?.database?.mode === "external") {
+    const appEnvText = existsSync(paths.envFile) ? readFileSync(paths.envFile, "utf8") : "";
+    const mongoUri = parseEnv(appEnvText)["MONGODB_URI"];
+    if (mongoUri) {
+      try {
+        await validateMongoConnection(mongoUri);
+      } catch (err: any) {
+        return errorResponse(
+          `Cannot connect to external MongoDB at ${mongoUri}. Check MONGODB_URI in app.env. (${err.message})`,
+          1,
+          400,
+        );
+      }
+    }
+  }
+  return null;
+}
+
 export function createApiHandler(paths: Paths) {
   return async function handleApi(req: Request, url: URL, method: string) {
     try {
@@ -130,23 +150,8 @@ export function createApiHandler(paths: Paths) {
       if (method === "POST" && url.pathname === "/api/start") {
         ensureConfigDefaults(paths, getCurrentReleaseDir(paths));
 
-        // For external DB mode, validate MongoDB is reachable before starting the stack
-        const cfgYaml = parseConfigYaml(paths) || {};
-        if (cfgYaml.infrastructure?.database?.mode === "external") {
-          const appEnvText = existsSync(paths.envFile) ? readFileSync(paths.envFile, "utf8") : "";
-          const mongoUri = parseEnv(appEnvText)["MONGODB_URI"];
-          if (mongoUri) {
-            try {
-              await validateMongoConnection(mongoUri);
-            } catch (err: any) {
-              return errorResponse(
-                `Cannot connect to external MongoDB at ${mongoUri}. Check MONGODB_URI in app.env. (${err.message})`,
-                1,
-                400,
-              );
-            }
-          }
-        }
+        const preCheckError = await runPreStartChecks(paths);
+        if (preCheckError) return preCheckError;
 
         const compose = ComposeCommand.from(paths);
         await startCompose(paths, "start", [
@@ -183,6 +188,15 @@ export function createApiHandler(paths: Paths) {
         } else {
           // "all" or unspecified — down then up with caddy reload
           ensureConfigDefaults(paths, getCurrentReleaseDir(paths));
+
+          const preCheckError = await runPreStartChecks(paths);
+          if (preCheckError) {
+            await startCompose(paths, "stop", [
+              { descriptor: ComposeCommand.forTeardown(paths).stop() },
+            ]);
+            return preCheckError;
+          }
+
           await startCompose(paths, "restart", [
             { label: "Stopping existing containers...", descriptor: ComposeCommand.forTeardown(paths).downKeepVolumes() },
             { descriptor: compose.up() },
@@ -216,6 +230,19 @@ export function createApiHandler(paths: Paths) {
 
       if (method === "POST" && url.pathname === "/api/config/validate") {
         return json({ status: "ok", data: validateConfig(paths) });
+      }
+
+      if (method === "POST" && url.pathname === "/api/test-connection") {
+        const body = await readJson(req);
+        if (body?.type === "mongo") {
+          try {
+            await validateMongoConnection(body.uri);
+            return json({ status: "ok" });
+          } catch (err: any) {
+            return errorResponse(err.message, 1, 400);
+          }
+        }
+        return errorResponse("Unsupported connection type", 1, 400);
       }
 
       if (method === "POST" && url.pathname === "/api/uninstall") {

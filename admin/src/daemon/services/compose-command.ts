@@ -71,6 +71,13 @@ export class ComposeCommand {
       COMPOSE_PROFILES: profiles.join(","),
     };
 
+    if (dbMode === "internal") {
+      env.MONGODB_URI = "mongodb://mongo:27017/pomelo";
+    }
+    if (judgeMode === "internal") {
+      env.JUDGE0_URL = "http://judge0-server:2358";
+    }
+
     // Base args shared by every compose invocation
     const baseArgs = [
       "compose",

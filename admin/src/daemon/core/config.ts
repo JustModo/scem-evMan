@@ -51,19 +51,34 @@ export function getConfigSnapshot(paths: Paths) {
 }
 
 export function updateConfig(paths: Paths, payload: any) {
-  if (typeof payload.appEnv === "string") {
-    writeFileSync(paths.envFile, payload.appEnv);
-  }
+  let finalAppEnv = typeof payload.appEnv === "string" ? payload.appEnv : (existsSync(paths.envFile) ? readFileSync(paths.envFile, "utf8") : "");
+
+  let configDoc: any = {};
   if (typeof payload.configYaml === "string") {
     writeFileSync(paths.configFile, payload.configYaml);
     try {
-      const doc = YAML.parse(payload.configYaml) || {};
-      const domain = doc.app?.domain;
-      const protocol = doc.app?.protocol;
+      configDoc = YAML.parse(payload.configYaml) || {};
+      const domain = configDoc.app?.domain;
+      const protocol = configDoc.app?.protocol;
       if (domain && protocol) {
         writeFileSync(paths.caddyFile, buildCaddyfile(domain, protocol));
       }
     } catch (e) {}
+  } else if (existsSync(paths.configFile)) {
+    try {
+      configDoc = YAML.parse(readFileSync(paths.configFile, "utf8")) || {};
+    } catch (e) {}
+  }
+
+  if (configDoc.infrastructure?.database?.mode === "internal") {
+    finalAppEnv = upsertEnv(finalAppEnv, "MONGODB_URI", "mongodb://mongo:27017/pomelo");
+  }
+  if (configDoc.infrastructure?.judge0?.mode === "internal") {
+    finalAppEnv = upsertEnv(finalAppEnv, "JUDGE0_URL", "http://judge0-server:2358");
+  }
+
+  if (finalAppEnv) {
+    writeFileSync(paths.envFile, finalAppEnv);
   }
   if (typeof payload.caddyfile === "string") {
     // If the UI sends a caddyfile explicitly, it will overwrite the generated one here

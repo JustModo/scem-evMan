@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Database, Code, Globe } from "lucide-react";
+import { Loader2, Database, Code, Globe, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function SetupPage() {
   const [config, setConfig] = useState<ConfigSnapshot | null>(null);
@@ -16,6 +16,8 @@ export default function SetupPage() {
   const [mongoMode, setMongoMode] = useState<"internal" | "external">("internal");
   const [mongoUri, setMongoUri] = useState("mongodb://mongo:27017/pomelo");
   const [mongoSaving, setMongoSaving] = useState(false);
+  const [mongoTesting, setMongoTesting] = useState(false);
+  const [mongoTestMsg, setMongoTestMsg] = useState<{type: "success" | "error", text: string} | null>(null);
 
   const [judgeMode, setJudgeMode] = useState<"internal" | "external">("internal");
   const [judgeUrl, setJudgeUrl] = useState("http://judge0-server:2358");
@@ -121,7 +123,18 @@ export default function SetupPage() {
 
   async function handleSaveMongo() {
     setMongoSaving(true);
+    setMongoTestMsg(null);
     try {
+      if (mongoMode === "external") {
+        try {
+          await api.testConnection({ type: "mongo", uri: mongoUri });
+        } catch (err: any) {
+          setMongoTestMsg({ type: "error", text: `Connection test failed. Save aborted.\n${err.message}` });
+          setMongoSaving(false);
+          return;
+        }
+      }
+
       const newEnv = updateEnvContent(config?.appEnv || "", { MONGODB_URI: mongoUri });
       const newYaml = updateYaml(config?.configYaml || "", (doc) => {
         if (!doc.infrastructure) doc.infrastructure = {};
@@ -133,8 +146,21 @@ export default function SetupPage() {
       await applyRestartAction((result as any)?.restartAction ?? "restart-all");
     } catch (err: any) {
       console.error(err);
+      window.dispatchEvent(new CustomEvent("action-error", { detail: err.message || String(err) }));
     }
     setMongoSaving(false);
+  }
+
+  async function handleTestMongo() {
+    setMongoTesting(true);
+    setMongoTestMsg(null);
+    try {
+      await api.testConnection({ type: "mongo", uri: mongoUri });
+      setMongoTestMsg({ type: "success", text: "Connection successful. Read/write verified." });
+    } catch (err: any) {
+      setMongoTestMsg({ type: "error", text: err.message || "Connection failed" });
+    }
+    setMongoTesting(false);
   }
 
   async function handleSaveJudge() {
@@ -151,6 +177,7 @@ export default function SetupPage() {
       await applyRestartAction((result as any)?.restartAction ?? "restart-all");
     } catch (err: any) {
       console.error(err);
+      window.dispatchEvent(new CustomEvent("action-error", { detail: err.message || String(err) }));
     }
     setJudgeSaving(false);
   }
@@ -169,6 +196,7 @@ export default function SetupPage() {
       await applyRestartAction((result as any)?.restartAction ?? "restart-all");
     } catch (err: any) {
       console.error(err);
+      window.dispatchEvent(new CustomEvent("action-error", { detail: err.message || String(err) }));
     }
     setDomainSaving(false);
   }
@@ -220,10 +248,32 @@ export default function SetupPage() {
                 />
               </div>
             )}
-            <Button onClick={handleSaveMongo} disabled={mongoSaving}>
-              {mongoSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Save & Restart
-            </Button>
+            {mongoTestMsg && (
+              <div className={`flex items-start gap-2 p-3 rounded-md text-sm ${
+                mongoTestMsg.type === "success"
+                  ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
+                  : "bg-destructive/10 border border-destructive/20 text-destructive"
+              }`}>
+                {mongoTestMsg.type === "success" ? (
+                  <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                )}
+                <span className="whitespace-pre-wrap">{mongoTestMsg.text}</span>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button onClick={handleSaveMongo} disabled={mongoSaving || mongoTesting}>
+                {mongoSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Save & Restart
+              </Button>
+              {mongoMode === "external" && (
+                <Button variant="outline" onClick={handleTestMongo} disabled={mongoSaving || mongoTesting}>
+                  {mongoTesting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="h-4 w-4 mr-2" />}
+                  Test Connection
+                </Button>
+              )}
+            </div>
           </div>
         </section>
 
