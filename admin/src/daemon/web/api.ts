@@ -1,13 +1,15 @@
+import { existsSync, readFileSync } from "fs";
 import YAML from "yaml";
 import { logsResponse, startCompose } from "../services/compose";
 import { ComposeCommand } from "../services/compose-command";
-import { getConfigSnapshot, updateConfig, validateConfig, parseConfigYaml, ensureConfigDefaults } from "../core/config";
+import { getConfigSnapshot, updateConfig, validateConfig, parseConfigYaml, ensureConfigDefaults, parseEnv } from "../core/config";
 import { getCurrentReleaseDir } from "../core/release";
 import { errorResponse, json, normalizeError, readJson } from "./http";
 import { getStatus, getStorageUsage } from "../services/status";
 import { startUninstall } from "../services/uninstall";
 import { createUser, deleteUser, listUsers, updateUser } from "../services/users";
 import { isOperationRunning, getOperationState, getLogBuffer, subscribeToLogs } from "../services/operations";
+import { validateMongoConnection } from "../services/db-check";
 import type { Paths } from "../core/types";
 
 /**
@@ -17,31 +19,38 @@ function determineRestartAction(
   paths: Paths,
   body: any,
   currentConfig: ReturnType<typeof getConfigSnapshot>,
-): "none" | "restart-all" | "reload-caddy" | "restart-caddy" | "restart-judge" {
+): "none" | "restart-all" | "reload-caddy" | "restart-caddy" | "restart-judge" | "restart-daemon" {
   const appEnvChanged = typeof body.appEnv === "string" && body.appEnv !== currentConfig.appEnv;
   const configYamlChanged = typeof body.configYaml === "string" && body.configYaml !== currentConfig.configYaml;
   const caddyfileChanged = typeof body.caddyfile === "string" && body.caddyfile !== currentConfig.caddyfile;
   const judge0Changed = typeof body.judge0 === "string" && body.judge0 !== currentConfig.judge0;
 
+  if (configYamlChanged) {
+    const oldCfg = parseConfigYaml(paths) || {};
+    let newCfg: any = {};
+    try {
+      newCfg = YAML.parse(body.configYaml) || {};
+    } catch {}
+
+    // Admin port change — daemon must restart to bind to the new port
+    const oldAdminPort = oldCfg.ports?.admin ?? 8462;
+    const newAdminPort = newCfg.ports?.admin ?? 8462;
+    if (oldAdminPort !== newAdminPort) {
+      return "restart-daemon";
+    }
+
+    const oldHttpPort = oldCfg.ports?.caddyHttp ?? 80;
+    const oldHttpsPort = oldCfg.ports?.caddyHttps ?? 443;
+    const newHttpPort = newCfg.ports?.caddyHttp ?? 80;
+    const newHttpsPort = newCfg.ports?.caddyHttps ?? 443;
+
+    if (oldHttpPort !== newHttpPort || oldHttpsPort !== newHttpsPort) {
+      return "restart-all";
+    }
+  }
+
   // If core app config or env changed, full restart is needed
   if (appEnvChanged || configYamlChanged) {
-    // Check if ports changed in configYaml — Caddy needs a container restart for port changes
-    if (configYamlChanged) {
-      const oldCfg = parseConfigYaml(paths) || {};
-      let newCfg: any = {};
-      try {
-        newCfg = YAML.parse(body.configYaml) || {};
-      } catch {}
-
-      const oldHttpPort = oldCfg.ports?.caddyHttp ?? 80;
-      const oldHttpsPort = oldCfg.ports?.caddyHttps ?? 443;
-      const newHttpPort = newCfg.ports?.caddyHttp ?? 80;
-      const newHttpsPort = newCfg.ports?.caddyHttps ?? 443;
-
-      if (oldHttpPort !== newHttpPort || oldHttpsPort !== newHttpsPort) {
-        return "restart-all"; // Port changes need full container restart
-      }
-    }
     return "restart-all";
   }
 
@@ -120,6 +129,25 @@ export function createApiHandler(paths: Paths) {
 
       if (method === "POST" && url.pathname === "/api/start") {
         ensureConfigDefaults(paths, getCurrentReleaseDir(paths));
+
+        // For external DB mode, validate MongoDB is reachable before starting the stack
+        const cfgYaml = parseConfigYaml(paths) || {};
+        if (cfgYaml.infrastructure?.database?.mode === "external") {
+          const appEnvText = existsSync(paths.envFile) ? readFileSync(paths.envFile, "utf8") : "";
+          const mongoUri = parseEnv(appEnvText)["MONGODB_URI"];
+          if (mongoUri) {
+            try {
+              await validateMongoConnection(mongoUri);
+            } catch (err: any) {
+              return errorResponse(
+                `Cannot connect to external MongoDB at ${mongoUri}. Check MONGODB_URI in app.env. (${err.message})`,
+                1,
+                400,
+              );
+            }
+          }
+        }
+
         const compose = ComposeCommand.from(paths);
         await startCompose(paths, "start", [
           { label: "Stopping existing containers...", descriptor: ComposeCommand.forTeardown(paths).downKeepVolumes() },
@@ -177,6 +205,11 @@ export function createApiHandler(paths: Paths) {
         const restartAction = determineRestartAction(paths, body, currentConfig);
 
         updateConfig(paths, body);
+
+        if (restartAction === "restart-daemon") {
+          // Respond first, then exit — systemd Restart=always will bring daemon back on new port
+          setTimeout(() => process.exit(0), 500);
+        }
 
         return json({ status: "ok", data: { saved: true, restartAction } });
       }
