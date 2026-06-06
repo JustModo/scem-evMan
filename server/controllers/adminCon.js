@@ -641,6 +641,9 @@ const deleteContest = async (req, res, next) => {
         }
 
         await Contest.findByIdAndDelete(id);
+        
+        // Delete all submissions associated with this contest
+        await Submission.deleteMany({ contest: id });
 
         res.status(200).json({ success: true, message: 'Contest deleted successfully' });
     } catch (error) {
