@@ -45,7 +45,9 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id,
         console.warn(`Could not wrap code for ${language}, using original code:`, err.message);
     }
 
-    const executionPromises = testCases.map(async (tc, index) => {
+    const results = [];
+    for (let index = 0; index < testCases.length; index++) {
+        const tc = testCases[index];
         // Prepare input
         let input = '';
         if (typeof tc.input === 'object' && tc.input !== null) {
@@ -88,7 +90,7 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id,
             const decodedStderr = result.stderr ? Buffer.from(result.stderr, 'base64').toString('utf-8') : '';
             const decodedCompileOutput = result.compile_output ? Buffer.from(result.compile_output, 'base64').toString('utf-8') : '';
 
-            return {
+            results.push({
                 testCase: index + 1,
                 passed: isPassed,
                 input: input,
@@ -97,19 +99,19 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id,
                 error: decodedStderr || decodedCompileOutput || (result.status ? result.status.description : "Unknown Error"),
                 status: result.status ? result.status.description : "Unknown",
                 isVisible: forceVisible || tc.isVisible
-            };
+            });
         } catch (err) {
-            return {
+            results.push({
                 testCase: index + 1,
                 passed: false,
                 status: "System Error",
                 error: err.message,
                 isVisible: tc.isVisible
-            };
+            });
         }
-    });
+    }
 
-    return await Promise.all(executionPromises);
+    return results;
 };
 
 // @desc    Run code against visible test cases only

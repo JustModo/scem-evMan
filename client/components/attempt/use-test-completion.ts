@@ -48,6 +48,16 @@ export function useTestCompletion() {
 
       clearAttemptIntegrityState(testId);
 
+      try {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith("pomelo_draft_")) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (err) {
+        console.error("Failed to clear local storage drafts", err);
+      }
+
       if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen().catch(err => console.error("Error exiting fullscreen:", err));
       }
