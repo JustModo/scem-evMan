@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import TestForm from "@/components/admin/test/test-form";
 import { db } from "@/lib/db";
 import { Problem } from "@/types/problem";
-import { formatTimeForDisplay } from "@/lib/date-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -63,14 +62,12 @@ export default async function AdminTestEditPage({
 
   let testData = null;
   if (testDataRaw) {
-    const end = new Date(testDataRaw.endTime);
-    const endTimeStr = formatTimeForDisplay(end);
-
     testData = {
       ...testDataRaw,
       id: testDataRaw._id,
       startsAt: testDataRaw.startTime ? new Date(testDataRaw.startTime).toISOString() : '',
-      duration: endTimeStr,
+      endsAt: testDataRaw.endTime ? new Date(testDataRaw.endTime).toISOString() : '',
+      duration: '',
       problems: (testDataRaw.questions || []).map((q) => typeof q === 'string' ? q : (q._id || q.id || String(q))),
       rules: testDataRaw.rules || [],
       status: (testDataRaw.status || "waiting") as "waiting" | "ongoing" | "completed",
