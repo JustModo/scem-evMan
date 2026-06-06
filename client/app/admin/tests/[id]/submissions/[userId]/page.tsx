@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
+import { LocalTime } from "@/components/ui/local-time";
 import {
     ArrowLeft,
     CheckCircle2,
@@ -167,14 +167,6 @@ function mapSubmissionDetail(submissionItem: RawSubmissionItem): SubmissionDetai
     };
 }
 
-function formatSubmittedAt(value: string) {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return "Unknown";
-    }
-
-    return format(date, "MMM d, yyyy, h:mm a");
-}
 
 function getSubmissionStatusVariant(status: SubmissionStatus): "default" | "destructive" | "secondary" {
     if (status === "PASSED" || status === "Accepted") {
@@ -260,7 +252,7 @@ export default async function SubmissionDetailPage({
                 <div className="grid gap-6 md:grid-cols-3">
                     <StatItem icon={<Trophy className="h-4 w-4" />} label="Candidate" value={data.userName} mono={false} />
                     <StatItem icon={<Trophy className="h-4 w-4" />} label="Total Score" value={`${data.totalScore} / ${data.maxScore}`} />
-                    <StatItem icon={<Clock className="h-4 w-4" />} label="Submitted On" value={formatSubmittedAt(data.submittedAt)} mono={false} />
+                    <StatItem icon={<Clock className="h-4 w-4" />} label="Submitted On" value={<LocalTime iso={data.submittedAt} />} mono={false} />
                 </div>
 
                 <div className="space-y-8">
@@ -419,7 +411,7 @@ export default async function SubmissionDetailPage({
     );
 }
 
-function StatItem({ icon, label, value, mono = true }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
+function StatItem({ icon, label, value, mono = true }: { icon: React.ReactNode; label: string; value: React.ReactNode; mono?: boolean }) {
     return (
         <Card className="h-full border-border bg-card shadow-sm">
             <CardContent className="flex min-h-24 h-full items-center gap-3 px-5 py-">

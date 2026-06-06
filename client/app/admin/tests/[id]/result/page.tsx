@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
+import { LocalTime } from "@/components/ui/local-time";
 
 /* ---------- Types ---------- */
 interface Participant {
@@ -59,14 +59,6 @@ interface MongoSubmission {
     submittedAt: string;
 }
 
-function formatSubmittedAt(value: string) {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return "Unknown";
-    }
-
-    return format(date, "MMM d, yyyy, h:mm a");
-}
 
 export default async function AdminTestResultPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -204,7 +196,7 @@ export default async function AdminTestResultPage({ params }: { params: Promise<
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-sm text-muted-foreground">
-                                                    {formatSubmittedAt(p.submittedAt)}
+                                                    <LocalTime iso={p.submittedAt} />
                                                 </TableCell>
                                                 <TableCell className="px-6">
                                                     <div className="flex items-center justify-end gap-2">
