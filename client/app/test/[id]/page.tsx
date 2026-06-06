@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getBaseUrl } from "@/lib/env";
 import { getContestLanding, startTest, getContestData } from "@/actions/contest";
+import { clearAttemptIntegrityState } from "@/lib/attempt-integrity";
 
 interface ContestDetails {
   title: string;
@@ -100,6 +101,16 @@ export default function ContestLanding() {
           // The attempt screen will retry and enforce full-screen if the browser blocks this call.
         }
       }
+
+      // Clear any old violation counts and code drafts from a previous attempt
+      clearAttemptIntegrityState(testid as string);
+      try {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith("pomelo_draft_")) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch {}
 
       const result = await startTest(testid as string);
 

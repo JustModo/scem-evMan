@@ -87,6 +87,7 @@ export default function IntegrityMonitor() {
   const countdownIntervalRef = useRef<number | null>(null);
   const lastViolationAtRef = useRef(0);
   const isAutoSubmittingRef = useRef(false);
+  const isGracePeriodRef = useRef(true);
 
   const remainingWarnings = useMemo(
     () => Math.max(0, MAX_VIOLATIONS - violationCount),
@@ -139,7 +140,7 @@ export default function IntegrityMonitor() {
   }, [completeTest]);
 
   const registerViolation = useCallback(async (type: ViolationType) => {
-    if (!testId || isAutoSubmittingRef.current) return;
+    if (!testId || isAutoSubmittingRef.current || isGracePeriodRef.current) return;
 
     const storedCount = readViolationCount(testId);
     if (storedCount >= MAX_VIOLATIONS) {
@@ -220,12 +221,16 @@ export default function IntegrityMonitor() {
     void requestTestFullscreen();
     setCountdown(Math.ceil(FINAL_MODAL_DELAY_MS / 1000));
 
+    const graceTimer = setTimeout(() => {
+      isGracePeriodRef.current = false;
+    }, 2500);
+
     return () => {
+      clearTimeout(graceTimer);
       clearTimers();
       resetAttemptObfuscation();
-      void exitTestFullscreen();
     };
-  }, [clearTimers, forceSubmitTest, testId]);
+  }, [clearTimers, testId]);
 
   useEffect(() => {
     if (!testId) return;
