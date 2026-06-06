@@ -24,7 +24,7 @@ const requireAuth = () => async (req, res, next) => {
         _id: payload.userId,
         id: payload.userId,
         role: payload.role,
-        email: payload.email
+        username: payload.username
       };
       req.auth = { userId: payload.userId };
       next();

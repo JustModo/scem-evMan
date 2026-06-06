@@ -31,16 +31,16 @@ export default function UsersPage() {
   // Create dialog
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState<CreateUserPayload>({
-    name: "", email: "", password: "", role: "user",
+    name: "", username: "", password: "", role: "user",
   });
   const [creating, setCreating] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string; name?: string } | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{ username?: string; password?: string; name?: string } | null>(null);
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const USERNAME_REGEX = /^[a-zA-Z0-9_.@]+$/;
 
   async function loadTab(role: "admin" | "user", page: number) {
     setLoading(true);
@@ -68,14 +68,14 @@ export default function UsersPage() {
   }
 
   function validateForm(): boolean {
-    const errors: { email?: string; password?: string; name?: string } = {};
+    const errors: { username?: string; password?: string; name?: string } = {};
 
-    if (!createForm.email.trim()) {
-      errors.email = "Email is required";
-    } else if (createForm.email.length > 254) {
-      errors.email = "Email must be 254 characters or less";
-    } else if (!EMAIL_REGEX.test(createForm.email)) {
-      errors.email = "Invalid email format";
+    if (!createForm.username.trim()) {
+      errors.username = "Username is required";
+    } else if (createForm.username.length < 3 || createForm.username.length > 30) {
+      errors.username = "Username must be between 3 and 30 characters";
+    } else if (!USERNAME_REGEX.test(createForm.username)) {
+      errors.username = "Invalid username format. Only letters, numbers, underscores, periods, and @ allowed.";
     }
 
     if (!createForm.password) {
@@ -99,7 +99,7 @@ export default function UsersPage() {
     try {
       await api.createUser(createForm);
       setShowCreate(false);
-      setCreateForm({ name: "", email: "", password: "", role: "user" });
+      setCreateForm({ name: "", username: "", password: "", role: "user" });
       setValidationErrors(null);
       
       // Load first page of the role we just created
@@ -193,7 +193,7 @@ export default function UsersPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead>Username</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
@@ -212,7 +212,7 @@ export default function UsersPage() {
                   {user.name || "—"}
                 </div>
               </TableCell>
-              <TableCell className="font-mono text-xs">{user.email}</TableCell>
+              <TableCell className="font-mono text-xs">{user.username}</TableCell>
               <TableCell>
                 <Select
                   value={user.role}
@@ -328,20 +328,20 @@ export default function UsersPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-email">Email</Label>
+              <Label htmlFor="new-username">Username</Label>
               <Input
-                id="new-email"
-                type="email"
-                value={createForm.email}
+                id="new-username"
+                type="text"
+                value={createForm.username}
                 onChange={(e) => {
-                  setCreateForm({ ...createForm, email: e.target.value });
-                  if (validationErrors?.email) setValidationErrors({ ...validationErrors, email: undefined });
+                  setCreateForm({ ...createForm, username: e.target.value });
+                  if (validationErrors?.username) setValidationErrors({ ...validationErrors, username: undefined });
                 }}
-                placeholder="admin@example.com"
-                className={validationErrors?.email ? "border-destructive focus-visible:ring-destructive" : ""}
+                placeholder="johndoe"
+                className={validationErrors?.username ? "border-destructive focus-visible:ring-destructive" : ""}
               />
-              {validationErrors?.email && (
-                <p className="text-xs text-destructive mt-1">{validationErrors.email}</p>
+              {validationErrors?.username && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.username}</p>
               )}
             </div>
             <div className="space-y-2">
@@ -380,7 +380,7 @@ export default function UsersPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={creating || !createForm.email || !createForm.password}>
+            <Button onClick={handleCreate} disabled={creating || !createForm.username || !createForm.password}>
               {creating ? "Creating..." : "Create Account"}
             </Button>
           </DialogFooter>
@@ -393,7 +393,7 @@ export default function UsersPage() {
           <DialogHeader>
             <DialogTitle>Delete Account</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete <strong>{deleteTarget?.name || deleteTarget?.email}</strong>?
+              Are you sure you want to delete <strong>{deleteTarget?.name || deleteTarget?.username}</strong>?
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>

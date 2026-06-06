@@ -41,20 +41,20 @@ async function getDb(paths: Paths) {
   return mongoClient.db();
 }
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const USERNAME_REGEX = /^[a-zA-Z0-9_.@]+$/;
 
 function validateUserPayload(payload: any, isUpdate = false) {
-  const { name, email, password, role } = payload;
+  const { name, username, password, role } = payload;
 
-  if (!isUpdate || email !== undefined) {
-    if (typeof email !== "string" || !email.trim()) {
-      throw createError("Email is required and must be a string", 400);
+  if (!isUpdate || username !== undefined) {
+    if (typeof username !== "string" || !username.trim()) {
+      throw createError("Username is required and must be a string", 400);
     }
-    if (email.length > 254) {
-      throw createError("Email must be 254 characters or less", 400);
+    if (username.length < 3 || username.length > 30) {
+      throw createError("Username must be between 3 and 30 characters", 400);
     }
-    if (!EMAIL_REGEX.test(email)) {
-      throw createError("Invalid email format", 400);
+    if (!USERNAME_REGEX.test(username)) {
+      throw createError("Invalid username format. Only letters, numbers, underscores, periods, and @ allowed.", 400);
     }
   }
 
@@ -115,20 +115,23 @@ export async function listUsers(
 
 export async function createUser(paths: Paths, body: any) {
   validateUserPayload(body, false);
-  const { name, email, password, role } = body;
+  const { name, username, password, role } = body;
 
   const db = await getDb(paths);
-  const existing = await db.collection("users").findOne({ email });
+  const existing = await db.collection("users").findOne({ username });
   if (existing) {
-    throw createError("User with this email already exists", 400);
+    throw createError("User with this username already exists", 400);
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const now = new Date();
+  
+  const derivedName = name || (username.charAt(0).toUpperCase() + username.slice(1));
+  
   const doc = {
-    email,
+    username,
     passwordHash,
-    name: name || "",
+    name: derivedName,
     role: role === "admin" ? "admin" : "user",
     registeredContests: [],
     createdAt: now,
@@ -138,7 +141,7 @@ export async function createUser(paths: Paths, body: any) {
   const result = await db.collection("users").insertOne(doc);
   return {
     _id: result.insertedId.toString(),
-    email: doc.email,
+    username: doc.username,
     name: doc.name,
     role: doc.role,
     createdAt: doc.createdAt.toISOString(),
@@ -152,7 +155,7 @@ export async function updateUser(paths: Paths, id: string, body: any) {
   const update: Record<string, any> = { updatedAt: new Date() };
 
   if (body.name !== undefined) update.name = body.name;
-  if (body.email !== undefined) update.email = body.email;
+  if (body.username !== undefined) update.username = body.username;
   if (body.role !== undefined) update.role = body.role;
   if (body.password) {
     update.passwordHash = await bcrypt.hash(body.password, 10);

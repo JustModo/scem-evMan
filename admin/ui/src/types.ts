@@ -45,22 +45,22 @@ export type StorageUsage = {
 export type User = {
   _id: string;
   name: string;
-  email: string;
+  username: string;
   role: "admin" | "user";
   createdAt: string;
   updatedAt: string;
 };
 
 export type CreateUserPayload = {
-  name: string;
-  email: string;
+  name?: string;
+  username: string;
   password: string;
   role: "admin" | "user";
 };
 
 export type UpdateUserPayload = {
   name?: string;
-  email?: string;
+  username?: string;
   password?: string;
   role?: "admin" | "user";
 };
