@@ -222,7 +222,7 @@ export default function TestCasePanel({
                       <XCircle className="w-4 h-4 text-destructive" />
                     )}
                     <div className="text-sm font-medium text-foreground">
-                      {tc.isVisible ? `Sample Case ${idx + 1}` : `Hidden Case ${idx + 1}`}
+                      {`Hidden Testcase ${idx + 1}`}
                     </div>
                   </div>
                   <Badge variant={tc.passed ? "default" : "destructive"}>

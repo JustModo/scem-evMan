@@ -91,9 +91,9 @@ const executeTestCases = async ({ question, code, language, testCases, judge0Id,
             return {
                 testCase: index + 1,
                 passed: isPassed,
-                input: (forceVisible || tc.isVisible) ? input : undefined, // Hide input if not visible
-                expectedOutput: (forceVisible || tc.isVisible) ? expectedOutput : undefined,
-                actualOutput: (forceVisible || tc.isVisible) ? removeTrailingLineCommands(decodedStdout || "") : undefined,
+                input: input,
+                expectedOutput: expectedOutput,
+                actualOutput: removeTrailingLineCommands(decodedStdout || ""),
                 error: decodedStderr || decodedCompileOutput || (result.status ? result.status.description : "Unknown Error"),
                 status: result.status ? result.status.description : "Unknown",
                 isVisible: forceVisible || tc.isVisible
@@ -259,9 +259,16 @@ const submitCode = async (req, res, next) => {
         submission.totalScore = submission.submissions.reduce((acc, curr) => acc + (curr.score || 0), 0);
         await submission.save();
 
+        const clientResults = results.map(r => ({
+            testCase: r.testCase,
+            passed: r.passed,
+            status: r.status,
+            isVisible: r.isVisible
+        }));
+
         return res.status(200).json({
             success: true,
-            results, // Frontend will receive filtered input/output for hidden cases via executeTestCases logic
+            results: clientResults, // Frontend receives only status and pass/fail info
             score,
             overallStatus
         });

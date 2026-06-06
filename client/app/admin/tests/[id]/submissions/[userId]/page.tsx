@@ -366,7 +366,7 @@ export default async function SubmissionDetailPage({
                                                                     )}
                                                                 </summary>
 
-                                                                {!tc.isHidden && (tc.input || tc.expectedOutput || tc.error) && (
+                                                                {(tc.input || tc.expectedOutput || tc.error) && (
                                                                     <div className="space-y-3 border-t border-border/60 bg-background px-4 pb-4 pt-3">
                                                                         {tc.input && (
                                                                             <div className="space-y-1">
