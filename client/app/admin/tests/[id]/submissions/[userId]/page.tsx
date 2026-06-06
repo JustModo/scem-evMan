@@ -392,7 +392,7 @@ export default async function SubmissionDetailPage({
                                                                                 </pre>
                                                                             </div>
                                                                         )}
-                                                                        {tc.error && (
+                                                                        {tc.error && !tc.passed && (
                                                                             <div className="space-y-1">
                                                                                 <div className="text-[10px] font-bold uppercase tracking-wider text-destructive">Error Logs</div>
                                                                                 <pre className="overflow-x-auto whitespace-pre-wrap rounded-md border border-destructive/20 bg-destructive/10 p-2 font-mono text-[11px] text-destructive">
