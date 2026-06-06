@@ -151,8 +151,11 @@ export default function TestCaseCard() {
                 });
 
                 const inputData: Record<string, any> = {};
-                inputVariables.forEach((v: {variable: string}) => {
-                    inputData[v.variable] = rowData[v.variable] || '';
+                inputVariables.forEach((v: {variable: string; type: string}) => {
+                    const raw = rowData[v.variable] || '';
+                    inputData[v.variable] = v.type.includes("_array")
+                        ? raw.split(',').map((s: string) => s.trim()).filter((s: string) => s !== '')
+                        : raw;
                 });
 
                 newTestCases.push({
@@ -410,7 +413,50 @@ export default function TestCaseCard() {
                                                             <FormItem>
                                                                 <FormLabel className="text-xs">{variable.variable} <span className="text-muted-foreground font-normal">({variable.type})</span></FormLabel>
                                                                 <FormControl>
-                                                                    <Input {...field} value={field.value ?? ""} placeholder={`Value for ${variable.variable}`} className="h-8 text-sm" />
+                                                                    {variable.type.includes("_array") ? (
+                                                                        <div className="space-y-1.5">
+                                                                            {(Array.isArray(field.value) ? field.value : []).map((elem: string, eIdx: number) => {
+                                                                                const arr: string[] = Array.isArray(field.value) ? field.value : [];
+                                                                                return (
+                                                                                    <div key={eIdx} className="flex gap-1.5">
+                                                                                        <Input
+                                                                                            value={elem}
+                                                                                            onChange={e => {
+                                                                                                const next = [...arr];
+                                                                                                next[eIdx] = e.target.value;
+                                                                                                field.onChange(next);
+                                                                                            }}
+                                                                                            className="h-8 text-sm flex-1"
+                                                                                            placeholder={`Element ${eIdx + 1}`}
+                                                                                        />
+                                                                                        <Button
+                                                                                            type="button"
+                                                                                            variant="ghost"
+                                                                                            size="icon"
+                                                                                            className="h-8 w-8 text-destructive"
+                                                                                            onClick={() => field.onChange(arr.filter((_, i) => i !== eIdx))}
+                                                                                        >
+                                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="outline"
+                                                                                size="sm"
+                                                                                className="w-full h-7 text-xs mt-1"
+                                                                                onClick={() => {
+                                                                                    const arr: string[] = Array.isArray(field.value) ? field.value : [];
+                                                                                    field.onChange([...arr, ""]);
+                                                                                }}
+                                                                            >
+                                                                                <Plus className="h-3 w-3 mr-1" /> Add Element
+                                                                            </Button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <Input {...field} value={field.value ?? ""} placeholder={`Value for ${variable.variable}`} className="h-8 text-sm" />
+                                                                    )}
                                                                 </FormControl>
                                                                 <FormMessage />
                                                             </FormItem>

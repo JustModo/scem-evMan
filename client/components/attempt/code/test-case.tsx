@@ -137,7 +137,9 @@ export default function TestCasePanel({
                       ? tc.passed
                         ? "bg-primary/10 text-primary border border-primary/20"
                         : "bg-destructive/10 text-destructive border border-destructive/20"
-                      : "bg-muted/50 hover:bg-muted text-muted-foreground border border-transparent"
+                      : tc.passed
+                        ? "bg-primary/5 text-primary/60 border border-primary/10 hover:bg-primary/10"
+                        : "bg-destructive/5 text-destructive/60 border border-destructive/10 hover:bg-destructive/10"
                   }`}
                 >
                   {tc.passed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
