@@ -104,8 +104,6 @@ export default function ContestLanding() {
       const result = await startTest(testid as string);
 
       if (result.success) {
-        toast.success("Good luck!");
-
         // Fetch problems to redirect to the first one
         const questionsData = await getContestData(testid as string);
         if (questionsData.success && questionsData.data.problems?.length > 0) {
