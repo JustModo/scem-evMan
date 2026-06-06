@@ -173,7 +173,34 @@ fi
 # ==============================================================================
 print_banner
 
-# --- 1. Prerequisite Checks ---
+# --- 0. Existing Installation Check ---
+if command -v pomelo &>/dev/null || [[ -d "$APP_ROOT/app" && -n "$(ls -A "$APP_ROOT/app" 2>/dev/null)" ]]; then
+  log_warn "An existing installation of Pomelo was detected."
+  prompt "Would you like to uninstall it before proceeding? [y/N]: "
+  read -r do_uninstall < /dev/tty
+  if [[ "$do_uninstall" == "y" || "$do_uninstall" == "Y" ]]; then
+    log_info "Running uninstall process..."
+    if command -v pomelo &>/dev/null; then
+      pomelo uninstall
+    else
+      bash "$0" --uninstall
+    fi
+    
+    # Check if it was successfully uninstalled
+    hash -r 2>/dev/null || true
+    if command -v pomelo &>/dev/null || [[ -d "$APP_ROOT/app" && -n "$(ls -A "$APP_ROOT/app" 2>/dev/null)" ]]; then
+      fatal "Uninstall was aborted or failed. Cannot proceed with installation."
+    fi
+    
+    # Wait for the daemon to fully stop and release ports
+    log_info "Waiting for ports to be released..."
+    sleep 2
+  else
+    log_info "Installation aborted by user."
+    exit 0
+  fi
+fi
+
 log_step "Checking prerequisites"
 
 if [[ "$(uname -s)" != "Linux" ]]; then
