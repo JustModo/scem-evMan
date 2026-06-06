@@ -180,7 +180,7 @@ export default function ContestLanding() {
               </div>
               <div className="flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary/60" />
-                <span>{details ? new Date(details.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}</span>
+                <span>{details ? new Date(details.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }) : "-"}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Hourglass className="h-5 w-5 text-primary/60" />

@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -30,7 +29,7 @@ export function LeaderboardTable({ data, maxScore }: LeaderboardTableProps) {
     if (!value) return "N/A";
     const date = new Date(value);
     if (isNaN(date.getTime())) return "N/A";
-    return format(date, "MMM d, yyyy, h:mm a");
+    return date.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
   };
 
   return (

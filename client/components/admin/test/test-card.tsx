@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Clock, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Test } from "@/types/test";
-import { format } from "date-fns";
 import { getTestStatusBadgeVariant, getTestStatusLabel } from "@/lib/test-status";
 
 import { deleteTestAction } from "@/actions/delete-test";
@@ -52,7 +51,7 @@ export function TestCard({ test }: { test: Test }) {
           <Clock className="h-4 w-4 text-foreground shrink-0" />
           <span className="font-medium">Starts:</span>
           <span className="truncate">
-            {format(new Date(test.startsAt), "MMM d, yyyy, h:mm a")}
+            {new Date(test.startsAt).toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
           </span>
         </div>
 
