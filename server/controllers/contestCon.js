@@ -153,7 +153,8 @@ const getContestData = async (req, res, next) => {
                 if (s.question) {
                     answerMap[s.question.toString()] = {
                         answer: s.answer,
-                        code: s.code
+                        code: s.code,
+                        language: s.language
                     };
                 }
             });
@@ -181,7 +182,8 @@ const getContestData = async (req, res, next) => {
                     options: q.options,
                     marks: q.marks,
                     savedAnswer: answerMap[q._id.toString()] ? answerMap[q._id.toString()].answer : undefined,
-                    savedCode: answerMap[q._id.toString()] ? answerMap[q._id.toString()].code : undefined
+                    savedCode: answerMap[q._id.toString()] ? answerMap[q._id.toString()].code : undefined,
+                    savedLanguage: answerMap[q._id.toString()] ? answerMap[q._id.toString()].language : undefined
                 }))
             }
         });
