@@ -36,6 +36,7 @@ interface PopulatedUser {
 interface ContestRecord {
     _id: string;
     title?: string;
+    questions?: { marks?: number }[];
 }
 
 interface PopulatedQuestion {
@@ -216,7 +217,8 @@ export default async function SubmissionDetailPage({
         notFound();
     }
 
-    const contest = await db.findOne<ContestRecord>("contests", { _id: contestId });
+    const contest = await db.findOne<ContestRecord>("contests", { _id: contestId }, { populate: ["questions"] });
+    const maxScore = (contest?.questions || []).reduce((sum: number, q: { marks?: number }) => sum + (q.marks || 0), 0);
 
     const details = (submissionData.submissions || [])
         .map(mapSubmissionDetail)
@@ -228,7 +230,7 @@ export default async function SubmissionDetailPage({
         testId: contestId,
         testName: contest?.title || "Unknown Test",
         totalScore: submissionData.totalScore || 0,
-        maxScore: details.reduce((sum, detail) => sum + detail.points, 0),
+        maxScore,
         submittedAt: submissionData.submittedAt || submissionData.createdAt || "",
         details,
     };

@@ -38,6 +38,7 @@ interface TestResult {
     stats: {
         totalParticipants: number;
         averageScore: number;
+        maxScore: number;
     };
 }
 
@@ -45,6 +46,7 @@ interface MongoContest {
     _id: string;
     title: string;
     description: string;
+    questions?: { marks?: number }[];
 }
 
 interface MongoUser {
@@ -72,7 +74,7 @@ export default async function AdminTestResultPage({ params }: { params: Promise<
     const { id } = await params;
 
     // Fetch contest details
-    const contest = await db.findOne<MongoContest>('contests', { _id: id });
+    const contest = await db.findOne<MongoContest>('contests', { _id: id }, { populate: 'questions' });
     if (!contest) {
         return notFound();
     }
@@ -100,6 +102,7 @@ export default async function AdminTestResultPage({ params }: { params: Promise<
     const averageScore = totalParticipants > 0
         ? participants.reduce((acc, p) => acc + p.score, 0) / totalParticipants
         : 0;
+    const maxScore = (contest.questions || []).reduce((sum: number, q: { marks?: number }) => sum + (q.marks || 0), 0);
 
     const data: TestResult = {
         id: contest._id,
@@ -108,7 +111,8 @@ export default async function AdminTestResultPage({ params }: { params: Promise<
         participants,
         stats: {
             totalParticipants,
-            averageScore
+            averageScore,
+            maxScore
         }
     };
 
@@ -150,7 +154,7 @@ export default async function AdminTestResultPage({ params }: { params: Promise<
                         />
                         <AdvancedStatCard
                             label="Mean Score"
-                            value={data.stats.averageScore.toFixed(1)}
+                            value={`${data.stats.averageScore.toFixed(1)} / ${data.stats.maxScore}`}
                             icon={<Award className="h-5 w-5" />}
                             description="Average across participants"
                         />
@@ -197,7 +201,7 @@ export default async function AdminTestResultPage({ params }: { params: Promise<
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
-                                                        <span className="font-mono text-base font-semibold text-foreground">{p.score}</span>
+                                                        <span className="font-mono text-base font-semibold text-foreground">{p.score} / {data.stats.maxScore}</span>
                                                         <Badge variant="secondary" className="font-mono text-[11px]">
                                                             Score
                                                         </Badge>
