@@ -22,7 +22,7 @@ export default async function TestLayout({
   params
 }: {
   children: React.ReactNode;
-  params: Promise<{ testid: string; qid: string }>;
+  params: Promise<{ testid: string }>;
 }) {
   const { testid } = await params;
   const session = await auth();
