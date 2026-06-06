@@ -32,8 +32,19 @@ export async function fetchBackend(endpoint: string, options: RequestInit = {}) 
     return res.json();
   }
   
+  const text = await res.text();
+  
+  // Handle rate-limit responses that may come as plain text
+  if (res.status === 429) {
+    return {
+      success: false,
+      error: text || "Too many requests, please slow down",
+      rateLimited: true,
+    };
+  }
+
   return {
     success: res.ok,
-    message: await res.text(),
+    message: text,
   };
 }

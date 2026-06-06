@@ -19,7 +19,7 @@ const {
 } = require("../controllers/submitCon");
 
 const { validateContest } = require("../middlewares/contestMiddleware");
-const { submissionLimiter, joinLimiter } = require("../middlewares/rateLimiter");
+const { submissionLimiter, mcqLimiter, joinLimiter } = require("../middlewares/rateLimiter");
 
 const router = express.Router();
 
@@ -58,6 +58,6 @@ router.post('/:id/submit', requireAuth(), submissionLimiter, validateContest({ c
 router.post('/:id/end', requireAuth(), submissionLimiter, validateContest({ checkStarted: true }), endTest);
 
 // Save MCQ Answer - Must be not completed
-router.post('/:id/mcq', requireAuth(), submissionLimiter, validateContest({ checkStarted: true, checkEnded: true, checkAttemptStatus: 'NotCompleted' }), saveMCQ);
+router.post('/:id/mcq', requireAuth(), mcqLimiter, validateContest({ checkStarted: true, checkEnded: true, checkAttemptStatus: 'NotCompleted' }), saveMCQ);
 
 module.exports = router;

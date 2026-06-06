@@ -23,7 +23,22 @@ const submissionLimiter = rateLimit({
     // Use user id when available; fall back to IP to avoid runtime errors
     return req.user?.id || req.user?._id || req.user?.sub || rateLimit.ipKeyGenerator(req, res);
   },
-  message: 'Too many submissions, please try again after a minute',
+  message: { success: false, error: 'Too many submissions, please try again after a minute', rateLimited: true },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * MCQ Limiter: 30 requests per minute per user.
+ * MCQ answers are lightweight — allow more frequent saves.
+ */
+const mcqLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30,
+  keyGenerator: (req, res) => {
+    return req.user?.id || req.user?._id || req.user?.sub || rateLimit.ipKeyGenerator(req, res);
+  },
+  message: { success: false, error: 'Too many answer saves, please slow down', rateLimited: true },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -42,5 +57,6 @@ const joinLimiter = rateLimit({
 module.exports = {
   authLimiter,
   submissionLimiter,
+  mcqLimiter,
   joinLimiter,
 };

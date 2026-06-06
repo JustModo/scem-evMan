@@ -50,6 +50,8 @@ export default function TestCasePanel({
       const data = await runCode(testid as string, String(problem.id), code, language);
       if (data.success) {
         setResults(data.results);
+      } else if (data.rateLimited) {
+        toast.error(data.error || "Rate limited — please wait before running again");
       } else {
         toast.error(data.error || data.message || "Failed to run code");
       }
@@ -69,6 +71,8 @@ export default function TestCasePanel({
       const data = await submitCode(testid as string, String(problem.id), code, language);
       if (data.success) {
         setResults(data.results);
+      } else if (data.rateLimited) {
+        toast.error(data.error || "Rate limited — please wait before submitting again");
       } else {
         toast.error(data.error || data.message || "Failed to submit code");
       }
