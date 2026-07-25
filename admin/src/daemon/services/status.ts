@@ -73,5 +73,6 @@ async function diskUsage(path: string) {
   const res = await run("du", ["-sk", path]);
   if (res.code !== 0 || !res.stdout.trim()) return { bytes: 0 };
   const sizeKb = Number(res.stdout.trim().split(/\s+/)[0]);
+  if (isNaN(sizeKb)) return { bytes: 0 };
   return { bytes: sizeKb * 1024 };
 }

@@ -10,6 +10,10 @@ export function serveUi(paths: Paths, pathname: string) {
 
   const requested = pathname === "/" ? "index.html" : pathname.slice(1);
   const filePath = join(dist, requested);
+  // Guard against path traversal: resolved path must stay within dist
+  if (!filePath.startsWith(dist + "/") && filePath !== dist) {
+    return new Response("Forbidden", { status: 403 });
+  }
   if (existsSync(filePath) && !lstatSync(filePath).isDirectory()) {
     return new Response(Bun.file(filePath));
   }
